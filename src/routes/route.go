@@ -10,7 +10,7 @@ import (
 func SetUpRoutes(app *fiber.App) {
 	songs := app.Group("/songs")
 
-	songs.Get("/all", songCONTR.GetAllSongs)
+	songs.Get("/summary", songCONTR.Summary)
 
 	utils := app.Group("/utils")
 

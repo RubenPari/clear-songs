@@ -2,23 +2,20 @@ package song
 
 import (
 	"context"
-	"log"
-
-	trackDB "github.com/RubenPari/clear-songs/src/database/track"
-
 	"github.com/RubenPari/clear-songs/src/models"
 	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
 	"github.com/RubenPari/clear-songs/src/modules/utils"
 	"github.com/gofiber/fiber/v2"
+	spotifyAPI "github.com/zmb3/spotify/v2"
+	"log"
 )
 
-// GetAllSongs get all songs of the user
-// logged and save it in the database
-func GetAllSongs(c *fiber.Ctx) error {
+// Summary get a list of artistLibrarySummary objects
+func Summary(c *fiber.Ctx) error {
 	spotifyClient := authMO.SpotifyClient
 	ctx := context.Background()
 
-	songs, err := spotifyClient.CurrentUsersTracks(ctx, nil)
+	songs, err := spotifyClient.CurrentUsersTracks(ctx, spotifyAPI.Limit(10))
 
 	if err != nil {
 		log.Default().Printf("couldn't get songs: %v", err)
@@ -28,35 +25,25 @@ func GetAllSongs(c *fiber.Ctx) error {
 			"message": "couldn't get songs",
 		})
 	}
-
-	tracks := make([]models.Track, 0)
+	artistsSummary := make([]models.ArtistLibrarySummary, 0)
+	var artistsFounded [50]string
 
 	for _, song := range songs.Tracks {
-		track := models.Track{
-			Id:        song.ID,
-			Name:      song.Name,
-			Uri:       song.URI,
-			Album:     song.Album.Name,
-			Artist:    song.Artists[0].Name,
-			Featuring: utils.GetFeaturing(song),
+		founded, index := utils.ArrayContains(artistsFounded, string(song.Artists[0].ID))
+
+		if !founded {
+			artistsSummary = append(artistsSummary, models.ArtistLibrarySummary{
+				Id:   string(song.Artists[0].ID),
+				Name: song.Artists[0].Name,
+				Num:  1,
+			})
+
+			utils.AppendArray(&artistsFounded, string(song.Artists[0].ID))
+		} else {
+			artistsSummary[index].Num++
 		}
-
-		tracks = append(tracks, track)
 	}
 
-	saved := trackDB.Adds(tracks)
-
-	if !saved {
-		_ = c.SendStatus(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"status":  "error",
-			"message": "couldn't save songs",
-		})
-	}
-
-	_ = c.SendStatus(fiber.StatusCreated)
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "songs saved",
-	})
+	_ = c.SendStatus(200)
+	return c.JSON(artistsSummary)
 }
