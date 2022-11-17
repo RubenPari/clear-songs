@@ -1,12 +1,13 @@
 package auth
 
 import (
-	spotifyAPI "github.com/zmb3/spotify/v2"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	spotifyAPI "github.com/zmb3/spotify/v2"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -17,6 +18,7 @@ var (
 	SpotifyClient *spotifyAPI.Client = nil
 )
 
+// TODO: move func in utils package
 // LoadEnv loads environment
 // variables from .env file
 // in the root directory
