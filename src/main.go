@@ -3,23 +3,19 @@ package main
 import (
 	"os"
 
+	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	app := fiber.New()
 
-	errEnv := godotenv.Load("../.env")
-	if errEnv != nil {
-		panic(errEnv)
-	}
+	authMO.LoadEnv(3)
 
 	routes.SetUpRoutes(app)
 
-	errServer := app.Listen(":" + os.Getenv("PORT"))
-	if errServer != nil {
-		panic(errServer)
+	if err := app.Listen(":" + os.Getenv("PORT")); err != nil {
+		panic(err)
 	}
 }
