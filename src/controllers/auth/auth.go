@@ -34,8 +34,9 @@ func Callback(c *fiber.Ctx) error {
 	}
 
 	code := c.Query("code")
+	ctx := context.Background()
 
-	token, err := oauthConf.Exchange(context.Background(), code)
+	token, err := oauthConf.Exchange(ctx, code)
 
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
@@ -47,7 +48,7 @@ func Callback(c *fiber.Ctx) error {
 	}
 
 	// create http client
-	httpClient := spotifyAUTH.New().Client(context.Background(), token)
+	httpClient := spotifyAUTH.New().Client(ctx, token)
 
 	// create spotify http client
 	spotifyClient := spotifyAPI.New(httpClient)
@@ -55,7 +56,7 @@ func Callback(c *fiber.Ctx) error {
 	// export spotify client to modules
 	authMO.SpotifyClient = spotifyClient
 
-	resp, err := spotifyClient.CurrentUser(context.Background())
+	resp, err := spotifyClient.CurrentUser(ctx)
 
 	if err != nil {
 		_ = c.SendStatus(http.StatusUnauthorized)
