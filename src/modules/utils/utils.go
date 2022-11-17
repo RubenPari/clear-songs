@@ -16,3 +16,25 @@ func GetFeaturing(track spotifyAPI.SavedTrack) string {
 
 	return featuring
 }
+
+// ArrayContains check if an array contains a value
+func ArrayContains(array [50]string, value string) (bool, int) {
+	for i, v := range array {
+		if v == value {
+			return true, i
+		}
+	}
+
+	return false, 0
+}
+
+// AppendArray insert a value in
+// the first empty position of an array
+func AppendArray(array *[50]string, value string) {
+	for i, v := range *array {
+		if v == "" {
+			(*array)[i] = value
+			return
+		}
+	}
+}
