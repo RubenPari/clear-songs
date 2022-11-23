@@ -6,7 +6,7 @@ package models
 // - name of the artist defined above
 // - number of songs that the artist has in the user library
 type ArtistLibrarySummary struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Num  int    `json:"num"`
+	Id       string `json:"id"`
+	Name     string `json:"name"`
+	NumSongs int    `json:"numSongs"`
 }
