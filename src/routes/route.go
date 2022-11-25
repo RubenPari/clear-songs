@@ -11,6 +11,7 @@ func SetUpRoutes(app *fiber.App) {
 	songs := app.Group("/songs")
 
 	songs.Get("/summary", songCONTR.Summary)
+	songs.Delete("/remove-by-artist/:id_artist", songCONTR.RemoveByArtist)
 
 	utils := app.Group("/utils")
 

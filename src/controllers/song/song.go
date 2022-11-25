@@ -80,3 +80,76 @@ func Summary(c *fiber.Ctx) error {
 	_ = c.SendStatus(200)
 	return c.JSON(artistsSummary)
 }
+
+// RemoveByArtist remove all songs by artist
+func RemoveByArtist(c *fiber.Ctx) error {
+	spotifyClient := authMO.SpotifyClient
+	ctx := context.Background()
+
+	var artistId = c.Params("id_artist")
+
+	var limit = 50
+	var offset = 0
+
+	var errGetSavedTracks error
+
+	var songsToRemove []spotifyAPI.ID
+
+	for {
+		tracksPage, err := spotifyClient.CurrentUsersTracks(ctx, spotifyAPI.Limit(limit), spotifyAPI.Offset(offset))
+
+		if err != nil {
+			errGetSavedTracks = err
+			break
+		}
+
+		// add to songsToRemove array all songs getted
+		// by specific range and offset for each api call
+		for _, song := range tracksPage.Tracks {
+			if string(song.Artists[0].ID) == artistId {
+				songsToRemove = append(songsToRemove, song.ID)
+			}
+		}
+
+		if len(tracksPage.Tracks) < limit {
+			break
+		}
+
+		offset += limit
+	}
+
+	if errGetSavedTracks != nil {
+		log.Default().Printf("couldn't get songs: %v", errGetSavedTracks)
+		_ = c.SendStatus(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"status":  "error",
+			"message": "couldn't get songs",
+		})
+	}
+
+	// remove 50 songs at time
+	for start := 0; start < len(songsToRemove); start += 50 {
+		end := start + 50
+
+		if end > len(songsToRemove) {
+			end = len(songsToRemove)
+		}
+
+		errRemoveSongs := spotifyClient.RemoveTracksFromLibrary(ctx, songsToRemove[start:end]...)
+
+		if errRemoveSongs != nil {
+			log.Default().Printf("couldn't remove songs: %v", errRemoveSongs)
+			_ = c.SendStatus(fiber.StatusInternalServerError)
+			return c.JSON(fiber.Map{
+				"status":  "error",
+				"message": "couldn't remove songs",
+			})
+		}
+	}
+
+	_ = c.SendStatus(200)
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "songs removed",
+	})
+}
