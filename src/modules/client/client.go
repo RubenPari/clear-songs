@@ -17,11 +17,15 @@ func GetNameArtistById(id string) (string, error) {
 	port := os.Getenv("PORT")
 
 	// get name of artist by id with endpoint
-	responseName, errGetName := http.Get("http://localhost:" + port + "/utils/artist/get-name/" + id)
-	if errGetName != nil {
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", "http://localhost:"+port+"/utils/artist/get-name/"+id, nil)
+	req.Header.Add("Bearer", authMO.Token.AccessToken)
+	resp, err := client.Do(req)
+
+	if err != nil {
 		log.Default().Println("Error getting name of artist")
-		log.Default().Println(errGetName)
-		return "", errGetName
+		log.Default().Println(err)
+		return "", err
 	}
 
 	// extract name of artist from response of type json
@@ -31,7 +35,7 @@ func GetNameArtistById(id string) (string, error) {
 	}
 
 	var response Response
-	_ = json.NewDecoder(responseName.Body).Decode(&response)
+	_ = json.NewDecoder(resp.Body).Decode(&response)
 
 	return response.Name, nil
 }
@@ -44,7 +48,7 @@ func RemoveSongsByArtist(id string) error {
 
 	// remove songs by artist with endpoint DELETE
 	client := &http.Client{}
-	req, err := http.NewRequest("DELETE", "http://localhost:"+port+"/songs/remove-by-artist/"+id, nil)
+	req, _ := http.NewRequest("DELETE", "http://localhost:"+port+"/songs/remove-by-artist/"+id, nil)
 	req.Header.Add("Bearer", authMO.Token.AccessToken)
 	resp, err := client.Do(req)
 
@@ -56,7 +60,7 @@ func RemoveSongsByArtist(id string) error {
 
 	if resp.StatusCode != 200 {
 		log.Default().Println("Error removing songs by artist")
-		log.Default().Println(resp)
+		log.Default().Println(resp.Body)
 		return errors.New("error removing songs by artist")
 	}
 
