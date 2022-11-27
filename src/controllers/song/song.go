@@ -2,7 +2,9 @@ package song
 
 import (
 	"context"
+	"github.com/RubenPari/clear-songs/src/modules/client"
 	"log"
+	"strings"
 
 	"github.com/RubenPari/clear-songs/src/models"
 	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
@@ -151,5 +153,33 @@ func RemoveByArtist(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"status":  "success",
 		"message": "songs removed",
+	})
+}
+
+// MultipleRemoveByArtist remove all songs
+// by multiple artists passed in body
+func MultipleRemoveByArtist(c *fiber.Ctx) error {
+	// parse body as raw/text containing a list of artists id
+	artistsIdString := string(c.Body())
+	artistsId := strings.Split(artistsIdString, ",")
+
+	// call a client function to remove songs for each artistId
+	for _, artistId := range artistsId {
+		errRemoveByArtist := client.RemoveSongsByArtist(artistId)
+
+		if errRemoveByArtist != nil {
+			log.Default().Printf("couldn't remove songs: %v", errRemoveByArtist)
+			_ = c.SendStatus(fiber.StatusInternalServerError)
+			return c.JSON(fiber.Map{
+				"status":  "error",
+				"message": "couldn't remove songs",
+			})
+		}
+	}
+
+	_ = c.SendStatus(200)
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "songs removed for all artists",
 	})
 }
