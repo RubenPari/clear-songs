@@ -16,6 +16,7 @@ import (
 
 var (
 	SpotifyClient *spotifyAPI.Client = nil
+	Token         *oauth2.Token      = nil
 )
 
 // TODO: move func in utils package

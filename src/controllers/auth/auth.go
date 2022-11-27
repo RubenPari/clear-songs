@@ -50,10 +50,13 @@ func Callback(c *fiber.Ctx) error {
 	// create http client
 	httpClient := spotifyAUTH.New().Client(ctx, token)
 
+	// export token
+	authMO.Token = token
+
 	// create spotify http client
 	spotifyClient := spotifyAPI.New(httpClient)
 
-	// export spotify client to modules
+	// export spotify client
 	authMO.SpotifyClient = spotifyClient
 
 	resp, err := spotifyClient.CurrentUser(ctx)
