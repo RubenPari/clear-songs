@@ -2,6 +2,7 @@ package routes
 
 import (
 	authCONTR "github.com/RubenPari/clear-songs/src/controllers/auth"
+	playlistCONTR "github.com/RubenPari/clear-songs/src/controllers/playlist"
 	songCONTR "github.com/RubenPari/clear-songs/src/controllers/song"
 	utilsCONTR "github.com/RubenPari/clear-songs/src/controllers/utils"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,11 @@ func SetUpRoutes(app *fiber.App) {
 	songsMultiple := songs.Group("/multiple")
 
 	songsMultiple.Delete("/remove-by-artists", songCONTR.MultipleRemoveByArtist)
+
+	playlist := app.Group("/playlist")
+
+	playlist.Post("/rap/create", playlistCONTR.CreateRapPlaylist)
+	playlist.Post("/Edm/create", playlistCONTR.CreateEdmPlaylist)
 
 	utils := app.Group("/utils")
 
