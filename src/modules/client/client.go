@@ -3,17 +3,16 @@ package client
 import (
 	"encoding/json"
 	"errors"
-	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
 )
 
 // GetNameArtistById
 // call to endpoint to get name of artist by id
 func GetNameArtistById(id string) (string, error) {
-	_ = godotenv.Load()
 	port := os.Getenv("PORT")
 
 	// get name of artist by id with endpoint
@@ -43,7 +42,6 @@ func GetNameArtistById(id string) (string, error) {
 // RemoveSongsByArtist
 // call to endpoint to remove songs by artist
 func RemoveSongsByArtist(id string) error {
-	_ = godotenv.Load()
 	port := os.Getenv("PORT")
 
 	// remove songs by artist with endpoint DELETE
