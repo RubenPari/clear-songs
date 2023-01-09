@@ -77,6 +77,8 @@ func GetTracksUser() ([]spotifyAPI.SavedTrack, error) {
 		if err != nil {
 			errGetSavedTracks = err
 			break
+		} else {
+			log.Default().Printf("Sucessfully get %d songs by user library. Offset: %d Limit: %d", len(tracksPage.Tracks), offset, limit)
 		}
 
 		songs = append(songs, tracksPage.Tracks...)
@@ -89,11 +91,41 @@ func GetTracksUser() ([]spotifyAPI.SavedTrack, error) {
 	}
 
 	if errGetSavedTracks != nil {
-		log.Default().Printf("couldn't get songs: %v", errGetSavedTracks)
+		log.Default().Printf("couldn't get songs in user library: %v. Offset: %d Limit: %d", errGetSavedTracks, offset, limit)
+
 		return nil, errGetSavedTracks
 	} else {
+		log.Default().Printf("Sucessfully get all songs by user library. Offset: %d Limit: %d", offset, limit)
+
 		return songs, nil
 	}
+}
+
+func RemoveTracksPlaylist(tracks []spotifyAPI.ID, idPlaylist spotifyAPI.ID) error {
+	spotifyClient := authMO.SpotifyClient
+	ctx := context.Background()
+
+	var errRemoveTracks error = nil
+
+	for start := 0; start < len(tracks); start += 50 {
+		end := start + 50
+
+		if end > len(tracks) {
+			end = len(tracks)
+		}
+
+		_, err := spotifyClient.RemoveTracksFromPlaylist(ctx, idPlaylist, tracks[start:end]...)
+
+		if errRemoveTracks != nil {
+			log.Default().Printf("couldn't remove songs: %v from user library from %d to %d", err, start, end)
+			errRemoveTracks = err
+			break
+		} else {
+			log.Default().Printf("Sucessfully removed %d songs from user library from %d to %d", len(tracks[start:end]), start, end)
+		}
+	}
+
+	return errRemoveTracks
 }
 
 func RemoveUserTracks(tracks []spotifyAPI.ID) error {
@@ -112,9 +144,11 @@ func RemoveUserTracks(tracks []spotifyAPI.ID) error {
 		err := spotifyClient.RemoveTracksFromLibrary(ctx, tracks[start:end]...)
 
 		if errRemoveTracks != nil {
-			log.Default().Printf("couldn't remove songs: %v", errRemoveTracks)
+			log.Default().Printf("couldn't remove songs: %v from user library from %d to %d", err, start, end)
 			errRemoveTracks = err
 			break
+		} else {
+			log.Default().Printf("Sucessfully removed %d songs from user library from %d to %d", len(tracks[start:end]), start, end)
 		}
 	}
 

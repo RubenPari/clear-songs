@@ -21,7 +21,7 @@ func SetUpRoutes(app *fiber.App) {
 	playlist := app.Group("/playlist")
 
 	playlist.Post("/rap/create", playlistCONTR.CreateRapPlaylist)
-	playlist.Post("/Edm/create", playlistCONTR.CreateEdmPlaylist)
+	playlist.Post("/edm/create", playlistCONTR.CreateEdmPlaylist)
 
 	utils := app.Group("/utils")
 

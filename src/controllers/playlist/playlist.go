@@ -34,14 +34,20 @@ func CreateRapPlaylist(c *fiber.Ctx) error {
 	for _, track := range allTracks {
 		artist, _ := spotifyClient.GetArtist(ctx, track.Artists[0].ID)
 
+		log.Default().Printf("artist: %v", track.Artists[0].ID)
+
 		if slices.Contains(artist.Genres, "rap") ||
 			slices.Contains(artist.Genres, "hip hop") {
 			rapTracks = append(rapTracks, track.ID)
 		}
 	}
 
+	log.Default().Printf("success get all rap songs: %v", len(rapTracks))
+
 	// get all songs in the playlist
 	playlist, _ := spotifyClient.GetPlaylist(ctx, spotifyAPI.ID(os.Getenv("PLAYLIST_RAP")))
+
+	log.Default().Printf("success get playlist: %v", playlist.Name)
 
 	// create an array with all songs id to remove in the playlist
 	songsToRemove := make([]spotifyAPI.ID, 0)
@@ -52,8 +58,10 @@ func CreateRapPlaylist(c *fiber.Ctx) error {
 		songsToRemove = append(songsToRemove, playlistItem.Track.Track.ID)
 	}
 
+	log.Default().Printf("success get all songs in the playlist to remove: %v", len(songsToRemove))
+
 	// remove 50 songs at time
-	errRemoveTracks := utils.RemoveUserTracks(songsToRemove)
+	errRemoveTracks := utils.RemoveTracksPlaylist(songsToRemove, playlist.ID)
 
 	if errRemoveTracks != nil {
 		_ = c.SendStatus(fiber.StatusInternalServerError)
@@ -74,12 +82,16 @@ func CreateRapPlaylist(c *fiber.Ctx) error {
 		_, errAddSongs := spotifyClient.AddTracksToPlaylist(ctx, playlist.ID, rapTracks[start:end]...)
 
 		if errAddSongs != nil {
-			log.Default().Printf("couldn't add songs: %v", errAddSongs)
+			log.Default().Printf("couldn't add songs to the playlist: %v start: %v end: %v", errAddSongs, start, end)
+
 			_ = c.SendStatus(fiber.StatusInternalServerError)
+
 			return c.JSON(fiber.Map{
 				"status":  "error",
 				"message": "couldn't add songs",
 			})
+		} else {
+			log.Default().Printf("success add songs to the playlist: %v start: %v end: %v", playlist.Name, start, end)
 		}
 	}
 
