@@ -1,68 +1,49 @@
 package playlist
 
 import (
-	"context"
+	"log"
+	"os"
+
 	authMO "github.com/RubenPari/clear-songs/src/modules/auth"
+	"github.com/RubenPari/clear-songs/src/modules/utils"
 	"github.com/gofiber/fiber/v2"
 	spotifyAPI "github.com/zmb3/spotify/v2"
 	"golang.org/x/exp/slices"
-	"log"
-	"os"
 )
 
 // CreateRapPlaylist is a function that creates
 // a playlist with all rap songs in my library
 func CreateRapPlaylist(c *fiber.Ctx) error {
 	spotifyClient := authMO.SpotifyClient
-	ctx := context.Background()
+	ctx := c.Context()
 
-	// call to spotify api n times based on the offset
-	var limit = 50
-	var offset = 0 // NOTE: offset is excluded
-	// NOTE: gli elementi selezionati da n a m range
-	// non sono salvati in tale ordine
+	// get all songs in my library
+	allTracks, errAllTracks := utils.GetTracksUser()
 
-	var errGetSavedTracks error
-
-	songsToAdd := make([]spotifyAPI.ID, 0)
-
-	// get all songs in my library what have the genre rap
-	for {
-		tracksPage, err := spotifyClient.CurrentUsersTracks(ctx, spotifyAPI.Limit(limit), spotifyAPI.Offset(offset))
-
-		if err != nil {
-			errGetSavedTracks = err
-			break
-		}
-
-		// for each group of songs check if the genre (of artist) is rap
-		for _, track := range tracksPage.Tracks {
-			artist, _ := spotifyClient.GetArtist(ctx, track.Artists[0].ID)
-
-			if slices.Contains(artist.Genres, "rap") ||
-				slices.Contains(artist.Genres, "hip hop") {
-				songsToAdd = append(songsToAdd, track.ID)
-			}
-		}
-
-		if len(tracksPage.Tracks) < limit {
-			break
-		}
-
-		offset += limit
-	}
-
-	if errGetSavedTracks != nil {
+	if errAllTracks != nil {
 		_ = c.SendStatus(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
 			"status":  "error",
-			"message": "couldn't get songs",
+			"message": "couldn't get all tracks",
 		})
+	}
+
+	// filter rap songs
+	var rapTracks []spotifyAPI.ID
+
+	for _, track := range allTracks {
+		artist, _ := spotifyClient.GetArtist(ctx, track.Artists[0].ID)
+
+		if slices.Contains(artist.Genres, "rap") ||
+			slices.Contains(artist.Genres, "hip hop") {
+			rapTracks = append(rapTracks, track.ID)
+		}
 	}
 
 	// get all songs in the playlist
 	playlist, _ := spotifyClient.GetPlaylist(ctx, spotifyAPI.ID(os.Getenv("PLAYLIST_RAP")))
 
+	// create an array with all songs id to remove in the playlist
 	songsToRemove := make([]spotifyAPI.ID, 0)
 
 	playlistTracks, _ := spotifyClient.GetPlaylistItems(ctx, playlist.ID)
@@ -72,34 +53,25 @@ func CreateRapPlaylist(c *fiber.Ctx) error {
 	}
 
 	// remove 50 songs at time
-	for start := 0; start < len(songsToRemove); start += 50 {
-		end := start + 50
+	errRemoveTracks := utils.RemoveUserTracks(songsToRemove)
 
-		if end > len(songsToRemove) {
-			end = len(songsToRemove)
-		}
-
-		errRemoveSongs := spotifyClient.RemoveTracksFromLibrary(ctx, songsToRemove[start:end]...)
-
-		if errRemoveSongs != nil {
-			log.Default().Printf("couldn't remove songs: %v", errRemoveSongs)
-			_ = c.SendStatus(fiber.StatusInternalServerError)
-			return c.JSON(fiber.Map{
-				"status":  "error",
-				"message": "couldn't remove songs",
-			})
-		}
+	if errRemoveTracks != nil {
+		_ = c.SendStatus(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"status":  "error",
+			"message": "couldn't remove songs",
+		})
 	}
 
-	// add 100 songs at time
-	for start := 0; start < len(songsToAdd); start += 100 {
+	// add 100 songs at time to the playlist
+	for start := 0; start < len(rapTracks); start += 100 {
 		end := start + 50
 
-		if end > len(songsToAdd) {
-			end = len(songsToAdd)
+		if end > len(rapTracks) {
+			end = len(rapTracks)
 		}
 
-		_, errAddSongs := spotifyClient.AddTracksToPlaylist(ctx, playlist.ID, songsToAdd[start:end]...)
+		_, errAddSongs := spotifyClient.AddTracksToPlaylist(ctx, playlist.ID, rapTracks[start:end]...)
 
 		if errAddSongs != nil {
 			log.Default().Printf("couldn't add songs: %v", errAddSongs)
