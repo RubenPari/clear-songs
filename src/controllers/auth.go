@@ -41,6 +41,9 @@ func Callback(c *gin.Context) {
 	client := configAuth.Client(context.Background(), token)
 	spotify := spotifyAPI.NewClient(client)
 
+	// save spotify client in session
+	utils.SpotifyClient = &spotify
+
 	// get user for testing
 	_, errUser := spotify.CurrentUser()
 
