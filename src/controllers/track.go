@@ -4,15 +4,21 @@ import (
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
+	"strconv"
 )
 
 // GetTrackSummary returns a summary of the user's tracks
 func GetTrackSummary(c *gin.Context) {
-	// get spotify client
-	spotify := utils.SpotifyClient
+	// get min query parameter (if exists)
+	minStr := c.Query("min")
+	min, _ := strconv.Atoi(minStr)
+
+	// get max query parameter (if exists)
+	maxStr := c.Query("max")
+	max, _ := strconv.Atoi(maxStr)
 
 	// get tracks from user
-	tracks, errTracks := spotify.CurrentUsersTracks()
+	tracks, errTracks := utils.GetAllUserTracks()
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -25,10 +31,18 @@ func GetTrackSummary(c *gin.Context) {
 	// with attributes: name, count
 	artistSummaryArray := make(map[string]int)
 
-	for _, page := range tracks.Tracks {
-		for _, artist := range page.Artists {
-			artistSummaryArray[artist.Name]++
-		}
+	for _, page := range tracks {
+		artistSummaryArray[page.Artists[0].Name]++
+	}
+
+	// filter by min
+	if minStr != "" {
+		artistSummaryArray = utils.FilterByMin(artistSummaryArray, min)
+	}
+
+	// filter by max
+	if maxStr != "" {
+		artistSummaryArray = utils.FilterByMax(artistSummaryArray, max)
 	}
 
 	c.JSON(200, artistSummaryArray)

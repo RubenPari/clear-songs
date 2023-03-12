@@ -20,7 +20,7 @@ func main() {
 	server.Use(sessions.Sessions("session", store))
 
 	// load .env file
-	utils.LoadEnv(1)
+	utils.LoadEnv(0)
 
 	// set routes
 	routes.SetUpRoutes(server)

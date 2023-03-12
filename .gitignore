@@ -1,2 +1,5 @@
 /.env
 /src/src
+
+# JetBrain IDEs
+/.idea
