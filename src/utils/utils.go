@@ -1,15 +1,12 @@
 package utils
 
 import (
-	"log"
-	"math/rand"
-	"os"
-	"path/filepath"
-	"time"
-
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -41,19 +38,6 @@ func LoadEnv(moveUp int) {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-}
-
-func GenerateRandomWord(n int) string {
-	letters := []rune("abcdefghijklmnopqrstuvwxyz")
-	rand.NewSource(time.Now().UnixNano())
-
-	word := make([]rune, n) // initialize word with the correct length
-
-	for i := range word {
-		word[i] = letters[rand.Intn(len(letters))]
-	}
-
-	return string(word)
 }
 
 func GetOAuth2Config() *oauth2.Config {
