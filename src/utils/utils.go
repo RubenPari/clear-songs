@@ -208,6 +208,7 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 		for _, track := range tracks.Tracks {
 			if track.Artists[0].ID == id {
 				filtredTracks = append(filtredTracks, track.ID)
+				log.Default().Println("Track: ", track.Name, " - ", track.Artists[0].Name, " founded")
 			}
 		}
 
@@ -228,23 +229,25 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	log.Default().Println("Deleting all user tracks")
 
 	for {
-		err := SpotifyClient.RemoveTracksFromLibrary(tracks[offset : offset+limit]...)
+		if offset >= len(tracks) {
+			break
+		}
 
-		log.Default().Println("Deleting tracks from offset: ", offset)
+		if offset+50 > len(tracks) {
+			limit = len(tracks) - offset
+		}
+
+		err := SpotifyClient.RemoveTracksFromLibrary(tracks[offset : offset+limit]...)
 
 		if err != nil {
 			log.Default().Println("Error deleting user tracks")
 			return err
 		}
 
-		if offset > len(tracks) {
-			break
-		}
+		log.Default().Println("Deleting tracks from offset: ", offset)
 
 		offset += 50
 	}
-
-	log.Default().Println("Deleted all track")
 
 	return nil
 }

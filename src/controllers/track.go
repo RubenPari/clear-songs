@@ -26,6 +26,7 @@ func GetTrackSummary(c *gin.Context) {
 			"status":  "error",
 			"message": "Error getting tracks",
 		})
+		return
 	}
 
 	// initialize artist summary array
@@ -55,7 +56,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	idArtistString := c.Param("id_artist")
 	idArtist := spotifyAPI.ID(idArtistString)
 
-	// get tracks from user
+	// get tracks from user by artist
 	tracksFiltres, errTracks := utils.GetAllUserTracksByArtist(idArtist)
 
 	if errTracks != nil {
@@ -63,6 +64,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 			"status":  "error",
 			"message": "Error getting tracks",
 		})
+		return
 	}
 
 	// delete tracks from artist
@@ -73,6 +75,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 			"status":  "error",
 			"message": "Error deleting tracks",
 		})
+		return
 	}
 
 	c.JSON(200, gin.H{
@@ -93,6 +96,7 @@ func DeleteTrackByGenre(c *gin.Context) {
 			"status":  "error",
 			"message": "Error getting tracks",
 		})
+		return
 	}
 
 	// delete tracks from artist
@@ -103,6 +107,7 @@ func DeleteTrackByGenre(c *gin.Context) {
 			"status":  "error",
 			"message": "Error deleting tracks",
 		})
+		return
 	}
 
 	c.JSON(200, gin.H{
