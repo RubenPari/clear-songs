@@ -178,6 +178,128 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	return allTracks, nil
 }
 
+// GetAllUserTracks returns all
+// tracks of user call the endpoint:
+// https://api.spotify.com/v1/me/tracks
+// with limit 50 and offset 0
+// and repeat the call with offset 50, 100, 150, etc.
+// until the response is empty
+func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
+	var filtredTracks []spotifyAPI.ID
+	var offset = 0
+	var limit = 50
+
+	log.Default().Println("Getting all user tracks")
+
+	for {
+		tracks, err := SpotifyClient.CurrentUsersTracksOpt(&spotifyAPI.Options{
+			Limit:  &limit,
+			Offset: &offset,
+		})
+
+		// filter by artist id
+		for _, track := range tracks.Tracks {
+			if track.Artists[0].ID == id {
+				filtredTracks = append(filtredTracks, track.ID)
+			}
+		}
+
+		log.Default().Println("Getting tracks from offset: ", offset)
+
+		if err != nil {
+			log.Default().Println("Error getting user tracks")
+			return nil, err
+		}
+
+		if len(tracks.Tracks) == 0 {
+			break
+		}
+
+		offset += 50
+	}
+
+	log.Println("Total tracks: ", len(filtredTracks))
+
+	return filtredTracks, nil
+}
+
+// DeleteTracksUser deletes all tracks
+// of user from the library
+// call delete endpoint with limit 50
+// and offset 0 and repeat the call
+func DeleteTracksUser(tracks []spotifyAPI.ID) error {
+	var offset = 0
+	var limit = 50
+
+	log.Default().Println("Deleting all user tracks")
+
+	for {
+		err := SpotifyClient.RemoveTracksFromLibrary(tracks[offset : offset+limit]...)
+
+		log.Default().Println("Deleting tracks from offset: ", offset)
+
+		if err != nil {
+			log.Default().Println("Error deleting user tracks")
+			return err
+		}
+
+		if offset > len(tracks) {
+			break
+		}
+
+		offset += 50
+	}
+
+	log.Default().Println("Deleted all track")
+
+	return nil
+}
+
+func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
+	// get all possible genres name
+	genres := GetPossibleGenres(genre)
+
+	var tracksFilter []spotifyAPI.ID
+
+	var offset = 0
+	var limit = 50
+
+	log.Default().Println("Getting all user tracks by genre")
+
+	for {
+		tracks, err := SpotifyClient.CurrentUsersTracksOpt(&spotifyAPI.Options{
+			Limit:  &limit,
+			Offset: &offset,
+		})
+
+		log.Default().Println("Getting tracks from offset: ", offset)
+
+		if err != nil {
+			log.Default().Println("Error getting user tracks")
+			return nil, err
+		}
+
+		if len(tracks.Tracks) == 0 {
+			break
+		}
+
+		// filter by genre name
+		for _, track := range tracks.Tracks {
+			// get artist info object
+			artist, _ := SpotifyClient.GetArtist(track.Artists[0].ID)
+
+			// check if artist has the specific genre
+			if ContainsGenre(artist.Genres, genres) {
+				tracksFilter = append(tracksFilter, track.ID)
+			}
+		}
+
+		offset += 50
+	}
+
+	return tracksFilter, nil
+}
+
 // FilterByMin returns an array of tracks
 // of artist that have at least the
 // minimum number of tracks

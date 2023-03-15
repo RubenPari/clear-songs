@@ -1,10 +1,11 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
-	"strconv"
 )
 
 // GetTrackSummary returns a summary of the user's tracks
@@ -50,14 +51,12 @@ func GetTrackSummary(c *gin.Context) {
 
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
-	// get spotify client
-	spotify := utils.SpotifyClient
-
 	// get artist id from url
-	idArtist := c.Param("id_artist")
+	idArtistString := c.Param("id_artist")
+	idArtist := spotifyAPI.ID(idArtistString)
 
 	// get tracks from user
-	tracks, errTracks := spotify.CurrentUsersTracks()
+	tracksFiltres, errTracks := utils.GetAllUserTracksByArtist(idArtist)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -66,17 +65,8 @@ func DeleteTrackByArtist(c *gin.Context) {
 		})
 	}
 
-	// initialize tracks array
-	tracksArrayToDelete := make([]spotifyAPI.ID, 0)
-
-	for _, page := range tracks.Tracks {
-		if page.Artists[0].ID.String() == idArtist {
-			tracksArrayToDelete = append(tracksArrayToDelete, page.ID)
-		}
-	}
-
 	// delete tracks from artist
-	errDelete := spotify.RemoveTracksFromLibrary(tracksArrayToDelete...)
+	errDelete := utils.DeleteTracksUser(tracksFiltres)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -92,17 +82,11 @@ func DeleteTrackByArtist(c *gin.Context) {
 }
 
 func DeleteTrackByGenre(c *gin.Context) {
-	// get spotify client
-	spotify := utils.SpotifyClient
-
-	// get genre name from query params
-	genre := c.Query("genre")
-
-	// create genres array
-	genres := utils.GetPossibleGenres(genre)
+	// get genre name from query param
+	name := c.Query("name")
 
 	// get tracks from user
-	tracks, errTracks := spotify.CurrentUsersTracks()
+	tracksFiltres, errTracks := utils.GetAllUserTracksByGenre(name)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -111,20 +95,8 @@ func DeleteTrackByGenre(c *gin.Context) {
 		})
 	}
 
-	// initialize tracks array
-	tracksArrayToDelete := make([]spotifyAPI.ID, 0)
-
-	for _, page := range tracks.Tracks {
-		// get artist genres from track's album
-		fullAlbum, _ := spotify.GetAlbum(page.Album.ID)
-
-		if utils.ContainsGenre(fullAlbum.Genres, genres) {
-			tracksArrayToDelete = append(tracksArrayToDelete, page.ID)
-		}
-	}
-
 	// delete tracks from artist
-	errDelete := spotify.RemoveTracksFromLibrary(tracksArrayToDelete...)
+	errDelete := utils.DeleteTracksUser(tracksFiltres)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
