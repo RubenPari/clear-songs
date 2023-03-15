@@ -178,12 +178,8 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	return allTracks, nil
 }
 
-// GetAllUserTracks returns all
-// tracks of user call the endpoint:
-// https://api.spotify.com/v1/me/tracks
-// with limit 50 and offset 0
-// and repeat the call with offset 50, 100, 150, etc.
-// until the response is empty
+// GetAllUserTracks returns
+// all tracks of user
 func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 	var filtredTracks []spotifyAPI.ID
 	var offset = 0
@@ -197,13 +193,6 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 			Offset: &offset,
 		})
 
-		// filter by artist id
-		for _, track := range tracks.Tracks {
-			if track.Artists[0].ID == id {
-				filtredTracks = append(filtredTracks, track.ID)
-			}
-		}
-
 		log.Default().Println("Getting tracks from offset: ", offset)
 
 		if err != nil {
@@ -215,6 +204,13 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 			break
 		}
 
+		// filter by artist id
+		for _, track := range tracks.Tracks {
+			if track.Artists[0].ID == id {
+				filtredTracks = append(filtredTracks, track.ID)
+			}
+		}
+
 		offset += 50
 	}
 
@@ -223,10 +219,8 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 	return filtredTracks, nil
 }
 
-// DeleteTracksUser deletes all tracks
-// of user from the library
-// call delete endpoint with limit 50
-// and offset 0 and repeat the call
+// DeleteTracksUser deletes
+// all tracks of user
 func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	var offset = 0
 	var limit = 50
@@ -255,6 +249,8 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
+// GetAllUserTracksByGenre return all
+// user track library by genre
 func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
 	// get all possible genres name
 	genres := GetPossibleGenres(genre)
