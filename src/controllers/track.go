@@ -29,25 +29,13 @@ func GetTrackSummary(c *gin.Context) {
 		return
 	}
 
-	// initialize artist summary array
-	// with attributes: name, count
-	artistSummaryArray := make(map[string]int)
+	// get artist summary array
+	artistSummaryArray := utils.GetArtistsSummary(tracks)
 
-	for _, page := range tracks {
-		artistSummaryArray[page.Artists[0].Name]++
-	}
+	// filter aritst summary by min and max
+	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
 
-	// filter by min
-	if minStr != "" {
-		artistSummaryArray = utils.FilterByMin(artistSummaryArray, min)
-	}
-
-	// filter by max
-	if maxStr != "" {
-		artistSummaryArray = utils.FilterByMax(artistSummaryArray, max)
-	}
-
-	c.JSON(200, artistSummaryArray)
+	c.JSON(200, artistSummaryFiltered)
 }
 
 // DeleteTrackByArtist deletes all tracks from an artist
