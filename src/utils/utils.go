@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/joho/godotenv"
-	spotifyAPI "github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/joho/godotenv"
+	spotifyAPI "github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -311,4 +312,33 @@ func FilterByMax(tracks map[string]int, max int) map[string]int {
 	}
 
 	return newTracks
+}
+
+// GetArtistsSummary returns a
+// map with the number of tracks
+// of each artist
+func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) map[string]int {
+	var artistSummary = make(map[string]int)
+
+	for _, track := range tracks {
+		artistSummary[track.Artists[0].Name]++
+	}
+
+	return artistSummary
+}
+
+// FilterSummaryByRange returns a
+// map with the number of tracks
+// of each artist that have at least
+// the minimum number and maximum
+func FilterSummaryByRange(tracks map[string]int, min int, max int) map[string]int {
+	var newSummary = make(map[string]int)
+
+	for artist, count := range tracks {
+		if count >= min && count <= max {
+			newSummary[artist] = count
+		}
+	}
+
+	return newSummary
 }

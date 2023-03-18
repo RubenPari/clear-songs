@@ -22,4 +22,7 @@ func SetUpRoutes(server *gin.Engine) {
 	server.DELETE("/track/by-genre",
 		middlewares.CheckAuth(),
 		authContr.DeleteTrackByGenre)
+	server.DELETE("/track/by-range",
+		middlewares.CheckAuth(),
+		authContr.DeleteTrackByRange)
 }
