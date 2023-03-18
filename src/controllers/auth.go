@@ -59,3 +59,13 @@ func Callback(c *gin.Context) {
 		"message": "User authenticated",
 	})
 }
+
+func Logout(c *gin.Context) {
+	// delete spotify client from session
+	utils.SpotifyClient = nil
+
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "User logged out",
+	})
+}

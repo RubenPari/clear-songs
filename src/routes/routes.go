@@ -9,6 +9,7 @@ func SetUpRoutes(server *gin.Engine) {
 	// ####### AUTHENTICATION #######
 	server.GET("/auth/login", authContr.Login)
 	server.GET("/auth/callback", authContr.Callback)
+	server.GET("/auth/logout", authContr.Logout)
 
 	// ####### TRACK #######
 	server.GET("/track/summary", authContr.GetTrackSummary)
