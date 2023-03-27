@@ -1,13 +1,12 @@
 package utils
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -97,7 +96,7 @@ func GetPossibleGenres(genre string) []string {
 	case "pop":
 		genres = []string{"pop", "pop music"}
 	case "hip-hop":
-		genres = []string{"hip-hop", "hip hop", "rap", "hip hop music", "rappeur", "rap music", "hip-hop music"}
+		genres = []string{"hip-hop", "hip hop", "rap", "hip hop music", "rapper", "rap music", "hip-hop music"}
 	case "r&b":
 		genres = []string{"r&b", "rnb", "r&b music", "rnb music"}
 	case "country":
@@ -163,10 +162,10 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	return allTracks, nil
 }
 
-// GetAllUserTracks returns
-// all tracks of user
+// GetAllUserTracksByArtist
+// returns all tracks of user
 func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
-	var filtredTracks []spotifyAPI.ID
+	var filteredTracks []spotifyAPI.ID
 	var offset = 0
 	var limit = 50
 
@@ -192,7 +191,7 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 		// filter by artist id
 		for _, track := range tracks.Tracks {
 			if track.Artists[0].ID == id {
-				filtredTracks = append(filtredTracks, track.ID)
+				filteredTracks = append(filteredTracks, track.ID)
 				log.Default().Println("Track: ", track.Name, " - ", track.Artists[0].Name, " founded")
 			}
 		}
@@ -200,9 +199,9 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 		offset += 50
 	}
 
-	log.Println("Total tracks: ", len(filtredTracks))
+	log.Println("Total tracks: ", len(filteredTracks))
 
-	return filtredTracks, nil
+	return filteredTracks, nil
 }
 
 // DeleteTracksUser deletes
@@ -341,4 +340,74 @@ func FilterSummaryByRange(tracks map[string]int, min int, max int) map[string]in
 	}
 
 	return newSummary
+}
+
+// CheckTypeObject checks if the
+// object entity spotify is of the type specified
+func CheckTypeObject(typeObject string) bool {
+	if typeObject == "artist" ||
+		typeObject == "track" ||
+		typeObject == "album" ||
+		typeObject == "playlist" {
+		return true
+	}
+
+	return false
+}
+
+// GetObjectName returns the name of the
+// object entity spotify given the type and id
+func GetObjectName(typeObject string, id string) string {
+	switch typeObject {
+	case "artist":
+		artist, _ := SpotifyClient.GetArtist(spotifyAPI.ID(id))
+
+		return artist.Name + " - " + typeObject
+
+	case "album":
+		album, _ := SpotifyClient.GetAlbum(spotifyAPI.ID(id))
+
+		return album.Name + " - " + typeObject
+
+	case "track":
+		track, _ := SpotifyClient.GetTrack(spotifyAPI.ID(id))
+
+		return track.Name + " - " + typeObject
+	case "playlist":
+		playlist, _ := SpotifyClient.GetPlaylist(spotifyAPI.ID(id))
+
+		return playlist.Name + " - " + typeObject
+
+	default:
+		return ""
+	}
+}
+
+// GetIDByName returns the id of the
+// object entity spotify given name
+func GetIDByName(name string, typeObject string) spotifyAPI.ID {
+	switch typeObject {
+	case "artist":
+		artist, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeArtist)
+
+		return artist.Artists.Artists[0].ID
+
+	case "album":
+		album, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeAlbum)
+
+		return album.Albums.Albums[0].ID
+
+	case "track":
+		track, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeTrack)
+
+		return track.Tracks.Tracks[0].ID
+
+	case "playlist":
+		playlist, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypePlaylist)
+
+		return playlist.Playlists.Playlists[0].ID
+
+	default:
+		return ""
+	}
 }

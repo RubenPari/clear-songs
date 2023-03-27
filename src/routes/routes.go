@@ -2,6 +2,7 @@ package routes
 
 import (
 	authContr "github.com/RubenPari/clear-songs/src/controllers"
+	utilsContr "github.com/RubenPari/clear-songs/src/controllers"
 	"github.com/RubenPari/clear-songs/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
@@ -25,4 +26,13 @@ func SetUpRoutes(server *gin.Engine) {
 	server.DELETE("/track/by-range",
 		middlewares.CheckAuth(),
 		authContr.DeleteTrackByRange)
+
+	// ####### UTILS #######
+	server.GET("/utils/name-by-id/:id",
+		middlewares.CheckAuth(),
+		utilsContr.GetNameByID)
+	server.GET("/utils/id-by-name",
+		middlewares.CheckAuth(),
+		utilsContr.GetIDByName)
+
 }
