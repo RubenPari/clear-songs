@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/RubenPari/clear-songs/src/lib/utils"
 	"os"
 
 	"github.com/RubenPari/clear-songs/src/routes"
-	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 )
 
