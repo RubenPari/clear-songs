@@ -1,10 +1,11 @@
 package user
 
 import (
+	"log"
+
 	"github.com/RubenPari/clear-songs/src/lib/array"
 	"github.com/RubenPari/clear-songs/src/lib/utils"
 	spotifyAPI "github.com/zmb3/spotify"
-	"log"
 )
 
 // GetAllUserTracks
@@ -163,4 +164,33 @@ func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
 	}
 
 	return tracksFilter, nil
+}
+
+func DeleteTracksByArtists(artists []spotifyAPI.FullArtist) error {
+	var tracks []spotifyAPI.ID
+
+	// get all tracks of user
+	allTracks, err := GetAllUserTracks()
+
+	if err != nil {
+		return err
+	}
+
+	// filter tracks by artist
+	for _, track := range allTracks {
+		for _, artist := range artists {
+			if track.Artists[0].ID == artist.ID {
+				tracks = append(tracks, track.ID)
+			}
+		}
+	}
+
+	// delete tracks
+	err = DeleteTracksUser(tracks)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

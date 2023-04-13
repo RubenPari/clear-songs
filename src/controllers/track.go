@@ -164,3 +164,47 @@ func DeleteTrackByRange(c *gin.Context) {
 		"message": "Tracks deleted",
 	})
 }
+
+// DeleteTrackByFile deletes tracks from a file
+// of tipe .txt with every artist name in a
+// new line, send the file in the body of the
+// request
+func DeleteTrackByFile(c *gin.Context) {
+	// get file from request
+	file, errFile := c.FormFile("file")
+
+	if errFile != nil {
+		c.JSON(500, gin.H{
+			"status":  "error",
+			"message": "Error getting file",
+		})
+		return
+	}
+
+	// get artists from file
+	artists, errArtists := artist.GetArtistsFromFile(file)
+
+	if errArtists != nil {
+		c.JSON(500, gin.H{
+			"status":  "error",
+			"message": "Error getting artists",
+		})
+		return
+	}
+
+	// delete tracks from artists
+	errDelete := user.DeleteTracksByArtists(artists)
+
+	if errDelete != nil {
+		c.JSON(500, gin.H{
+			"status":  "error",
+			"message": "Error deleting tracks",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Tracks deleted",
+	})
+}

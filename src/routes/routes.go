@@ -26,6 +26,9 @@ func SetUpRoutes(server *gin.Engine) {
 	server.DELETE("/track/by-range",
 		middlewares.CheckAuth(),
 		authContr.DeleteTrackByRange)
+	server.DELETE("/track/by-file",
+		middlewares.CheckAuth(),
+		authContr.DeleteTrackByFile)
 
 	// ####### UTILS #######
 	server.GET("/utils/name-by-id/:id",
