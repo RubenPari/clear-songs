@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/RubenPari/clear-songs/src/lib/utils"
 	"strconv"
 
 	"github.com/RubenPari/clear-songs/src/lib/array"
@@ -21,6 +22,9 @@ func GetTrackSummary(c *gin.Context) {
 	maxStr := c.Query("max")
 	max, _ := strconv.Atoi(maxStr)
 
+	// get file query parameter (if exists)
+	file := c.Query("file")
+
 	// get tracks from user
 	tracks, errTracks := user.GetAllUserTracks()
 
@@ -37,6 +41,19 @@ func GetTrackSummary(c *gin.Context) {
 
 	// filter artist summary by min and max, if exists
 	artistSummaryFiltered := array.FilterSummaryByRange(artistSummaryArray, min, max)
+
+	// if file query parameter exists, save a file with the summary
+	if file == "true" {
+		errFile := utils.SaveSummaryToFile(artistSummaryFiltered)
+
+		if errFile != nil {
+			c.JSON(500, gin.H{
+				"status":  "error",
+				"message": "Error saving file",
+			})
+			return
+		}
+	}
 
 	c.JSON(200, artistSummaryFiltered)
 }
