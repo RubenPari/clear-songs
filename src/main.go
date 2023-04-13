@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/RubenPari/clear-songs/src/lib/utils"
 	"os"
+
+	"github.com/RubenPari/clear-songs/src/lib/utils"
 
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	// load .env file
-	utils.LoadEnv(0)
+	utils.LoadEnv(1)
 
 	// set routes
 	routes.SetUpRoutes(server)
