@@ -1,10 +1,11 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/RubenPari/clear-songs/src/lib/array"
 	"github.com/RubenPari/clear-songs/src/lib/artist"
 	"github.com/RubenPari/clear-songs/src/lib/user"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -34,7 +35,7 @@ func GetTrackSummary(c *gin.Context) {
 	// get artist summary array
 	artistSummaryArray := artist.GetArtistsSummary(tracks)
 
-	// filter artist summary by min and max
+	// filter artist summary by min and max, if exists
 	artistSummaryFiltered := array.FilterSummaryByRange(artistSummaryArray, min, max)
 
 	c.JSON(200, artistSummaryFiltered)
@@ -136,7 +137,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	// in the summary object
 	for artistObj := range artistSummaryFiltered {
 		// get tracks from user by artist
-		tracksFilters, errTracks := user.GetAllUserTracksByArtist(spotifyAPI.ID(artistObj))
+		tracksFilters, errTracks := user.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)))
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
