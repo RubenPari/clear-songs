@@ -1,7 +1,7 @@
 package artist
 
 import (
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"strings"
 
@@ -44,9 +44,11 @@ func GetArtistsFromFile(FileHeader *multipart.FileHeader) ([]spotifyAPI.FullArti
 		return nil, errOpen
 	}
 
-	defer file.Close()
+	defer func(file multipart.File) {
+		_ = file.Close()
+	}(file)
 
-	content, errRead := ioutil.ReadAll(file)
+	content, errRead := io.ReadAll(file)
 
 	if errRead != nil {
 		return nil, errRead
@@ -63,14 +65,14 @@ func GetArtistsFromFile(FileHeader *multipart.FileHeader) ([]spotifyAPI.FullArti
 
 	for _, artist := range artistsFile {
 		// get artist spotify object by searching its name
-		artistobj, errSearch := utils.SpotifyClient.Search(artist, spotifyAPI.SearchTypeArtist)
+		artistObj, errSearch := utils.SpotifyClient.Search(artist, spotifyAPI.SearchTypeArtist)
 
 		if errSearch != nil {
 			return nil, errSearch
 		}
 
 		// append the artist to the slice
-		artists = append(artists, artistobj.Artists.Artists[0])
+		artists = append(artists, artistObj.Artists.Artists[0])
 	}
 
 	return artists, nil
