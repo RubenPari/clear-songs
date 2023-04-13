@@ -9,33 +9,41 @@ import (
 
 func SetUpRoutes(server *gin.Engine) {
 	// ####### AUTHENTICATION #######
-	server.GET("/auth/login", authContr.Login)
-	server.GET("/auth/callback", authContr.Callback)
-	server.GET("/auth/logout", authContr.Logout)
+	auth := server.Group("/auth")
+	{
+		auth.GET("/login", authContr.Login)
+		auth.GET("/callback", authContr.Callback)
+		auth.GET("/logout", authContr.Logout)
+	}
 
 	// ####### TRACK #######
-	server.GET("/track/summary",
-		middlewares.CheckAuth(),
-		authContr.GetTrackSummary)
-	server.DELETE("/track/by-artist/:id_artist",
-		middlewares.CheckAuth(),
-		authContr.DeleteTrackByArtist)
-	server.DELETE("/track/by-genre",
-		middlewares.CheckAuth(),
-		authContr.DeleteTrackByGenre)
-	server.DELETE("/track/by-range",
-		middlewares.CheckAuth(),
-		authContr.DeleteTrackByRange)
-	server.DELETE("/track/by-file",
-		middlewares.CheckAuth(),
-		authContr.DeleteTrackByFile)
+	track := server.Group("/track")
+	{
+		track.GET("/summary",
+			middlewares.CheckAuth(),
+			authContr.GetTrackSummary)
+		track.DELETE("/by-artist/:id_artist",
+			middlewares.CheckAuth(),
+			authContr.DeleteTrackByArtist)
+		track.DELETE("/by-genre",
+			middlewares.CheckAuth(),
+			authContr.DeleteTrackByGenre)
+		track.DELETE("/by-range",
+			middlewares.CheckAuth(),
+			authContr.DeleteTrackByRange)
+		track.DELETE("/by-file",
+			middlewares.CheckAuth(),
+			authContr.DeleteTrackByFile)
+	}
 
 	// ####### UTILS #######
-	server.GET("/utils/name-by-id/:id",
-		middlewares.CheckAuth(),
-		utilsContr.GetNameByID)
-	server.GET("/utils/id-by-name",
-		middlewares.CheckAuth(),
-		utilsContr.GetIDByName)
-
+	utils := server.Group("/utils")
+	{
+		utils.GET("/name-by-id/:id",
+			middlewares.CheckAuth(),
+			utilsContr.GetNameByID)
+		utils.GET("/id-by-name",
+			middlewares.CheckAuth(),
+			utilsContr.GetIDByName)
+	}
 }
