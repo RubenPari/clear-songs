@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"context"
+	"github.com/RubenPari/clear-songs/src/lib/utils"
 
-	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
