@@ -1,5 +1,9 @@
 package array
 
+import (
+	"github.com/RubenPari/clear-songs/src/models"
+)
+
 // Contains checks if an array of string
 // contains an element string
 func Contains(array []string, element string) bool {
@@ -54,18 +58,25 @@ func FilterByMax(tracks map[string]int, max int) map[string]int {
 	return newTracks
 }
 
-// FilterSummaryByRange returns a
-// map with the number of tracks
-// of each artist that have at least
-// the minimum number and maximum
-func FilterSummaryByRange(tracks map[string]int, min int, max int) map[string]int {
-	var newSummary = make(map[string]int)
+// FilterSummaryByRange returns an array of
+// artist summary that have at least the
+// minimum number of tracks and at most the
+// maximum number of tracks
+// NOTE: if min or max are 0, they are ignored
+func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []models.ArtistSummary {
+	var newTracks []models.ArtistSummary
 
-	for artist, count := range tracks {
-		if count >= min && count <= max {
-			newSummary[artist] = count
+	for _, track := range tracks {
+		if min == 0 && max == 0 {
+			newTracks = append(newTracks, track)
+		} else if min == 0 && track.Count <= max {
+			newTracks = append(newTracks, track)
+		} else if max == 0 && track.Count >= min {
+			newTracks = append(newTracks, track)
+		} else if track.Count >= min && track.Count <= max {
+			newTracks = append(newTracks, track)
 		}
 	}
 
-	return newSummary
+	return newTracks
 }
