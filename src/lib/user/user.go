@@ -48,6 +48,8 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 // GetAllUserTracksByArtist
 // returns all tracks of user
 func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
+	log.Default().Println("Getting all user tracks by artist")
+
 	var filteredTracks []spotifyAPI.ID
 	var offset = 0
 	var limit = 50
@@ -90,10 +92,10 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 // DeleteTracksUser deletes
 // all tracks of user
 func DeleteTracksUser(tracks []spotifyAPI.ID) error {
+	log.Default().Println("Deleting user tracks")
+
 	var offset = 0
 	var limit = 50
-
-	log.Default().Println("Deleting all user tracks")
 
 	for {
 		if offset >= len(tracks) {
@@ -167,6 +169,8 @@ func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
 }
 
 func DeleteTracksByArtists(artists []spotifyAPI.FullArtist) error {
+	log.Default().Println("Deleting tracks by artists")
+
 	var tracks []spotifyAPI.ID
 
 	// get all tracks of user

@@ -2,6 +2,7 @@ package artist
 
 import (
 	"io"
+	"log"
 	"mime/multipart"
 	"strings"
 
@@ -14,6 +15,8 @@ import (
 // map with the number of tracks
 // of each artist
 func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
+	log.Default().Println("Getting artists summary array")
+
 	var artistSummary = make(map[string]int)
 
 	for _, track := range tracks {
@@ -37,6 +40,8 @@ func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
 // file that contains the name of the
 // artists separated by new line
 func GetArtistsFromFile(FileHeader *multipart.FileHeader) ([]spotifyAPI.FullArtist, error) {
+	log.Default().Println("Getting artists from file")
+
 	// get file content
 	file, errOpen := FileHeader.Open()
 

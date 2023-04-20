@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"log"
+
 	"github.com/RubenPari/clear-songs/src/lib/utils"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,8 @@ func Login(c *gin.Context) {
 
 	// create url for spotify login
 	url := configAuth.AuthCodeURL("state", oauth2.AccessTypeOffline)
+
+	log.Default().Println("Called login, redirecting to: " + url)
 
 	// redirect to url
 	c.Redirect(302, url)
@@ -41,6 +45,8 @@ func Callback(c *gin.Context) {
 	client := configAuth.Client(context.Background(), token)
 	spotify := spotifyAPI.NewClient(client)
 
+	log.Default().Println("Called callback, created client")
+
 	// save spotify client in session
 	utils.SpotifyClient = &spotify
 
@@ -63,6 +69,8 @@ func Callback(c *gin.Context) {
 func Logout(c *gin.Context) {
 	// delete spotify client from session
 	utils.SpotifyClient = nil
+
+	log.Default().Println("Called logout, deleted client from session")
 
 	c.JSON(200, gin.H{
 		"status":  "success",

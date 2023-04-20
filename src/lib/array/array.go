@@ -1,6 +1,8 @@
 package array
 
 import (
+	"log"
+
 	"github.com/RubenPari/clear-songs/src/models"
 )
 
@@ -64,6 +66,8 @@ func FilterByMax(tracks map[string]int, max int) map[string]int {
 // maximum number of tracks
 // NOTE: if min or max are 0, they are ignored
 func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []models.ArtistSummary {
+	log.Default().Println("Filtering artist summary array by range")
+
 	var newTracks []models.ArtistSummary
 
 	for _, track := range tracks {
