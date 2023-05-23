@@ -1,14 +1,17 @@
 package utils
 
 import (
-	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/joho/godotenv"
-	spotifyAPI "github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	spotifyAPI "github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -192,4 +195,18 @@ func SaveSummaryToFile(summary []models.ArtistSummary) error {
 	}
 
 	return nil
+}
+
+func CorsConfig(server *gin.Engine) {
+	server.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"http://localhost:3000"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:  []string{"Origin", "Content-Type"},
+		ExposeHeaders: []string{"Content-Length"},
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "http://localhost:3000"
+		},
+		AllowFiles: true,
+		MaxAge:     86400,
+	}))
 }

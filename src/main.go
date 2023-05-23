@@ -20,6 +20,9 @@ func main() {
 	// set routes
 	routes.SetUpRoutes(server)
 
+	// set CORS
+	utils.CorsConfig(server)
+
 	// start server
 	if server.Run(":"+os.Getenv("PORT")) != nil {
 		panic("Error starting server")

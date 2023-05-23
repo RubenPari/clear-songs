@@ -5,6 +5,7 @@ go 1.19
 require github.com/gin-gonic/gin v1.9.0
 
 require (
+	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 )
