@@ -1,17 +1,16 @@
 package utils
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-	"strconv"
-
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
+	"path/filepath"
+	"strconv"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -173,7 +172,9 @@ func GetIDByName(name string, typeObject string) spotifyAPI.ID {
 	}
 }
 
-func SaveSummaryToFile(summary []models.ArtistSummary) error {
+// SaveSummaryToFile minimal param if is true
+// creates a file with only the name of the artists
+func SaveSummaryToFile(summary []models.ArtistSummary, minimal bool) error {
 	file, errCreate := os.Create("summary.txt")
 
 	if errCreate != nil {
@@ -186,11 +187,23 @@ func SaveSummaryToFile(summary []models.ArtistSummary) error {
 
 	// for each artist in the summary
 	// write the name and the count
-	for _, summary := range summary {
-		_, errWrite := file.WriteString(summary.Name + " - " + strconv.Itoa(summary.Count) + "\n")
+	if minimal {
+		for _, summary := range summary {
+			// write the name
+			_, errWrite := file.WriteString(summary.Name + "\n")
 
-		if errWrite != nil {
-			return errWrite
+			if errWrite != nil {
+				return errWrite
+			}
+		}
+	} else {
+		for _, summary := range summary {
+			// write the name and the count
+			_, errWrite := file.WriteString(summary.Name + " - " + strconv.Itoa(summary.Count) + "\n")
+
+			if errWrite != nil {
+				return errWrite
+			}
 		}
 	}
 

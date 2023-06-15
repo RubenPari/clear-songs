@@ -44,8 +44,23 @@ func GetTrackSummary(c *gin.Context) {
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
 
 	// if file query parameter exists, save a file with the summary
-	if file == "true" {
-		errFile := utils.SaveSummaryToFile(artistSummaryFiltered)
+
+	// minimal -> only artists name
+	if file == "minimal" {
+		errFile := utils.SaveSummaryToFile(artistSummaryFiltered, true)
+
+		if errFile != nil {
+			c.JSON(500, gin.H{
+				"status":  "error",
+				"message": "Error saving file",
+			})
+			return
+		}
+	}
+
+	// complete -> artists name and tracks
+	if file == "complete" {
+		errFile := utils.SaveSummaryToFile(artistSummaryFiltered, false)
 
 		if errFile != nil {
 			c.JSON(500, gin.H{
