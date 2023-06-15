@@ -3,7 +3,6 @@ package user
 import (
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/lib/array"
 	"github.com/RubenPari/clear-songs/src/lib/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -157,7 +156,7 @@ func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
 			artist, _ := utils.SpotifyClient.GetArtist(track.Artists[0].ID)
 
 			// check if artist has the specific genre
-			if array.ContainsGenre(artist.Genres, genres) {
+			if utils.ContainsGenre(artist.Genres, genres) {
 				tracksFilter = append(tracksFilter, track.ID)
 			}
 		}

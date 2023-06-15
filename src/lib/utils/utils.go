@@ -197,6 +197,55 @@ func SaveSummaryToFile(summary []models.ArtistSummary) error {
 	return nil
 }
 
+// Contains checks if an array of string
+// contains an element string
+func Contains(array []string, element string) bool {
+	for _, a := range array {
+		if a == element {
+			return true
+		}
+	}
+
+	return false
+}
+
+// ContainsGenre checks if an array of string genres
+// contains almost one genre of the second array of genres
+func ContainsGenre(genres []string, genresToSearch []string) bool {
+	for _, genre := range genres {
+		if Contains(genresToSearch, genre) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// FilterSummaryByRange returns an array of
+// artist summary that have at least the
+// minimum number of tracks and at most the
+// maximum number of tracks
+// NOTE: if min or max are 0, they are ignored
+func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []models.ArtistSummary {
+	log.Default().Println("Filtering artist summary array by range")
+
+	var newTracks []models.ArtistSummary
+
+	for _, track := range tracks {
+		if min == 0 && max == 0 {
+			newTracks = append(newTracks, track)
+		} else if min == 0 && track.Count <= max {
+			newTracks = append(newTracks, track)
+		} else if max == 0 && track.Count >= min {
+			newTracks = append(newTracks, track)
+		} else if track.Count >= min && track.Count <= max {
+			newTracks = append(newTracks, track)
+		}
+	}
+
+	return newTracks
+}
+
 func CorsConfig(server *gin.Engine) {
 	server.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"http://localhost:3000"},

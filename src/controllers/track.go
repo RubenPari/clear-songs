@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"github.com/RubenPari/clear-songs/src/lib/utils"
 	"strconv"
 
-	"github.com/RubenPari/clear-songs/src/lib/array"
 	"github.com/RubenPari/clear-songs/src/lib/artist"
 	"github.com/RubenPari/clear-songs/src/lib/user"
+	"github.com/RubenPari/clear-songs/src/lib/utils"
 
+	artistSpotifyLib "github.com/RubenPari/clear-songs/src/lib/artist"
+	userSpotifyLib "github.com/RubenPari/clear-songs/src/lib/user"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -26,7 +27,7 @@ func GetTrackSummary(c *gin.Context) {
 	file := c.Query("file")
 
 	// get tracks from user
-	tracks, errTracks := user.GetAllUserTracks()
+	tracks, errTracks := userSpotifyLib.GetAllUserTracks()
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -40,7 +41,7 @@ func GetTrackSummary(c *gin.Context) {
 	artistSummaryArray := artist.GetArtistsSummary(tracks)
 
 	// filter artist summary by min and max, if exists
-	artistSummaryFiltered := array.FilterSummaryByRange(artistSummaryArray, min, max)
+	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
 
 	// if file query parameter exists, save a file with the summary
 	if file == "true" {
@@ -65,7 +66,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(idArtistString)
 
 	// get tracks from user by artist
-	tracksFilterers, errTracks := user.GetAllUserTracksByArtist(idArtist)
+	tracksFilterers, errTracks := userSpotifyLib.GetAllUserTracksByArtist(idArtist)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -76,7 +77,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	// delete tracks from artist
-	errDelete := user.DeleteTracksUser(tracksFilterers)
+	errDelete := userSpotifyLib.DeleteTracksUser(tracksFilterers)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -97,7 +98,7 @@ func DeleteTrackByGenre(c *gin.Context) {
 	name := c.Query("name")
 
 	// get tracks from user
-	tracksFilterers, errTracks := user.GetAllUserTracksByGenre(name)
+	tracksFilterers, errTracks := userSpotifyLib.GetAllUserTracksByGenre(name)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -108,7 +109,7 @@ func DeleteTrackByGenre(c *gin.Context) {
 	}
 
 	// delete tracks from artist
-	errDelete := user.DeleteTracksUser(tracksFilterers)
+	errDelete := userSpotifyLib.DeleteTracksUser(tracksFilterers)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -134,7 +135,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	max, _ := strconv.Atoi(maxStr)
 
 	// get tracks from user
-	tracks, errTracks := user.GetAllUserTracks()
+	tracks, errTracks := userSpotifyLib.GetAllUserTracks()
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -148,7 +149,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	artistSummaryArray := artist.GetArtistsSummary(tracks)
 
 	// filter artist summary by min and max
-	artistSummaryFiltered := array.FilterSummaryByRange(artistSummaryArray, min, max)
+	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
 
 	// delete all tracks from artists present
 	// in the summary object
@@ -199,7 +200,7 @@ func DeleteTrackByFile(c *gin.Context) {
 	}
 
 	// get artists from file
-	artists, errArtists := artist.GetArtistsFromFile(file)
+	artists, errArtists := artistSpotifyLib.GetArtistsFromFile(file)
 
 	if errArtists != nil {
 		c.JSON(500, gin.H{
@@ -210,7 +211,7 @@ func DeleteTrackByFile(c *gin.Context) {
 	}
 
 	// delete tracks from artists
-	errDelete := user.DeleteTracksByArtists(artists)
+	errDelete := userSpotifyLib.DeleteTracksByArtists(artists)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
