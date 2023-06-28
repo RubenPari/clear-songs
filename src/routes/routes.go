@@ -36,6 +36,23 @@ func SetUpRoutes(server *gin.Engine) {
 			authContr.DeleteTrackByFile)
 	}
 
+	// ####### ALBUMS #######
+	album := server.Group("/album")
+	{
+		album.GET("/all",
+			middlewares.CheckAuth(),
+			authContr.GetAll)
+		album.GET("/by-artist/:id_artist",
+			middlewares.CheckAuth(),
+			authContr.GetAlbumByArtist)
+		album.DELETE("/by-artist/:id_artist",
+			middlewares.CheckAuth(),
+			authContr.DeleteAlbumByArtist)
+		album.PUT("/convert-to-songs",
+			middlewares.CheckAuth(),
+			authContr.ConvertAlbumToSongs)
+	}
+
 	// ####### UTILS #######
 	utils := server.Group("/utils")
 	{
