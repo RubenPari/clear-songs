@@ -41,16 +41,16 @@ func SetUpRoutes(server *gin.Engine) {
 	{
 		album.GET("/all",
 			middlewares.CheckAuth(),
-			authContr.GetAll)
+			albumContr.GetAll)
 		album.GET("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
-			authContr.GetAlbumByArtist)
+			albumContr.GetAlbumByArtist)
 		album.DELETE("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
-			authContr.DeleteAlbumByArtist)
+			albumContr.DeleteAlbumByArtist)
 		album.PUT("/convert-to-songs",
 			middlewares.CheckAuth(),
-			authContr.ConvertAlbumToSongs)
+			albumContr.ConvertAlbumToSongs)
 	}
 
 	// ####### UTILS #######
