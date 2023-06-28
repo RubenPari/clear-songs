@@ -20,7 +20,7 @@ func RemoveAlbumsForUser(albumsId []spotifyAPI.ID) (bool, error) {
 	return true, nil
 }
 
-// RemoveAlbumForUser remove an followed album for user
+// RemoveAlbumForUser remove a followed album for user
 // fetching spotify API without client
 func RemoveAlbumForUser(albumId spotifyAPI.ID) (bool, error) {
 	// get AccessToken
@@ -52,7 +52,7 @@ func RemoveAlbumForUser(albumId spotifyAPI.ID) (bool, error) {
 
 	// check status code
 	if resp.StatusCode != 200 {
-		return false, fmt.Errorf("Error removing album for user")
+		return false, fmt.Errorf("error removing album for user")
 	}
 
 	return true, nil
