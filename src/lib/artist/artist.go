@@ -62,6 +62,9 @@ func GetArtistsFromFile(FileHeader *multipart.FileHeader) ([]spotifyAPI.FullArti
 	// convert the content of []byte to string
 	contentString := string(content)
 
+	// remove the last new line
+	contentString = strings.TrimSuffix(contentString, "\n")
+
 	// cut the string by new line
 	artistsFile := strings.Split(contentString, "\n")
 

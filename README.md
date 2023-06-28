@@ -54,7 +54,7 @@ add the following variables in the .env file
 ```console
 CLIENT_ID=your-spotify-client-id
 CLIENT_SECRET=your-spotify-client-secret
-REDIRECT_URL=your-spotify-redirect-uri
+REDIRECT_URI=your-spotify-redirect-uri
 PORT=your-server-port
 ```
 
