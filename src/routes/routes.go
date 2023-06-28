@@ -1,6 +1,7 @@
 package routes
 
 import (
+	albumContr "github.com/RubenPari/clear-songs/src/controllers"
 	authContr "github.com/RubenPari/clear-songs/src/controllers"
 	utilsContr "github.com/RubenPari/clear-songs/src/controllers"
 	"github.com/RubenPari/clear-songs/src/middlewares"
