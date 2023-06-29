@@ -6,8 +6,8 @@ import (
 	"mime/multipart"
 	"strings"
 
-	"github.com/RubenPari/clear-songs/src/lib/utils"
 	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

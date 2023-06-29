@@ -1,10 +1,10 @@
-package user
+package services
 
 import (
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/lib/client"
-	"github.com/RubenPari/clear-songs/src/lib/utils"
+	"github.com/RubenPari/clear-songs/src/client"
+	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

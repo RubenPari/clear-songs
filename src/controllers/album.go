@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	userSpotifyLib "github.com/RubenPari/clear-songs/src/lib/user"
+	userService "github.com/RubenPari/clear-songs/src/services/user"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 func GetAll(c *gin.Context) {
-	albums := userSpotifyLib.GetAllUserAlbums()
+	albums := userService.GetAllUserAlbums()
 
 	c.JSON(200, albums)
 }
@@ -15,7 +15,7 @@ func GetAll(c *gin.Context) {
 func GetAlbumByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(c.Param("id_artist"))
 
-	albums := userSpotifyLib.GetAllUserAlbumsByArtist(idArtist)
+	albums := userService.GetAllUserAlbumsByArtist(idArtist)
 
 	c.JSON(200, albums)
 }
@@ -23,7 +23,7 @@ func GetAlbumByArtist(c *gin.Context) {
 func DeleteAlbumByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(c.Param("id_artist"))
 
-	err := userSpotifyLib.DeleteAlbumsByArtist(idArtist)
+	err := userService.DeleteAlbumsByArtist(idArtist)
 
 	if err != nil {
 		c.JSON(400, gin.H{
@@ -42,7 +42,7 @@ func DeleteAlbumByArtist(c *gin.Context) {
 func ConvertAlbumToSongs(c *gin.Context) {
 	idAlbum := spotifyAPI.ID(c.Query("id_album"))
 
-	err := userSpotifyLib.ConvertAlbumToSongs(idAlbum)
+	err := userService.ConvertAlbumToSongs(idAlbum)
 
 	if err != nil {
 		c.JSON(400, gin.H{
