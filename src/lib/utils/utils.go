@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"os"
-	"strconv"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -14,7 +15,7 @@ func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URL"),
+		RedirectURL:  os.Getenv("REDIRECT_URI"),
 		Scopes: []string{
 			"user-read-private",
 			"user-read-email",
