@@ -33,6 +33,12 @@ func Callback(c *gin.Context) {
 	// get token from code
 	token, errToken := configAuth.Exchange(context.Background(), code)
 
+	// generate randomm token for protected ednpoints
+	tokenHeader := utils.RandomString(20)
+
+	// save generated token in session
+	utils.TokenHeader = tokenHeader
+
 	if errToken != nil {
 		c.JSON(500, gin.H{
 			"status":  "error",
@@ -62,12 +68,14 @@ func Callback(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"status":  "success",
 		"message": "User authenticated",
+		"token":   tokenHeader,
 	})
 }
 
 func Logout(c *gin.Context) {
 	// delete spotify client from session
 	utils.SpotifyClient = nil
+	utils.TokenHeader = ""
 
 	log.Default().Println("Called logout, deleted client from session")
 
