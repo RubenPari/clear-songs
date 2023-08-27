@@ -15,5 +15,17 @@ if ($lastSegment -ne "src") {
     }
 }
 
+# Esegui la build del progetto
+& go build .
+
+#  Rimouvo il file eseguibile "src" o "src.exe"
+Remove-Item -Path .\src -Force
+
+# Controlla se il comando è stato eseguito correttamente
+if ($LASTEXITCODE -ne 0) {
+    Write-Output "Build fallita!"
+    exit
+}
+
 # Esegui il comando specificato
 & infisical run --env=dev -- go run .
