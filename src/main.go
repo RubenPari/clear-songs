@@ -13,9 +13,6 @@ func main() {
 	server := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
 
-	// load .env file
-	utils.LoadEnv(1)
-
 	// set routes
 	routes.SetUpRoutes(server)
 
