@@ -2,8 +2,10 @@ package utils
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/gin-contrib/cors"
@@ -12,7 +14,24 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var SpotifyClient *spotifyAPI.Client
+var (
+	SpotifyClient *spotifyAPI.Client
+	TokenHeader   string
+)
+
+func RandomString(n int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(src)
+	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	result := make([]byte, n)
+
+	for i := range result {
+		result[i] = letters[rng.Intn(len(letters))]
+	}
+
+	return string(result)
+}
 
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
