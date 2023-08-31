@@ -80,11 +80,4 @@ open your browser and login to
 ```console
 http://localhost:{PORT}/auth/login
 ```
-
-explore the api with openapi to
-
-```console
-http://localhost:{PORT}/openapi/index.html
-```
-
 </div>
