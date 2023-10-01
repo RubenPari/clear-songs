@@ -9,7 +9,8 @@ if ($lastSegment -ne "src") {
     # Se non sei in 'src', prova a spostarti in 'src'
     if (Test-Path ".\src") {
         Set-Location -Path .\src
-    } else {
+    }
+    else {
         Write-Output "Cartella 'src' non trovata!"
         exit
     }
@@ -18,7 +19,7 @@ if ($lastSegment -ne "src") {
 # Esegui la build del progetto
 & go build .
 
-#  Rimouvo il file eseguibile "src" o "src.exe"
+# Rimuovi il file eseguibile "src" o "src.exe"
 Remove-Item -Path .\src -Force
 
 # Controlla se il comando è stato eseguito correttamente
@@ -27,5 +28,11 @@ if ($LASTEXITCODE -ne 0) {
     exit
 }
 
-# Esegui il comando specificato
-& infisical run --env=dev -- go run .
+# Controlla se esiste il file .env nella cartella principale
+if (Test-Path "$currentDir\.env") {
+    # Esegui il comando specificato
+    go run .
+}
+else {
+    Write-Output "File .env non trovato nella cartella principale!"
+}
