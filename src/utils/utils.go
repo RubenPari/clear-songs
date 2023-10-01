@@ -4,12 +4,14 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )
@@ -18,6 +20,35 @@ var (
 	SpotifyClient *spotifyAPI.Client
 	TokenHeader   string
 )
+
+func LoadEnv(moveUp int) {
+	// add /env or \env to the path
+	// depending on the OS
+	var envName string
+
+	if os.PathSeparator == '/' {
+		envName = "/.env"
+	} else {
+		envName = "\\.env"
+	}
+
+	// get current directory
+	// and move up to the root directory
+	currentDir, _ := os.Getwd()
+
+	for i := 0; i < moveUp; i++ {
+		currentDir = filepath.Dir(currentDir)
+	}
+
+	// load .env file
+	err := godotenv.Load(currentDir + envName)
+
+	log.Default().Println("Loading env file in " + currentDir + envName)
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 func RandomString(n int) string {
 	src := rand.NewSource(time.Now().UnixNano())
