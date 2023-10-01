@@ -1,7 +1,5 @@
-/.env
-/src/src
-/src/src.exe
-/src/summary.txt
 
-# JetBrain IDEs
-/.idea
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
