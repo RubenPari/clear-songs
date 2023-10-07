@@ -35,6 +35,45 @@ func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
 	return artistSummaryArray
 }
 
+// GroupArtistSummaryByGenres returns a
+// map of []models.ArtistSummary grouped
+// by genres musical
+func GroupArtistSummaryByGenres(artistSummaryArray []models.ArtistSummary) []models.ArtistGroupSummary {
+	log.Default().Println("Grouping artists summary by genres")
+
+	var artistSummaryGrouped = make(map[string][]models.ArtistSummary)
+
+	for _, artistSummary := range artistSummaryArray {
+		artist := artistSummary.Name
+
+		// get artist spotify object by searching its name
+		artistObj, errSearch := utils.SpotifyClient.Search(artist, spotifyAPI.SearchTypeArtist)
+
+		if errSearch != nil {
+			continue
+		}
+
+		// get artist genres
+		artistGenres := artistObj.Artists.Artists[0].Genres
+
+		// add artist summary to the map
+		for _, genre := range artistGenres {
+			artistSummaryGrouped[genre] = append(artistSummaryGrouped[genre], artistSummary)
+		}
+	}
+
+	var artistSummaryGroupedArray []models.ArtistGroupSummary
+
+	for genre, artistSummary := range artistSummaryGrouped {
+		artistSummaryGroupedArray = append(artistSummaryGroupedArray, models.ArtistGroupSummary{
+			Genre:   genre,
+			Artists: artistSummary,
+		})
+	}
+
+	return artistSummaryGroupedArray
+}
+
 // GetArtistsFromFile returns an array
 // of spotifyAPI.FullArtist from a .txt
 // file that contains the name of the

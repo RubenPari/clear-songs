@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/RubenPari/clear-songs/src/models"
@@ -192,44 +191,6 @@ func GetIDByName(name string, typeObject string) spotifyAPI.ID {
 	}
 }
 
-// SaveSummaryToFile minimal param if is true
-// creates a file with only the name of the artists
-func SaveSummaryToFile(summary []models.ArtistSummary, minimal bool) error {
-	file, errCreate := os.Create("summary.txt")
-
-	if errCreate != nil {
-		return errCreate
-	}
-
-	defer func(file *os.File) {
-		_ = file.Close()
-	}(file)
-
-	// for each artist in the summary
-	// write the name and the count
-	if minimal {
-		for _, summary := range summary {
-			// write the name
-			_, errWrite := file.WriteString(summary.Name + "\n")
-
-			if errWrite != nil {
-				return errWrite
-			}
-		}
-	} else {
-		for _, summary := range summary {
-			// write the name and the count
-			_, errWrite := file.WriteString(summary.Name + " - " + strconv.Itoa(summary.Count) + "\n")
-
-			if errWrite != nil {
-				return errWrite
-			}
-		}
-	}
-
-	return nil
-}
-
 // Contains checks if an array of string
 // contains an element string
 func Contains(array []string, element string) bool {
@@ -277,6 +238,32 @@ func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []mod
 	}
 
 	return newTracks
+}
+
+func FilterGroupSummaryByRange(tracks []models.ArtistGroupSummary, min int, max int) []models.ArtistGroupSummary {
+	log.Default().Println("Filtering artist summary array by range")
+
+	var filteredGroupSummaries []models.ArtistGroupSummary
+
+	for _, groupSummary := range tracks {
+		var filteredArtists []models.ArtistSummary
+		for _, artist := range groupSummary.Artists {
+			if (min == 0 || artist.Count >= min) && (max == 0 || artist.Count <= max) {
+				filteredArtists = append(filteredArtists, artist)
+			}
+		}
+
+		// Aggiungi solo i gruppi che hanno artisti filtrati
+		if len(filteredArtists) > 0 {
+			filteredGroupSummary := models.ArtistGroupSummary{
+				Genre:   groupSummary.Genre,
+				Artists: filteredArtists,
+			}
+			filteredGroupSummaries = append(filteredGroupSummaries, filteredGroupSummary)
+		}
+	}
+
+	return filteredGroupSummaries
 }
 
 func CorsConfig(server *gin.Engine) {

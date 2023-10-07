@@ -16,11 +16,15 @@ import (
 func GetTrackSummary(c *gin.Context) {
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
-	min, _ := strconv.Atoi(minStr)
+	minCount, _ := strconv.Atoi(minStr)
 
 	// get max query parameter (if exists)
 	maxStr := c.Query("max")
-	max, _ := strconv.Atoi(maxStr)
+	maxCount, _ := strconv.Atoi(maxStr)
+
+	// get group-by query parameter (if exists)
+	groupByGenreStr := c.Query("group-by")
+	groupByGenre := groupByGenreStr == "1"
 
 	// get tracks from user
 	tracks, errTracks := userService.GetAllUserTracks()
@@ -36,10 +40,21 @@ func GetTrackSummary(c *gin.Context) {
 	// get artist summary array
 	artistSummaryArray := artist.GetArtistsSummary(tracks)
 
-	// filter artist summary by min and max, if exists
-	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
+	// manage case when groupBy is present or not
+	if groupByGenre {
+		// group artist summary by genres
+		artistSummaryArrayGrouped := artist.GroupArtistSummaryByGenres(artistSummaryArray)
 
-	c.JSON(200, artistSummaryFiltered)
+		// filter artist summary group by min and max, if exists
+		artistSummaryFiltered := utils.FilterGroupSummaryByRange(artistSummaryArrayGrouped, minCount, maxCount)
+
+		c.JSON(200, artistSummaryFiltered)
+	} else {
+		// filter artist summary by min and max
+		artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
+
+		c.JSON(200, artistSummaryFiltered)
+	}
 }
 
 // DeleteTrackByArtist deletes all tracks from an artist
@@ -111,11 +126,11 @@ func DeleteTrackByGenre(c *gin.Context) {
 func DeleteTrackByRange(c *gin.Context) {
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
-	min, _ := strconv.Atoi(minStr)
+	minCount, _ := strconv.Atoi(minStr)
 
 	// get max query parameter (if exists)
 	maxStr := c.Query("max")
-	max, _ := strconv.Atoi(maxStr)
+	maxCount, _ := strconv.Atoi(maxStr)
 
 	// get tracks from user
 	tracks, errTracks := userService.GetAllUserTracks()
@@ -132,7 +147,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	artistSummaryArray := artistService.GetArtistsSummary(tracks)
 
 	// filter artist summary by min and max
-	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
+	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
 	// delete all tracks from artists present
 	// in the summary object
