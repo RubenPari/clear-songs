@@ -22,9 +22,6 @@ func GetTrackSummary(c *gin.Context) {
 	maxStr := c.Query("max")
 	max, _ := strconv.Atoi(maxStr)
 
-	// get file query parameter (if exists)
-	file := c.Query("file")
-
 	// get tracks from user
 	tracks, errTracks := userService.GetAllUserTracks()
 
@@ -41,34 +38,6 @@ func GetTrackSummary(c *gin.Context) {
 
 	// filter artist summary by min and max, if exists
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, min, max)
-
-	// if file query parameter exists, save a file with the summary
-
-	// minimal -> only artists name
-	if file == "minimal" {
-		errFile := utils.SaveSummaryToFile(artistSummaryFiltered, true)
-
-		if errFile != nil {
-			c.JSON(500, gin.H{
-				"status":  "error",
-				"message": "Error saving file",
-			})
-			return
-		}
-	}
-
-	// complete -> artists name and tracks
-	if file == "complete" {
-		errFile := utils.SaveSummaryToFile(artistSummaryFiltered, false)
-
-		if errFile != nil {
-			c.JSON(500, gin.H{
-				"status":  "error",
-				"message": "Error saving file",
-			})
-			return
-		}
-	}
 
 	c.JSON(200, artistSummaryFiltered)
 }
