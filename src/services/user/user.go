@@ -121,53 +121,6 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
-// GetAllUserTracksByGenre return all
-// user track library by genre
-func GetAllUserTracksByGenre(genre string) ([]spotifyAPI.ID, error) {
-	// get all possible genres name
-	genres := utils.GetPossibleGenres(genre)
-
-	var tracksFilter []spotifyAPI.ID
-
-	var offset = 0
-	var limit = 50
-
-	log.Default().Println("Getting all user tracks by genre")
-
-	for {
-		tracks, err := utils.SpotifyClient.CurrentUsersTracksOpt(&spotifyAPI.Options{
-			Limit:  &limit,
-			Offset: &offset,
-		})
-
-		log.Default().Println("Getting tracks from offset: ", offset)
-
-		if err != nil {
-			log.Default().Println("Error getting user tracks")
-			return nil, err
-		}
-
-		if len(tracks.Tracks) == 0 {
-			break
-		}
-
-		// filter by genre name
-		for _, track := range tracks.Tracks {
-			// get artist info object
-			artist, _ := utils.SpotifyClient.GetArtist(track.Artists[0].ID)
-
-			// check if artist has the specific genre
-			if utils.ContainsGenre(artist.Genres, genres) {
-				tracksFilter = append(tracksFilter, track.ID)
-			}
-		}
-
-		offset += 50
-	}
-
-	return tracksFilter, nil
-}
-
 func DeleteTracksByArtists(artists []spotifyAPI.FullArtist) error {
 	log.Default().Println("Deleting tracks by artists")
 

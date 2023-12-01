@@ -91,38 +91,6 @@ func DeleteTrackByArtist(c *gin.Context) {
 	})
 }
 
-func DeleteTrackByGenre(c *gin.Context) {
-	// get genre name from query param
-	name := c.Query("name")
-
-	// get tracks from user
-	tracksFilterers, errTracks := userService.GetAllUserTracksByGenre(name)
-
-	if errTracks != nil {
-		c.JSON(500, gin.H{
-			"status":  "error",
-			"message": "Error getting tracks",
-		})
-		return
-	}
-
-	// delete tracks from artist
-	errDelete := userService.DeleteTracksUser(tracksFilterers)
-
-	if errDelete != nil {
-		c.JSON(500, gin.H{
-			"status":  "error",
-			"message": "Error deleting tracks",
-		})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"status":  "success",
-		"message": "Tracks deleted",
-	})
-}
-
 func DeleteTrackByRange(c *gin.Context) {
 	// get min query parameter (if exists)
 	minStr := c.Query("min")

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"os"
-
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 func main() {
@@ -18,9 +17,6 @@ func main() {
 
 	// set routes
 	routes.SetUpRoutes(server)
-
-	// set CORS
-	utils.CorsConfig(server)
 
 	// start server
 	if server.Run(":"+os.Getenv("PORT")) != nil {

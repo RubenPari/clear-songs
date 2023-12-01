@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
@@ -84,43 +82,6 @@ func GetOAuth2Config() *oauth2.Config {
 		}}
 }
 
-// GetPossibleGenres returns an array of genres
-// with all possible genres name alternatives
-func GetPossibleGenres(genre string) []string {
-	var genres []string
-
-	switch genre {
-	case "rock":
-		genres = []string{"rock", "rock and roll", "rock & roll"}
-	case "pop":
-		genres = []string{"pop", "pop music"}
-	case "hip-hop":
-		genres = []string{"hip-hop", "hip hop", "rap", "hip hop music", "rapper", "rap music", "hip-hop music"}
-	case "r&b":
-		genres = []string{"r&b", "rnb", "r&b music", "rnb music"}
-	case "country":
-		genres = []string{"country", "country music"}
-	case "jazz":
-		genres = []string{"jazz", "jazz music"}
-	case "blues":
-		genres = []string{"blues", "blues music"}
-	case "metal":
-		genres = []string{"metal", "metal music"}
-	case "classical":
-		genres = []string{"classical", "classical music"}
-	case "reggae":
-		genres = []string{"reggae", "reggae music"}
-	case "soul":
-		genres = []string{"soul", "soul music"}
-	case "electronic":
-		genres = []string{"electronic", "electronic music", "electro", "EDM", "electro music", "EDM music"}
-	case "folk":
-		genres = []string{"folk", "folk music"}
-	}
-
-	return genres
-}
-
 // CheckTypeObject checks if the
 // object entity spotify is of the type specified
 func CheckTypeObject(typeObject string) bool {
@@ -191,30 +152,6 @@ func GetIDByName(name string, typeObject string) spotifyAPI.ID {
 	}
 }
 
-// Contains checks if an array of string
-// contains an element string
-func Contains(array []string, element string) bool {
-	for _, a := range array {
-		if a == element {
-			return true
-		}
-	}
-
-	return false
-}
-
-// ContainsGenre checks if an array of string genres
-// contains almost one genre of the second array of genres
-func ContainsGenre(genres []string, genresToSearch []string) bool {
-	for _, genre := range genres {
-		if Contains(genresToSearch, genre) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // FilterSummaryByRange returns an array of
 // artist summary that have at least the
 // minimum number of tracks and at most the
@@ -264,18 +201,4 @@ func FilterGroupSummaryByRange(tracks []models.ArtistGroupSummary, min int, max 
 	}
 
 	return filteredGroupSummaries
-}
-
-func CorsConfig(server *gin.Engine) {
-	server.Use(cors.New(cors.Config{
-		AllowOrigins:  []string{"http://localhost:3000"},
-		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:  []string{"Origin", "Content-Type"},
-		ExposeHeaders: []string{"Content-Length"},
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "http://localhost:3000"
-		},
-		AllowFiles: true,
-		MaxAge:     86400,
-	}))
 }

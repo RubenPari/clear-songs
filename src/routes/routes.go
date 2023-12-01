@@ -26,9 +26,6 @@ func SetUpRoutes(server *gin.Engine) {
 		track.DELETE("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByArtist)
-		track.DELETE("/by-genre",
-			middlewares.CheckAuth(),
-			authContr.DeleteTrackByGenre)
 		track.DELETE("/by-range",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByRange)
