@@ -1,6 +1,7 @@
 package routes
 
 import (
+	albumContr "github.com/RubenPari/clear-songs/src/controllers"
 	authContr "github.com/RubenPari/clear-songs/src/controllers"
 	utilsContr "github.com/RubenPari/clear-songs/src/controllers"
 	"github.com/RubenPari/clear-songs/src/middlewares"
@@ -25,15 +26,29 @@ func SetUpRoutes(server *gin.Engine) {
 		track.DELETE("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByArtist)
-		track.DELETE("/by-genre",
-			middlewares.CheckAuth(),
-			authContr.DeleteTrackByGenre)
 		track.DELETE("/by-range",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByRange)
 		track.DELETE("/by-file",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByFile)
+	}
+
+	// ####### ALBUMS #######
+	album := server.Group("/album")
+	{
+		album.GET("/all",
+			middlewares.CheckAuth(),
+			albumContr.GetAll)
+		album.GET("/by-artist/:id_artist",
+			middlewares.CheckAuth(),
+			albumContr.GetAlbumByArtist)
+		album.DELETE("/by-artist/:id_artist",
+			middlewares.CheckAuth(),
+			albumContr.DeleteAlbumByArtist)
+		album.PUT("/convert-to-songs",
+			middlewares.CheckAuth(),
+			albumContr.ConvertAlbumToSongs)
 	}
 
 	// ####### UTILS #######
