@@ -17,18 +17,34 @@ import (
 func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
 	log.Default().Println("Getting artists summary array")
 
-	var artistSummary = make(map[string]int)
+	var artistSummary = make(map[string]struct {
+		count int
+		id    string
+	})
 
 	for _, track := range tracks {
-		artistSummary[track.Artists[0].Name]++
+		// Controllo se l'artista è già nella mappa
+		if artist, exists := artistSummary[track.Artists[0].Name]; exists {
+			artist.count++
+			artistSummary[track.Artists[0].Name] = artist
+		} else {
+			artistSummary[track.Artists[0].Name] = struct {
+				count int
+				id    string
+			}{
+				count: 1,
+				id:    string(track.Artists[0].ID),
+			}
+		}
 	}
 
 	var artistSummaryArray []models.ArtistSummary
 
-	for artist, count := range artistSummary {
+	for artist, summary := range artistSummary {
 		artistSummaryArray = append(artistSummaryArray, models.ArtistSummary{
 			Name:  artist,
-			Count: count,
+			Id:    summary.id,
+			Count: summary.count,
 		})
 	}
 
