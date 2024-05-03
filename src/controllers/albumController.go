@@ -23,18 +23,16 @@ func GetAlbumByArtist(c *gin.Context) {
 func DeleteAlbumByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(c.Param("id_artist"))
 
-	err := userService.DeleteAlbumsByArtist(idArtist)
+	errDelete := userService.DeleteAlbumsByArtist(idArtist)
 
-	if err != nil {
+	if errDelete != nil {
 		c.JSON(400, gin.H{
-			"status":  "error",
 			"message": "Error deleting albums",
 		})
 		return
 	}
 
 	c.JSON(200, gin.H{
-		"status":  "success",
 		"message": "Albums deleted",
 	})
 }
@@ -42,18 +40,16 @@ func DeleteAlbumByArtist(c *gin.Context) {
 func ConvertAlbumToSongs(c *gin.Context) {
 	idAlbum := spotifyAPI.ID(c.Query("id_album"))
 
-	err := userService.ConvertAlbumToSongs(idAlbum)
+	errConvert := userService.ConvertAlbumToSongs(idAlbum)
 
-	if err != nil {
+	if errConvert != nil {
 		c.JSON(400, gin.H{
-			"status":  "error",
 			"message": "Error converting album to songs",
 		})
 		return
 	}
 
 	c.JSON(200, gin.H{
-		"status":  "success",
 		"message": "Album converted to songs",
 	})
 }

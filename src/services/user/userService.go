@@ -121,37 +121,6 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
-func DeleteTracksByArtists(artists []spotifyAPI.FullArtist) error {
-	log.Default().Println("Deleting tracks by artists")
-
-	var tracks []spotifyAPI.ID
-
-	// get all tracks of user
-	allTracks, err := GetAllUserTracks()
-
-	if err != nil {
-		return err
-	}
-
-	// filter tracks by artist
-	for _, track := range allTracks {
-		for _, artist := range artists {
-			if track.Artists[0].ID == artist.ID {
-				tracks = append(tracks, track.ID)
-			}
-		}
-	}
-
-	// delete tracks
-	err = DeleteTracksUser(tracks)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func DeleteAlbumsUser(albums []spotifyAPI.SavedAlbum) error {
 	log.Default().Println("Deleting user albums")
 
@@ -268,7 +237,6 @@ func DeleteAlbumsByArtist(idArtist spotifyAPI.ID) error {
 
 	var albums []spotifyAPI.SavedAlbum
 
-	// get all albums of user
 	allAlbums := GetAllUserAlbums()
 
 	// filter albums by artist
@@ -278,11 +246,10 @@ func DeleteAlbumsByArtist(idArtist spotifyAPI.ID) error {
 		}
 	}
 
-	// delete albums
-	err := DeleteAlbumsUser(albums)
+	errDeleteAlbums := DeleteAlbumsUser(albums)
 
-	if err != nil {
-		return err
+	if errDeleteAlbums != nil {
+		return errDeleteAlbums
 	}
 
 	return nil
@@ -292,10 +259,10 @@ func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	log.Default().Println("Converting album to songs")
 
 	// get album info
-	album, err := utils.SpotifyClient.GetAlbum(idAlbum)
+	album, errAlbum := utils.SpotifyClient.GetAlbum(idAlbum)
 
-	if err != nil {
-		return err
+	if errAlbum != nil {
+		return errAlbum
 	}
 
 	// get all tracks of album
@@ -306,10 +273,10 @@ func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	}
 
 	// add tracks to user library
-	err = utils.SpotifyClient.AddTracksToLibrary(tracks...)
+	errAddTracks := utils.SpotifyClient.AddTracksToLibrary(tracks...)
 
-	if err != nil {
-		return err
+	if errAddTracks != nil {
+		return errAddTracks
 	}
 
 	return nil

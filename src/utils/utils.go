@@ -1,22 +1,16 @@
 package utils
 
 import (
-	"log"
-	"math/rand"
-	"os"
-	"path/filepath"
-	"time"
-
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
+	"path/filepath"
 )
 
-var (
-	SpotifyClient *spotifyAPI.Client
-	TokenHeader   string
-)
+var SpotifyClient *spotifyAPI.Client
 
 func LoadEnv(moveUp int) {
 	// add /env or \env to the path
@@ -45,20 +39,6 @@ func LoadEnv(moveUp int) {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-}
-
-func RandomString(n int) string {
-	src := rand.NewSource(time.Now().UnixNano())
-	rng := rand.New(src)
-	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-	result := make([]byte, n)
-
-	for i := range result {
-		result[i] = letters[rng.Intn(len(letters))]
-	}
-
-	return string(result)
 }
 
 func GetOAuth2Config() *oauth2.Config {
@@ -175,30 +155,4 @@ func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []mod
 	}
 
 	return newTracks
-}
-
-func FilterGroupSummaryByRange(tracks []models.ArtistGroupSummary, min int, max int) []models.ArtistGroupSummary {
-	log.Default().Println("Filtering artist summary array by range")
-
-	var filteredGroupSummaries []models.ArtistGroupSummary
-
-	for _, groupSummary := range tracks {
-		var filteredArtists []models.ArtistSummary
-		for _, artist := range groupSummary.Artists {
-			if (min == 0 || artist.Count >= min) && (max == 0 || artist.Count <= max) {
-				filteredArtists = append(filteredArtists, artist)
-			}
-		}
-
-		// Aggiungi solo i gruppi che hanno artisti filtrati
-		if len(filteredArtists) > 0 {
-			filteredGroupSummary := models.ArtistGroupSummary{
-				Genre:   groupSummary.Genre,
-				Artists: filteredArtists,
-			}
-			filteredGroupSummaries = append(filteredGroupSummaries, filteredGroupSummary)
-		}
-	}
-
-	return filteredGroupSummaries
 }
