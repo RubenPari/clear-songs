@@ -29,9 +29,6 @@ func SetUpRoutes(server *gin.Engine) {
 		track.DELETE("/by-range",
 			middlewares.CheckAuth(),
 			authContr.DeleteTrackByRange)
-		track.DELETE("/by-file",
-			middlewares.CheckAuth(),
-			authContr.DeleteTrackByFile)
 	}
 
 	// ####### ALBUMS #######

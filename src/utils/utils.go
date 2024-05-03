@@ -1,33 +1,44 @@
 package utils
 
 import (
-	"log"
-	"math/rand"
-	"os"
-	"time"
-
 	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
+	"path/filepath"
 )
 
-var (
-	SpotifyClient *spotifyAPI.Client
-	TokenHeader   string
-)
+var SpotifyClient *spotifyAPI.Client
 
-func RandomString(n int) string {
-	src := rand.NewSource(time.Now().UnixNano())
-	rng := rand.New(src)
-	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+func LoadEnv(moveUp int) {
+	// add /env or \env to the path
+	// depending on the OS
+	var envName string
 
-	result := make([]byte, n)
-
-	for i := range result {
-		result[i] = letters[rng.Intn(len(letters))]
+	if os.PathSeparator == '/' {
+		envName = "/.env"
+	} else {
+		envName = "\\.env"
 	}
 
-	return string(result)
+	// get current directory
+	// and move up to the root directory
+	currentDir, _ := os.Getwd()
+
+	for i := 0; i < moveUp; i++ {
+		currentDir = filepath.Dir(currentDir)
+	}
+
+	// load .env file
+	err := godotenv.Load(currentDir + envName)
+
+	log.Default().Println("Loading env file in " + currentDir + envName)
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func GetOAuth2Config() *oauth2.Config {
@@ -144,30 +155,4 @@ func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []mod
 	}
 
 	return newTracks
-}
-
-func FilterGroupSummaryByRange(tracks []models.ArtistGroupSummary, min int, max int) []models.ArtistGroupSummary {
-	log.Default().Println("Filtering artist summary array by range")
-
-	var filteredGroupSummaries []models.ArtistGroupSummary
-
-	for _, groupSummary := range tracks {
-		var filteredArtists []models.ArtistSummary
-		for _, artist := range groupSummary.Artists {
-			if (min == 0 || artist.Count >= min) && (max == 0 || artist.Count <= max) {
-				filteredArtists = append(filteredArtists, artist)
-			}
-		}
-
-		// Aggiungi solo i gruppi che hanno artisti filtrati
-		if len(filteredArtists) > 0 {
-			filteredGroupSummary := models.ArtistGroupSummary{
-				Genre:   groupSummary.Genre,
-				Artists: filteredArtists,
-			}
-			filteredGroupSummaries = append(filteredGroupSummaries, filteredGroupSummary)
-		}
-	}
-
-	return filteredGroupSummaries
 }

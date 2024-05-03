@@ -15,7 +15,6 @@ func GetNameByID(c *gin.Context) {
 	// check if type is valid
 	if utils.CheckTypeObject(typeObject) == false {
 		c.JSON(400, gin.H{
-			"status":  "error",
 			"message": "Type provided is not valid",
 		})
 		return
@@ -25,7 +24,6 @@ func GetNameByID(c *gin.Context) {
 
 	if nameObject == "" {
 		c.JSON(400, gin.H{
-			"status":  "error",
 			"message": "Object not found",
 		})
 		return
@@ -44,7 +42,6 @@ func GetIDByName(c *gin.Context) {
 	// check if type is valid
 	if utils.CheckTypeObject(typeObject) == false {
 		c.JSON(400, gin.H{
-			"status":  "error",
 			"message": "Type provided is not valid",
 		})
 		return
