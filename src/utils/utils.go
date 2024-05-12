@@ -2,7 +2,6 @@ package utils
 
 import (
 	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"log"
@@ -10,20 +9,6 @@ import (
 )
 
 var SpotifyClient *spotifyAPI.Client
-
-func LoadEnv() {
-	currentDir, _ := os.Getwd()
-
-	var envDirectory = currentDir + "/.env"
-
-	err := godotenv.Load(envDirectory)
-
-	log.Default().Println("Loading env file in " + envDirectory)
-
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
 
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
