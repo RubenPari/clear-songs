@@ -1,40 +1,29 @@
 package utils
 
 import (
+	"log"
+	"os"
+	"path/filepath"
+
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"log"
-	"os"
-	"path/filepath"
 )
 
 var SpotifyClient *spotifyAPI.Client
 
-func LoadEnv(moveUp int) {
-	// add /env or \env to the path
-	// depending on the OS
-	var envName string
-
-	if os.PathSeparator == '/' {
-		envName = "/.env"
-	} else {
-		envName = "\\.env"
-	}
-
-	// get current directory
-	// and move up to the root directory
+func LoadEnv() {
 	currentDir, _ := os.Getwd()
 
-	for i := 0; i < moveUp; i++ {
-		currentDir = filepath.Dir(currentDir)
-	}
+	// move up one directory
+	currentDir = filepath.Dir(currentDir)
 
-	// load .env file
-	err := godotenv.Load(currentDir + envName)
+	var envDirectory = currentDir + "/.env"
 
-	log.Default().Println("Loading env file in " + currentDir + envName)
+	err := godotenv.Load(envDirectory)
+
+	log.Default().Println("Loading env file in " + envDirectory)
 
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -60,76 +49,6 @@ func GetOAuth2Config() *oauth2.Config {
 			AuthURL:  spotifyAPI.AuthURL,
 			TokenURL: spotifyAPI.TokenURL,
 		}}
-}
-
-// CheckTypeObject checks if the
-// object entity spotify is of the type specified
-func CheckTypeObject(typeObject string) bool {
-	if typeObject == "artist" ||
-		typeObject == "track" ||
-		typeObject == "album" ||
-		typeObject == "playlist" {
-		return true
-	}
-
-	return false
-}
-
-// GetObjectName returns the name of the
-// object entity spotify given the type and id
-func GetObjectName(typeObject string, id string) string {
-	switch typeObject {
-	case "artist":
-		artist, _ := SpotifyClient.GetArtist(spotifyAPI.ID(id))
-
-		return artist.Name + " - " + typeObject
-
-	case "album":
-		album, _ := SpotifyClient.GetAlbum(spotifyAPI.ID(id))
-
-		return album.Name + " - " + typeObject
-
-	case "track":
-		track, _ := SpotifyClient.GetTrack(spotifyAPI.ID(id))
-
-		return track.Name + " - " + typeObject
-	case "playlist":
-		playlist, _ := SpotifyClient.GetPlaylist(spotifyAPI.ID(id))
-
-		return playlist.Name + " - " + typeObject
-
-	default:
-		return ""
-	}
-}
-
-// GetIDByName returns the id of the
-// object entity spotify given name
-func GetIDByName(name string, typeObject string) spotifyAPI.ID {
-	switch typeObject {
-	case "artist":
-		artist, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeArtist)
-
-		return artist.Artists.Artists[0].ID
-
-	case "album":
-		album, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeAlbum)
-
-		return album.Albums.Albums[0].ID
-
-	case "track":
-		track, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypeTrack)
-
-		return track.Tracks.Tracks[0].ID
-
-	case "playlist":
-		playlist, _ := SpotifyClient.Search(name, spotifyAPI.SearchTypePlaylist)
-
-		return playlist.Playlists.Playlists[0].ID
-
-	default:
-		return ""
-	}
 }
 
 // FilterSummaryByRange returns an array of

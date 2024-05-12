@@ -3,7 +3,6 @@ package services
 import (
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/client"
 	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -47,6 +46,7 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 
 // GetAllUserTracksByArtist
 // returns all tracks of user
+// by artist id
 func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 	log.Default().Println("Getting all user tracks by artist")
 
@@ -90,7 +90,7 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
 }
 
 // DeleteTracksUser deletes
-// all tracks of user
+// specified tracks from user
 func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	log.Default().Println("Deleting user tracks")
 
@@ -121,43 +121,8 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
-func DeleteAlbumsUser(albums []spotifyAPI.SavedAlbum) error {
-	log.Default().Println("Deleting user albums")
-
-	var offset = 0
-	var limit = 50
-
-	for {
-		if offset >= len(albums) {
-			break
-		}
-
-		if offset+50 > len(albums) {
-			limit = len(albums) - offset
-		}
-
-		// get album ids between offset : offset+limit
-		var albumsId []spotifyAPI.ID
-
-		for _, album := range albums[offset : offset+limit] {
-			albumsId = append(albumsId, album.ID)
-		}
-
-		_, errRemoved := client.RemoveAlbumsForUser(albumsId)
-
-		if errRemoved != nil {
-			log.Default().Println("Error deleting user albums")
-			return errRemoved
-		}
-
-		log.Default().Println("Deleting albums from offset: ", offset)
-
-		offset += 50
-	}
-
-	return nil
-}
-
+// GetAllUserAlbums
+// returns all albums of user
 func GetAllUserAlbums() []spotifyAPI.SavedAlbum {
 	log.Default().Println("Getting all user albums")
 
@@ -192,6 +157,9 @@ func GetAllUserAlbums() []spotifyAPI.SavedAlbum {
 	return allAlbums
 }
 
+// GetAllUserAlbumsByArtist
+// returns all albums of user
+// by artist id
 func GetAllUserAlbumsByArtist(idArtist spotifyAPI.ID) []spotifyAPI.SavedAlbum {
 	log.Default().Println("Getting all user albums by artist")
 
@@ -232,29 +200,8 @@ func GetAllUserAlbumsByArtist(idArtist spotifyAPI.ID) []spotifyAPI.SavedAlbum {
 	return filteredAlbums
 }
 
-func DeleteAlbumsByArtist(idArtist spotifyAPI.ID) error {
-	log.Default().Println("Deleting albums by artist")
-
-	var albums []spotifyAPI.SavedAlbum
-
-	allAlbums := GetAllUserAlbums()
-
-	// filter albums by artist
-	for _, album := range allAlbums {
-		if album.Artists[0].ID == idArtist {
-			albums = append(albums, album)
-		}
-	}
-
-	errDeleteAlbums := DeleteAlbumsUser(albums)
-
-	if errDeleteAlbums != nil {
-		return errDeleteAlbums
-	}
-
-	return nil
-}
-
+// ConvertAlbumToSongs
+// converts album to songs
 func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	log.Default().Println("Converting album to songs")
 
