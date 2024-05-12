@@ -3,9 +3,7 @@ package controllers
 import (
 	"strconv"
 
-	"github.com/RubenPari/clear-songs/src/services/artist"
-	artistService "github.com/RubenPari/clear-songs/src/services/artist"
-	userService "github.com/RubenPari/clear-songs/src/services/user"
+	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +21,7 @@ func GetTrackSummary(c *gin.Context) {
 	maxCount, _ := strconv.Atoi(maxStr)
 
 	// get tracks from user
-	tracks, errTracks := userService.GetAllUserTracks()
+	tracks, errTracks := services.GetAllUserTracks()
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -32,7 +30,7 @@ func GetTrackSummary(c *gin.Context) {
 		return
 	}
 
-	artistSummaryArray := artist.GetArtistsSummary(tracks)
+	artistSummaryArray := services.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
@@ -45,7 +43,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	idArtistString := c.Param("id_artist")
 	idArtist := spotifyAPI.ID(idArtistString)
 
-	tracksFilterers, errTracks := userService.GetAllUserTracksByArtist(idArtist)
+	tracksFilterers, errTracks := services.GetAllUserTracksByArtist(idArtist)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -55,7 +53,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	// delete tracks from artist
-	errDelete := userService.DeleteTracksUser(tracksFilterers)
+	errDelete := services.DeleteTracksUser(tracksFilterers)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -77,7 +75,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	maxStr := c.Query("max")
 	maxCount, _ := strconv.Atoi(maxStr)
 
-	tracks, errTracks := userService.GetAllUserTracks()
+	tracks, errTracks := services.GetAllUserTracks()
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -86,14 +84,14 @@ func DeleteTrackByRange(c *gin.Context) {
 		return
 	}
 
-	artistSummaryArray := artistService.GetArtistsSummary(tracks)
+	artistSummaryArray := services.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
 	// delete all tracks from artists present
 	// in the summary object
 	for artistObj := range artistSummaryFiltered {
-		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)))
+		tracksFilters, errTracks := services.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)))
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -103,7 +101,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		}
 
 		// delete tracks from artist
-		errDelete := userService.DeleteTracksUser(tracksFilters)
+		errDelete := services.DeleteTracksUser(tracksFilters)
 
 		if errDelete != nil {
 			c.JSON(500, gin.H{
