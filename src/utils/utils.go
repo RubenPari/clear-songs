@@ -1,23 +1,18 @@
 package utils
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"log"
+	"os"
 )
 
 var SpotifyClient *spotifyAPI.Client
 
 func LoadEnv() {
 	currentDir, _ := os.Getwd()
-
-	// move up one directory
-	currentDir = filepath.Dir(currentDir)
 
 	var envDirectory = currentDir + "/.env"
 
