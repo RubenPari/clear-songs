@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -74,4 +75,40 @@ func FilterSummaryByRange(tracks []models.ArtistSummary, min int, max int) []mod
 	}
 
 	return newTracks
+}
+
+// ConvertTracksToID converts a list of tracks
+// can be of type:
+// - []spotifyAPI.FullTrack,
+// - []spotifyAPI.PlaylistTrack,
+// - []spotifyAPI.SavedTrack,
+// - []spotifyAPI.SavedAlbum
+// to a list of track IDs
+func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
+	var trackIDs []spotifyAPI.ID
+
+	switch t := tracks.(type) {
+	case []spotifyAPI.FullTrack:
+		for _, track := range t {
+			trackIDs = append(trackIDs, track.ID)
+		}
+	case []spotifyAPI.PlaylistTrack:
+		for _, track := range t {
+			trackIDs = append(trackIDs, track.Track.ID)
+		}
+	case []spotifyAPI.SavedTrack:
+		for _, track := range t {
+			trackIDs = append(trackIDs, track.FullTrack.ID)
+		}
+	case []spotifyAPI.SavedAlbum:
+		for _, album := range t {
+			for _, track := range album.Tracks.Tracks {
+				trackIDs = append(trackIDs, track.ID)
+			}
+		}
+	default:
+		return nil, errors.New("type not supported")
+	}
+
+	return trackIDs, nil
 }

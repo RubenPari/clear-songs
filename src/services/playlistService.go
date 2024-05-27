@@ -37,10 +37,9 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 }
 
 func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
-	// get all track ids
-	var trackIDs []spotifyAPI.ID
-	for _, track := range tracks {
-		trackIDs = append(trackIDs, track.Track.ID)
+	trackIDs, errConvertIDs := utils.ConvertTracksToID(tracks)
+	if errConvertIDs != nil {
+		return errConvertIDs
 	}
 
 	// remove tracks from playlist 100 at a time

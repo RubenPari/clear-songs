@@ -213,14 +213,13 @@ func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	}
 
 	// get all tracks of album
-	var tracks []spotifyAPI.ID
-
-	for _, track := range album.Tracks.Tracks {
-		tracks = append(tracks, track.ID)
+	trackIDs, errConvertIDs := utils.ConvertTracksToID(album.Tracks.Tracks)
+	if errConvertIDs != nil {
+		return errConvertIDs
 	}
 
 	// add tracks to user library
-	errAddTracks := utils.SpotifyClient.AddTracksToLibrary(tracks...)
+	errAddTracks := utils.SpotifyClient.AddTracksToLibrary(trackIDs...)
 
 	if errAddTracks != nil {
 		return errAddTracks
