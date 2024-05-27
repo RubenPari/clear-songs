@@ -1,5 +1,5 @@
 # Move to the src directory
-cd .\src
+Set-Location .\src
 
 # Run gofmt on all Go files in the project
 Get-ChildItem -Recurse -Filter "*.go" | ForEach-Object {
