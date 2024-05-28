@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
@@ -13,14 +11,11 @@ func main() {
 	server := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
 
-	// load .env file
-	utils.LoadEnv()
-
 	// set routes
 	routes.SetUpRoutes(server)
 
 	// start server
-	if server.Run(":"+os.Getenv("PORT")) != nil {
+	if server.Run(":"+utils.Port) != nil {
 		panic("Error starting server")
 	}
 }

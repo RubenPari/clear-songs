@@ -3,39 +3,25 @@ package utils
 import (
 	"errors"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )
 
 var SpotifyClient *spotifyAPI.Client
 
-func LoadEnv() {
-	currentDir, _ := os.Getwd()
-
-	// move up one directory
-	currentDir = filepath.Dir(currentDir)
-
-	var envDirectory = currentDir + "/.env"
-
-	err := godotenv.Load(envDirectory)
-
-	log.Default().Println("Loading env file in " + envDirectory)
-
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
+// ClientID ClientSecret RedirectURI Port
+var ClientID = "06d2f7ccaabd48829ad97f299c13c1be"
+var ClientSecret = "ecc19973c7d7459fa2fd6a4206ae538a"
+var RedirectURI = "http://localhost:3000/auth/callback"
+var Port = "3000"
 
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URI"),
+		ClientID:     ClientID,
+		ClientSecret: ClientSecret,
+		RedirectURL:  RedirectURI,
 		Scopes: []string{
 			"user-read-private",
 			"user-read-email",
