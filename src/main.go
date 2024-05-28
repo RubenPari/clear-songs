@@ -8,8 +8,8 @@ import (
 
 func main() {
 	// initialize server
+	gin.SetMode(gin.DebugMode)
 	server := gin.Default()
-	gin.SetMode(gin.ReleaseMode)
 
 	// set routes
 	routes.SetUpRoutes(server)
