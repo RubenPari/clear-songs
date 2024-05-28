@@ -19,20 +19,27 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 	}
 
 	// get all tracks from playlist with pagination
-	for firstTracks.Next != "" {
-		offset := firstTracks.Offset + firstTracks.Limit
-		nextTracks, errNextTracks := utils.SpotifyClient.GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
+	offset := 0
+	limit := 100
+
+	for {
+		tracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
 			Offset: &offset,
+			Limit:  &limit,
 		}, "")
 
-		if errNextTracks != nil {
-			return nil, errNextTracks
+		if errGetTracks != nil {
+			return nil, errGetTracks
 		}
 
-		firstTracks.Tracks = append(firstTracks.Tracks, nextTracks.Tracks...)
-		firstTracks.Next = nextTracks.Next
-	}
+		if len(tracks.Tracks) == 0 {
+			break
+		}
 
+		firstTracks.Tracks = append(firstTracks.Tracks, tracks.Tracks...)
+
+		offset += 100
+	}
 	return firstTracks.Tracks, nil
 }
 

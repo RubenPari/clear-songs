@@ -10,7 +10,7 @@ import (
 // DeleteAllPlaylistTracks deletes
 // all tracks from a playlist
 func DeleteAllPlaylistTracks(c *gin.Context) {
-	idPlaylist := c.Param("id")
+	idPlaylist := c.Query("id_playlist")
 
 	if idPlaylist == "" {
 		c.JSON(400, gin.H{
@@ -45,7 +45,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 // DeleteAllPlaylistAndUserTracks deletes all tracks
 // from a playlist and from the user's library
 func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
-	idPlaylist := c.Param("id")
+	idPlaylist := c.Query("id_playlist")
 
 	if idPlaylist == "" {
 		c.JSON(400, gin.H{
