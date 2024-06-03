@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
+	"os"
 
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -97,4 +99,26 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 	}
 
 	return trackIDs, nil
+}
+
+// SaveTracksFileIDs saves a list of track IDs
+// to a file json in the root of the project
+func SaveTracksFileIDs(ids []spotifyAPI.ID) error {
+	file, errCreateFile := os.Create("tracks-backup.json")
+
+	if errCreateFile != nil {
+		return errCreateFile
+	}
+
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+
+	errEcoder := encoder.Encode(ids)
+
+	if errEcoder != nil {
+		return errEcoder
+	}
+
+	return nil
 }

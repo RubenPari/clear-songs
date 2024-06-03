@@ -28,6 +28,24 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
+	tracksIDs, errConvertIDs := utils.ConvertTracksToID(tracks)
+
+	if errConvertIDs != nil {
+		c.JSON(500, gin.H{
+			"message": "Error converting tracks to IDs",
+		})
+		return
+	}
+
+	errSaveTracksFile := utils.SaveTracksFileIDs(tracksIDs)
+
+	if errSaveTracksFile != nil {
+		c.JSON(500, gin.H{
+			"message": "Error saving backup tracks to file",
+		})
+		return
+	}
+
 	errDelete := services.DeleteTracksPlaylist(spotifyAPI.ID(idPlaylist), tracks)
 
 	if errDelete != nil {
