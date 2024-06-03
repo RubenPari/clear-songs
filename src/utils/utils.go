@@ -110,14 +110,16 @@ func SaveTracksFileIDs(ids []spotifyAPI.ID) error {
 		return errCreateFile
 	}
 
-	defer file.Close()
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
 
 	encoder := json.NewEncoder(file)
 
-	errEcoder := encoder.Encode(ids)
+	errEncoder := encoder.Encode(ids)
 
-	if errEcoder != nil {
-		return errEcoder
+	if errEncoder != nil {
+		return errEncoder
 	}
 
 	return nil
