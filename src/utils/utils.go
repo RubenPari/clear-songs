@@ -3,12 +3,13 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/RubenPari/clear-songs/src/models"
-	spotifyAPI "github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
 	"io"
 	"log"
 	"os"
+
+	"github.com/RubenPari/clear-songs/src/models"
+	spotifyAPI "github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 var SpotifyClient *spotifyAPI.Client
