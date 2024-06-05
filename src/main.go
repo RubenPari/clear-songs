@@ -9,8 +9,8 @@ import (
 
 func main() {
 	// initialize server
-	server := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
+	server := gin.Default()
 
 	// set routes
 	routes.SetUpRoutes(server)
