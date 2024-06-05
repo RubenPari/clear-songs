@@ -37,7 +37,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	errSaveTracksFile := utils.SaveTracksFileIDs(tracksIDs)
+	errSaveTracksFile := utils.SaveTracksFileBackupIDs(tracksIDs)
 
 	if errSaveTracksFile != nil {
 		c.JSON(500, gin.H{
