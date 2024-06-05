@@ -42,4 +42,15 @@ func SetUpRoutes(server *gin.Engine) {
 			middlewares.CheckAuth(),
 			controllers.ConvertAlbumToSongs)
 	}
+
+	// ####### PLAYLIST #######
+	playlist := server.Group("/playlist")
+	{
+		playlist.DELETE("/delete-tracks",
+			middlewares.CheckAuth(),
+			controllers.DeleteAllPlaylistTracks)
+		playlist.DELETE("/delete-tracks-and-library",
+			middlewares.CheckAuth(),
+			controllers.DeleteAllPlaylistAndUserTracks)
+	}
 }
