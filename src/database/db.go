@@ -1,14 +1,16 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
+	"github.com/RubenPari/clear-songs/src/models"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var db *sql.DB = nil
+var db *gorm.DB = nil
 
 func Init() {
 	// credential
@@ -24,24 +26,31 @@ func Init() {
 
 	// Open the connection
 	var errConnectDb error
-	db, errConnectDb = sql.Open("postgres", psqlInfo)
+	db, errConnectDb := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{})
 
 	if errConnectDb != nil {
 		log.Fatalf("Error connecting to the database: %v", errConnectDb)
 	}
 
 	// test connection
-	errTestDb := db.Ping()
+	errTestDb := db.Exec("SELECT 1").Error
 
 	if errTestDb != nil {
-		log.Fatalf("Error testing the connection to the database: %v", errTestDb)
+		log.Printf("Error testing the connection to the database: %v", errTestDb)
 	}
 
-	fmt.Println("Successfully connected!")
+	// auto-migration
+	errMigration := db.AutoMigrate(&models.TrackDB{})
+
+	if errMigration != nil {
+		log.Printf("Error migrating the database: %v", errMigration)
+	}
+
+	log.Println("Successfully connected!")
 }
 
 // GetDB returns instances of db
-func GetDB() *sql.DB {
+func GetDB() *gorm.DB {
 	if db == nil {
 		Init()
 	}

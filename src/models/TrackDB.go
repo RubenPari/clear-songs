@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Track struct {
+type TrackDB struct {
 	gorm.Model
 	Id     string `gorm:"type:varchar(100);not null"`
 	Name   string `gorm:"type:varchar(100);not null"`

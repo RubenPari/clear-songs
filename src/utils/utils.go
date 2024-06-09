@@ -105,7 +105,7 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	db := database.GetDB()
 
 	for _, trackPlaylist := range tracksPlaylist {
-		track := models.Track{
+		track := models.TrackDB{
 			Id:     trackPlaylist.Track.ID.String(),
 			Name:   trackPlaylist.Track.Name,
 			Artist: trackPlaylist.Track.Artists[0].Name,
@@ -114,20 +114,20 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
 		}
 
-		var existingTrack models.Track
-		errAlreadyExistTRack := db.QueryRow("SELECT * FROM tracks WHERE id = ?", track.Id).Scan(&existingTrack)
+		var existingTrack models.TrackDB
+		errAlreadyExistTrack := db.First(&existingTrack, "id = ?", track.Id)
 
-		if errAlreadyExistTRack != nil && !errors.Is(errAlreadyExistTRack, gorm.ErrRecordNotFound) {
-			log.Printf("Error querying track: %v\n", errAlreadyExistTRack)
-			return errAlreadyExistTRack
-		}
+		if errAlreadyExistTrack != nil {
+			if !errors.Is(errAlreadyExistTrack.Error, gorm.ErrRecordNotFound) {
+				log.Printf("Error querying track: %v\n", errAlreadyExistTrack)
+				return errAlreadyExistTrack.Error
+			}
 
-		if errors.Is(errAlreadyExistTRack, gorm.ErrRecordNotFound) {
-			_, errInsertTrack := db.Exec("INSERT INTO tracks (id, name, artist, album, uri, url) VALUES (?, ?, ?, ?, ?, ?)", track.Id, track.Name, track.Artist, track.Album, track.URI, track.URL)
+			errInsertTrack := db.Create(&track)
 
-			if errInsertTrack != nil {
-				log.Printf("Error inserting track: %v", errInsertTrack)
-				return errInsertTrack
+			if errInsertTrack.Error != nil {
+				log.Printf("Error inserting track: %v\n", errInsertTrack.Error)
+				return errInsertTrack.Error
 			}
 		}
 	}
