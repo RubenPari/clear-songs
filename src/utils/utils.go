@@ -1,15 +1,14 @@
 package utils
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"log"
-	"os"
 
+	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"gorm.io/gorm"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -19,8 +18,6 @@ const ClientID = "06d2f7ccaabd48829ad97f299c13c1be"
 const ClientSecret = "ecc19973c7d7459fa2fd6a4206ae538a"
 const RedirectURI = "http://localhost:3000/auth/callback"
 const Port = "3000"
-const fileNameTracksBackup = "tracks-backup.json"
-const FilePermission = 0755
 
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
@@ -104,59 +101,35 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 	return trackIDs, nil
 }
 
-// SaveTracksFileBackupIDs saves a list of track IDs
-// to a json file in the root directory for recovery
-// track in case of accidental deletion
-func SaveTracksFileBackupIDs(tracksIds []spotifyAPI.ID) error {
-	// open file for reading and writing if it doesn't exist
-	file, errOpenFile := os.OpenFile(fileNameTracksBackup, os.O_RDWR|os.O_CREATE, FilePermission)
+func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
+	db := database.GetDB()
 
-	if errOpenFile != nil {
-		return errOpenFile
-	}
-
-	defer func(file *os.File) {
-		_ = file.Close()
-	}(file)
-
-	// Read existing IDs from file
-	var existingTrackIDs []spotifyAPI.ID
-	decoder := json.NewDecoder(file)
-	errReadIDs := decoder.Decode(&existingTrackIDs)
-
-	if errReadIDs != nil && errOpenFile != io.EOF {
-		return errReadIDs
-	}
-
-	// Create a map of existing IDs for faster lookup
-	idMap := make(map[spotifyAPI.ID]bool)
-	for _, id := range existingTrackIDs {
-		idMap[id] = true
-	}
-
-	// Add new IDs to the existing IDs
-	for _, trackId := range tracksIds {
-		_, exists := idMap[trackId]
-
-		if !exists {
-			existingTrackIDs = append(existingTrackIDs, trackId)
-			idMap[trackId] = true
+	for _, trackPlaylist := range tracksPlaylist {
+		track := models.Track{
+			Id:     trackPlaylist.Track.ID.String(),
+			Name:   trackPlaylist.Track.Name,
+			Artist: trackPlaylist.Track.Artists[0].Name,
+			Album:  trackPlaylist.Track.Album.Name,
+			URI:    string(trackPlaylist.Track.URI),
+			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
 		}
-	}
 
-	// Truncate the file to 0
-	errTruncateFile := file.Truncate(0)
+		var existingTrack models.Track
+		errAlreadyExistTRack := db.QueryRow("SELECT * FROM tracks WHERE id = ?", track.Id).Scan(&existingTrack)
 
-	if errTruncateFile != nil {
-		return errTruncateFile
-	}
+		if errAlreadyExistTRack != nil && !errors.Is(errAlreadyExistTRack, gorm.ErrRecordNotFound) {
+			log.Printf("Error querying track: %v\n", errAlreadyExistTRack)
+			return errAlreadyExistTRack
+		}
 
-	// Write the new IDs to the file
-	encoder := json.NewEncoder(file)
-	errWriteTrackIDs := encoder.Encode(existingTrackIDs)
+		if errors.Is(errAlreadyExistTRack, gorm.ErrRecordNotFound) {
+			_, errInsertTrack := db.Exec("INSERT INTO tracks (id, name, artist, album, uri, url) VALUES (?, ?, ?, ?, ?, ?)", track.Id, track.Name, track.Artist, track.Album, track.URI, track.URL)
 
-	if errWriteTrackIDs != nil {
-		return errWriteTrackIDs
+			if errInsertTrack != nil {
+				log.Printf("Error inserting track: %v", errInsertTrack)
+				return errInsertTrack
+			}
+		}
 	}
 
 	return nil

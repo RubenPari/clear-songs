@@ -28,16 +28,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	tracksIDs, errConvertIDs := utils.ConvertTracksToID(tracks)
-
-	if errConvertIDs != nil {
-		c.JSON(500, gin.H{
-			"message": "Error converting tracks to IDs",
-		})
-		return
-	}
-
-	errSaveTracksFile := utils.SaveTracksFileBackupIDs(tracksIDs)
+	errSaveTracksFile := utils.SaveTracksBackup(tracks)
 
 	if errSaveTracksFile != nil {
 		c.JSON(500, gin.H{
