@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 func main() {
@@ -14,8 +16,16 @@ func main() {
 	// set routes
 	routes.SetUpRoutes(server)
 
+	// load environment variables
+	utils.LoadEnvVariables()
+
+	// connect to database
+	if errConnectDb := database.Init(); errConnectDb != nil {
+		panic("Error connecting to database")
+	}
+
 	// start server
-	if server.Run(":"+utils.Port) != nil {
+	if server.Run(":"+os.Getenv("PORT")) != nil {
 		panic("Error starting server")
 	}
 }

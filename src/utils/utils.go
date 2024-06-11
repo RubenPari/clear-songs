@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"bufio"
 	"errors"
 	"log"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
@@ -13,17 +17,11 @@ import (
 
 var SpotifyClient *spotifyAPI.Client
 
-// ClientID ClientSecret RedirectURI Port
-const ClientID = "06d2f7ccaabd48829ad97f299c13c1be"
-const ClientSecret = "ecc19973c7d7459fa2fd6a4206ae538a"
-const RedirectURI = "http://localhost:3000/auth/callback"
-const Port = "3000"
-
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     ClientID,
-		ClientSecret: ClientSecret,
-		RedirectURL:  RedirectURI,
+		ClientID:     os.Getenv("CLIENT_ID"),
+		ClientSecret: os.Getenv("CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("REDIRECT_URL"),
 		Scopes: []string{
 			"user-read-private",
 			"user-read-email",
@@ -102,8 +100,6 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 }
 
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
-	db := database.GetDB()
-
 	for _, trackPlaylist := range tracksPlaylist {
 		track := models.TrackDB{
 			Id:     trackPlaylist.Track.ID.String(),
@@ -115,22 +111,85 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 		}
 
 		var existingTrack models.TrackDB
-		errAlreadyExistTrack := db.First(&existingTrack, "id = ?", track.Id)
+		alreadyExistTrack := database.Db.First(&existingTrack, "id = ?", track.Id)
 
-		if errAlreadyExistTrack != nil {
-			if !errors.Is(errAlreadyExistTrack.Error, gorm.ErrRecordNotFound) {
-				log.Printf("Error querying track: %v\n", errAlreadyExistTrack)
-				return errAlreadyExistTrack.Error
+		if alreadyExistTrack != nil {
+			if !errors.Is(alreadyExistTrack.Error, gorm.ErrRecordNotFound) {
+				log.Printf("Error querying track: %v\n", alreadyExistTrack)
+				return alreadyExistTrack.Error
 			}
 
-			errInsertTrack := db.Create(&track)
+			insertTrack := database.Db.Create(&track)
 
-			if errInsertTrack.Error != nil {
-				log.Printf("Error inserting track: %v\n", errInsertTrack.Error)
-				return errInsertTrack.Error
+			if insertTrack.Error != nil {
+				log.Printf("Error inserting track: %v\n", insertTrack.Error)
+				return insertTrack.Error
 			}
 		}
 	}
 
 	return nil
+}
+
+// LoadEnvVariables load environment variables from a file path
+func LoadEnvVariables() {
+	// get current working directory
+	cwd, errCwd := os.Getwd()
+
+	if errCwd != nil {
+		log.Fatalf("error getting current working directory: %v", errCwd)
+	}
+
+	// add .env file to the path
+	envPath := path.Join(cwd, ".env")
+
+	file, errOpenFile := os.Open(envPath)
+
+	if errOpenFile != nil {
+		log.Fatalf("error opening .env file: %v", errOpenFile)
+	}
+
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
+
+	scanner := bufio.NewScanner(file)
+
+	// read the file line by line
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// skip empty lines and comments
+		if len(line) == 0 || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// split the line into key and value
+		parts := strings.SplitN(line, "=", 2)
+
+		if len(parts) != 2 {
+			log.Fatalf("invalid line in .env file: %s", line)
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		// remove quotes "" from the value
+		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
+			value = strings.Trim(value, `"`)
+		}
+
+		// set the environment variable
+		errSetEnvVar := os.Setenv(key, value)
+
+		if errSetEnvVar != nil {
+			log.Fatalf("error setting environment variable: %v", errSetEnvVar)
+		}
+	}
+
+	errReadFile := scanner.Err()
+
+	if errReadFile != nil {
+		log.Fatalf("error reading .env file: %v", errReadFile)
+	}
 }
