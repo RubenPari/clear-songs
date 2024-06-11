@@ -1,27 +1,27 @@
 package utils
 
 import (
-	"encoding/json"
+	"bufio"
 	"errors"
-	"io"
 	"log"
 	"os"
+	"path"
+	"strings"
 
+	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	"gorm.io/gorm"
 )
 
 var SpotifyClient *spotifyAPI.Client
-
-const fileNameTracksBackup = "tracks-backup.json"
-const FilePermission = 0755
 
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URI"),
+		RedirectURL:  os.Getenv("REDIRECT_URL"),
 		Scopes: []string{
 			"user-read-private",
 			"user-read-email",
@@ -99,60 +99,97 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 	return trackIDs, nil
 }
 
-// SaveTracksFileBackupIDs saves a list of track IDs
-// to a json file in the root directory for recovery
-// track in case of accidental deletion
-func SaveTracksFileBackupIDs(tracksIds []spotifyAPI.ID) error {
-	// open file for reading and writing if it doesn't exist
-	file, errOpenFile := os.OpenFile(fileNameTracksBackup, os.O_RDWR|os.O_CREATE, FilePermission)
+func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
+	for _, trackPlaylist := range tracksPlaylist {
+		track := models.TrackDB{
+			Id:     trackPlaylist.Track.ID.String(),
+			Name:   trackPlaylist.Track.Name,
+			Artist: trackPlaylist.Track.Artists[0].Name,
+			Album:  trackPlaylist.Track.Album.Name,
+			URI:    string(trackPlaylist.Track.URI),
+			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
+		}
+
+		var existingTrack models.TrackDB
+		alreadyExistTrack := database.Db.First(&existingTrack, "id = ?", track.Id)
+
+		if alreadyExistTrack != nil {
+			if !errors.Is(alreadyExistTrack.Error, gorm.ErrRecordNotFound) {
+				log.Printf("Error querying track: %v\n", alreadyExistTrack)
+				return alreadyExistTrack.Error
+			}
+
+			insertTrack := database.Db.Create(&track)
+
+			if insertTrack.Error != nil {
+				log.Printf("Error inserting track: %v\n", insertTrack.Error)
+				return insertTrack.Error
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadEnvVariables load environment variables from a file path
+func LoadEnvVariables() {
+	// get current working directory
+	cwd, errCwd := os.Getwd()
+
+	if errCwd != nil {
+		log.Fatalf("error getting current working directory: %v", errCwd)
+	}
+
+	// add .env file to the path
+	envPath := path.Join(cwd, ".env")
+
+	file, errOpenFile := os.Open(envPath)
 
 	if errOpenFile != nil {
-		return errOpenFile
+		log.Fatalf("error opening .env file: %v", errOpenFile)
 	}
 
 	defer func(file *os.File) {
 		_ = file.Close()
 	}(file)
 
-	// Read existing IDs from file
-	var existingTrackIDs []spotifyAPI.ID
-	decoder := json.NewDecoder(file)
-	errReadIDs := decoder.Decode(&existingTrackIDs)
+	scanner := bufio.NewScanner(file)
 
-	if errReadIDs != nil && errOpenFile != io.EOF {
-		return errReadIDs
-	}
+	// read the file line by line
+	for scanner.Scan() {
+		line := scanner.Text()
 
-	// Create a map of existing IDs for faster lookup
-	idMap := make(map[spotifyAPI.ID]bool)
-	for _, id := range existingTrackIDs {
-		idMap[id] = true
-	}
+		// skip empty lines and comments
+		if len(line) == 0 || strings.HasPrefix(line, "#") {
+			continue
+		}
 
-	// Add new IDs to the existing IDs
-	for _, trackId := range tracksIds {
-		_, exists := idMap[trackId]
+		// split the line into key and value
+		parts := strings.SplitN(line, "=", 2)
 
-		if !exists {
-			existingTrackIDs = append(existingTrackIDs, trackId)
-			idMap[trackId] = true
+		if len(parts) != 2 {
+			log.Fatalf("invalid line in .env file: %s", line)
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		// remove quotes "" from the value
+		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
+			value = strings.Trim(value, `"`)
+		}
+
+		// set the environment variable
+		errSetEnvVar := os.Setenv(key, value)
+
+		if errSetEnvVar != nil {
+			log.Fatalf("error setting environment variable: %v", errSetEnvVar)
 		}
 	}
 
-	// Truncate the file to 0
-	errTruncateFile := file.Truncate(0)
+	errReadFile := scanner.Err()
 
-	if errTruncateFile != nil {
-		return errTruncateFile
+	if errReadFile != nil {
+		log.Fatalf("error reading .env file: %v", errReadFile)
 	}
-
-	// Write the new IDs to the file
-	encoder := json.NewEncoder(file)
-	errWriteTrackIDs := encoder.Encode(existingTrackIDs)
-
-	if errWriteTrackIDs != nil {
-		return errWriteTrackIDs
-	}
-
-	return nil
 }

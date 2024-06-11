@@ -1,19 +1,29 @@
 package main
 
 import (
+	"github.com/RubenPari/clear-songs/src/utils"
 	"os"
 
+	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// initialize server
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	server := gin.Default()
 
 	// set routes
 	routes.SetUpRoutes(server)
+
+	// load environment variables
+	utils.LoadEnvVariables()
+
+	// connect to database
+	if errConnectDb := database.Init(); errConnectDb != nil {
+		panic("Error connecting to database")
+	}
 
 	// start server
 	if server.Run(":"+os.Getenv("PORT")) != nil {
