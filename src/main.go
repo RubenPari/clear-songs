@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// initialize server
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	server := gin.Default()
 
 	// set routes
