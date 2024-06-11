@@ -1,18 +1,14 @@
 package utils
 
 import (
-	"bufio"
 	"errors"
-	"log"
-	"os"
-	"path"
-	"strings"
-
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 var SpotifyClient *spotifyAPI.Client
@@ -129,67 +125,4 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	}
 
 	return nil
-}
-
-// LoadEnvVariables load environment variables from a file path
-func LoadEnvVariables() {
-	// get current working directory
-	cwd, errCwd := os.Getwd()
-
-	if errCwd != nil {
-		log.Fatalf("error getting current working directory: %v", errCwd)
-	}
-
-	// add .env file to the path
-	envPath := path.Join(cwd, ".env")
-
-	file, errOpenFile := os.Open(envPath)
-
-	if errOpenFile != nil {
-		log.Fatalf("error opening .env file: %v", errOpenFile)
-	}
-
-	defer func(file *os.File) {
-		_ = file.Close()
-	}(file)
-
-	scanner := bufio.NewScanner(file)
-
-	// read the file line by line
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// skip empty lines and comments
-		if len(line) == 0 || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		// split the line into key and value
-		parts := strings.SplitN(line, "=", 2)
-
-		if len(parts) != 2 {
-			log.Fatalf("invalid line in .env file: %s", line)
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		// remove quotes "" from the value
-		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
-			value = strings.Trim(value, `"`)
-		}
-
-		// set the environment variable
-		errSetEnvVar := os.Setenv(key, value)
-
-		if errSetEnvVar != nil {
-			log.Fatalf("error setting environment variable: %v", errSetEnvVar)
-		}
-	}
-
-	errReadFile := scanner.Err()
-
-	if errReadFile != nil {
-		log.Fatalf("error reading .env file: %v", errReadFile)
-	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/RubenPari/clear-songs/src/utils"
 	"os"
 
 	"github.com/RubenPari/clear-songs/src/database"
@@ -16,9 +15,6 @@ func main() {
 
 	// set routes
 	routes.SetUpRoutes(server)
-
-	// load environment variables
-	utils.LoadEnvVariables()
 
 	// connect to database
 	if errConnectDb := database.Init(); errConnectDb != nil {
