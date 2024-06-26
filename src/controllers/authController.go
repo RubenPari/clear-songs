@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"log"
 
 	"github.com/RubenPari/clear-songs/src/utils"
@@ -60,8 +61,11 @@ func Callback(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	// delete spotify client from session
+	// set spotify client to nil
 	utils.SpotifyClient = nil
+
+	// flash session
+	cacheManager.Delete()
 
 	log.Default().Println("Called logout, deleted client from session")
 

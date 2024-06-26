@@ -47,41 +47,16 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 // GetAllUserTracksByArtist
 // returns all tracks of user
 // by artist id
-func GetAllUserTracksByArtist(id spotifyAPI.ID) ([]spotifyAPI.ID, error) {
+func GetAllUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.ID, error) {
 	log.Default().Println("Getting all user tracks by artist")
 
 	var filteredTracks []spotifyAPI.ID
-	var offset = 0
-	var limit = 50
 
-	log.Default().Println("Getting all user tracks")
-
-	for {
-		tracks, err := utils.SpotifyClient.CurrentUsersTracksOpt(&spotifyAPI.Options{
-			Limit:  &limit,
-			Offset: &offset,
-		})
-
-		log.Default().Println("Getting tracks from offset: ", offset)
-
-		if err != nil {
-			log.Default().Println("Error getting user tracks")
-			return nil, err
+	for _, track := range tracks {
+		if track.Artists[0].ID == id {
+			filteredTracks = append(filteredTracks, track.ID)
+			log.Default().Println("Track: ", track.Name, " - ", track.Artists[0].Name, " founded")
 		}
-
-		if len(tracks.Tracks) == 0 {
-			break
-		}
-
-		// filter by artist id
-		for _, track := range tracks.Tracks {
-			if track.Artists[0].ID == id {
-				filteredTracks = append(filteredTracks, track.ID)
-				log.Default().Println("Track: ", track.Name, " - ", track.Artists[0].Name, " founded")
-			}
-		}
-
-		offset += 50
 	}
 
 	log.Println("Total tracks: ", len(filteredTracks))
@@ -160,39 +135,16 @@ func GetAllUserAlbums() []spotifyAPI.SavedAlbum {
 // GetAllUserAlbumsByArtist
 // returns all albums of user
 // by artist id
-func GetAllUserAlbumsByArtist(idArtist spotifyAPI.ID) []spotifyAPI.SavedAlbum {
+func GetAllUserAlbumsByArtist(idArtist spotifyAPI.ID, albums []spotifyAPI.SavedAlbum) []spotifyAPI.SavedAlbum {
 	log.Default().Println("Getting all user albums by artist")
 
 	var filteredAlbums []spotifyAPI.SavedAlbum
-	var offset = 0
-	var limit = 50
 
-	for {
-		albums, err := utils.SpotifyClient.CurrentUsersAlbumsOpt(&spotifyAPI.Options{
-			Limit:  &limit,
-			Offset: &offset,
-		})
-
-		log.Default().Println("Getting albums from offset: ", offset)
-
-		if err != nil {
-			log.Default().Println("Error getting user albums")
-			return nil
+	for _, album := range albums {
+		if album.Artists[0].ID == idArtist {
+			filteredAlbums = append(filteredAlbums, album)
+			log.Default().Println("Album: ", album.Name, " - ", album.Artists[0].Name, " founded")
 		}
-
-		if len(albums.Albums) == 0 {
-			break
-		}
-
-		// filter by artist id
-		for _, album := range albums.Albums {
-			if album.Artists[0].ID == idArtist {
-				filteredAlbums = append(filteredAlbums, album)
-				log.Default().Println("Album: ", album.Name, " - ", album.Artists[0].Name, " founded")
-			}
-		}
-
-		offset += 50
 	}
 
 	log.Println("Total albums: ", len(filteredAlbums))

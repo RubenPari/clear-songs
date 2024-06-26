@@ -1,13 +1,22 @@
 package controllers
 
 import (
+	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 func GetAll(c *gin.Context) {
-	albums := services.GetAllUserAlbums()
+	// get albums from user
+	var albums []spotifyAPI.SavedAlbum
+
+	if albums := cacheManager.Get("albums").([]spotifyAPI.SavedAlbum); albums != nil {
+		albums = services.GetAllUserAlbums()
+
+		// save user albums in cacheManager
+		cacheManager.Set("albums", albums)
+	}
 
 	c.JSON(200, albums)
 }
@@ -15,9 +24,20 @@ func GetAll(c *gin.Context) {
 func GetAlbumByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(c.Param("id_artist"))
 
-	albums := services.GetAllUserAlbumsByArtist(idArtist)
+	// get albums from user
+	var albums []spotifyAPI.SavedAlbum
 
-	c.JSON(200, albums)
+	if albums := cacheManager.Get("albums").([]spotifyAPI.SavedAlbum); albums != nil {
+		albums = services.GetAllUserAlbums()
+
+		// save user albums in cacheManager
+		cacheManager.Set("albums", albums)
+
+	}
+
+	albumsArtist := services.GetAllUserAlbumsByArtist(idArtist, albums)
+
+	c.JSON(200, albumsArtist)
 }
 
 func ConvertAlbumToSongs(c *gin.Context) {
