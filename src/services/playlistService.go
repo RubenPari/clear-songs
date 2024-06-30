@@ -12,15 +12,10 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 		return nil, errGetPlaylist
 	}
 
-	firstTracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracks(playlist.ID)
-
-	if errGetTracks != nil {
-		return nil, errGetTracks
-	}
-
 	// get all tracks from playlist with pagination
-	offset := 0
+	var offset = 0
 	limit := 100
+	var playlistTracks []spotifyAPI.PlaylistTrack
 
 	for {
 		tracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
@@ -32,15 +27,16 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 			return nil, errGetTracks
 		}
 
-		if len(tracks.Tracks) == 0 {
+		playlistTracks = append(playlistTracks, tracks.Tracks...)
+
+		if len(tracks.Tracks) < limit {
 			break
 		}
 
-		firstTracks.Tracks = append(firstTracks.Tracks, tracks.Tracks...)
-
-		offset += 100
+		offset += limit
 	}
-	return firstTracks.Tracks, nil
+
+	return playlistTracks, nil
 }
 
 func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
