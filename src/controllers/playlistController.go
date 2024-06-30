@@ -24,7 +24,11 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 	var tracksPlaylist []spotifyAPI.PlaylistTrack
 	var errTrackPlaylist error
 
-	if tracksPlaylist := cacheManager.Get("tracksPlaylist" + idPlaylist); tracksPlaylist == nil {
+	value, found := cacheManager.Get("tracksPlaylist" + idPlaylist)
+
+	if found {
+		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
+	} else {
 		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(idPlaylist))
 
 		if errTrackPlaylist != nil {
@@ -76,7 +80,10 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 	var tracksPlaylist []spotifyAPI.PlaylistTrack
 	var errTrackPlaylist error
 
-	if tracksPlaylist := cacheManager.Get("tracksPlaylist" + idPlaylist); tracksPlaylist == nil {
+	value, _ := cacheManager.Get("tracksPlaylist" + idPlaylist)
+	if value != nil {
+		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
+	} else {
 		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(idPlaylist))
 
 		if errTrackPlaylist != nil {

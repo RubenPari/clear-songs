@@ -11,7 +11,11 @@ func GetAll(c *gin.Context) {
 	// get albums from user
 	var albums []spotifyAPI.SavedAlbum
 
-	if albums := cacheManager.Get("albums").([]spotifyAPI.SavedAlbum); albums != nil {
+	value, found := cacheManager.Get("albums")
+
+	if found {
+		albums = value.([]spotifyAPI.SavedAlbum)
+	} else {
 		albums = services.GetAllUserAlbums()
 
 		// save user albums in cacheManager
@@ -27,12 +31,15 @@ func GetAlbumByArtist(c *gin.Context) {
 	// get albums from user
 	var albums []spotifyAPI.SavedAlbum
 
-	if albums := cacheManager.Get("albums").([]spotifyAPI.SavedAlbum); albums != nil {
+	value, found := cacheManager.Get("albums")
+
+	if found {
+		albums = value.([]spotifyAPI.SavedAlbum)
+	} else {
 		albums = services.GetAllUserAlbums()
 
 		// save user albums in cacheManager
 		cacheManager.Set("albums", albums)
-
 	}
 
 	albumsArtist := services.GetAllUserAlbumsByArtist(idArtist, albums)

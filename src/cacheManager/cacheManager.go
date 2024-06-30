@@ -27,10 +27,10 @@ func Set(key string, value interface{}) {
 
 // Get retrieves an item from the cache
 // If the item does not exist, it returns nil
-func Get(key string) interface{} {
+func Get(key string) (interface{}, bool) {
 	value, found := cacheStore.Get(key)
 	if found {
-		return value
+		return value, true
 	}
-	return nil
+	return nil, false
 }

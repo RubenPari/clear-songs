@@ -25,7 +25,11 @@ func GetTrackSummary(c *gin.Context) {
 	var tracks []spotifyAPI.SavedTrack
 	var errTracks error
 
-	if tracks = cacheManager.Get("userTracks").([]spotifyAPI.SavedTrack); tracks == nil {
+	value, found := cacheManager.Get("userTracks")
+
+	if found {
+		tracks = value.([]spotifyAPI.SavedTrack)
+	} else {
 		tracks, errTracks = services.GetAllUserTracks()
 
 		if errTracks != nil {
@@ -56,7 +60,11 @@ func DeleteTrackByArtist(c *gin.Context) {
 	var tracks []spotifyAPI.SavedTrack
 	var errTracks error
 
-	if tracks = cacheManager.Get("userTracks").([]spotifyAPI.SavedTrack); tracks == nil {
+	value, found := cacheManager.Get("userTracks")
+
+	if found {
+		tracks = value.([]spotifyAPI.SavedTrack)
+	} else {
 		tracks, errTracks = services.GetAllUserTracks()
 
 		if errTracks != nil {
@@ -107,7 +115,11 @@ func DeleteTrackByRange(c *gin.Context) {
 	var tracks []spotifyAPI.SavedTrack
 	var errTracks error
 
-	if tracks = cacheManager.Get("userTracks").([]spotifyAPI.SavedTrack); tracks == nil {
+	value, found := cacheManager.Get("userTracks")
+
+	if found {
+		tracks = value.([]spotifyAPI.SavedTrack)
+	} else {
 		tracks, errTracks = services.GetAllUserTracks()
 
 		if errTracks != nil {
