@@ -6,15 +6,14 @@ import (
 	"os"
 
 	"github.com/RubenPari/clear-songs/src/models"
-	_ "github.com/lib/pq"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB = nil
 
 func Init() error {
-	// credential
+	// mysql credential
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -22,12 +21,11 @@ func Init() error {
 	dbname := os.Getenv("DB_NAME")
 
 	// create the connection string
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
-		host, port, user, password, dbname)
+	mysqlInfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbname)
 
 	// Open the connection
 	var errConnectDb error
-	db, errConnectDb := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{})
+	db, errConnectDb := gorm.Open(mysql.Open(mysqlInfo), &gorm.Config{})
 
 	if errConnectDb != nil {
 		log.Printf("Error connect database: %v", errConnectDb)
@@ -49,6 +47,8 @@ func Init() error {
 		log.Printf("Error migration: %v", errMigration)
 		return errMigration
 	}
+
+	Db = db
 
 	log.Println("Successfully connected to database!")
 
