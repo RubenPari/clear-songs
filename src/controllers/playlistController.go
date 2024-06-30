@@ -41,15 +41,6 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		cacheManager.Set("tracksPlaylist"+idPlaylist, tracksPlaylist)
 	}
 
-	errSaveTracksFile := utils.SaveTracksBackup(tracksPlaylist)
-
-	if errSaveTracksFile != nil {
-		c.JSON(500, gin.H{
-			"message": "Error saving backup tracks to file",
-		})
-		return
-	}
-
 	errDelete := services.DeleteTracksPlaylist(spotifyAPI.ID(idPlaylist), tracksPlaylist)
 
 	if errDelete != nil {
@@ -94,6 +85,15 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		}
 
 		cacheManager.Set("tracksPlaylist"+idPlaylist, tracksPlaylist)
+	}
+
+	errSaveTracksFile := utils.SaveTracksBackup(tracksPlaylist)
+
+	if errSaveTracksFile != nil {
+		c.JSON(500, gin.H{
+			"message": "Error saving backup tracks to file",
+		})
+		return
 	}
 
 	errDeletePlaylistTracks := services.DeleteTracksPlaylist(spotifyAPI.ID(idPlaylist), tracksPlaylist)
