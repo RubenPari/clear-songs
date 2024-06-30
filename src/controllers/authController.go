@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"log"
+
+	"github.com/RubenPari/clear-songs/src/cacheManager"
 
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"

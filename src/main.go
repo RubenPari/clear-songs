@@ -1,12 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
-	"os"
 )
 
 func main() {
