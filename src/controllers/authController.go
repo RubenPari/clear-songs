@@ -11,9 +11,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var configAuth = utils.GetOAuth2Config()
+var configAuth *oauth2.Config = nil
 
 func Login(c *gin.Context) {
+	configAuth = utils.GetOAuth2Config()
+
 	// create url for spotify login
 	url := configAuth.AuthCodeURL("state", oauth2.AccessTypeOffline)
 
