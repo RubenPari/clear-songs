@@ -102,7 +102,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 
 	if errConvertIDs != nil {
 		c.JSON(500, gin.H{
-			"message": "Error converting tracks",
+			"message": "Error converting tracks to IDs",
 		})
 		return
 	}
