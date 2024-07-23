@@ -48,7 +48,7 @@ func Callback(c *gin.Context) {
 	utils.SpotifyClient = &spotify
 
 	// get user for testing
-	user, errUser := spotify.CurrentUser()
+	user, errUser := utils.SpotifyClient.CurrentUser()
 
 	if errUser != nil {
 		c.JSON(500, gin.H{
