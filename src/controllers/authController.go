@@ -4,15 +4,19 @@ import (
 	"context"
 	"log"
 
+	"github.com/RubenPari/clear-songs/src/cacheManager"
+
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )
 
-var configAuth = utils.GetOAuth2Config()
+var configAuth *oauth2.Config = nil
 
 func Login(c *gin.Context) {
+	configAuth = utils.GetOAuth2Config()
+
 	// create url for spotify login
 	url := configAuth.AuthCodeURL("state", oauth2.AccessTypeOffline)
 
@@ -60,8 +64,11 @@ func Callback(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	// delete spotify client from session
+	// set spotify client to nil
 	utils.SpotifyClient = nil
+
+	// flash session
+	cacheManager.Delete()
 
 	log.Default().Println("Called logout, deleted client from session")
 

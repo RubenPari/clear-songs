@@ -1,26 +1,28 @@
 package services
 
 import (
+	"errors"
+
+	playlisthelper "github.com/RubenPari/clear-songs/src/playlistHelper"
 	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
+	if playlisthelper.CheckIfValidId(idPlaylist) {
+		return nil, errors.New("invalid playlist ID")
+	}
+
 	playlist, errGetPlaylist := utils.SpotifyClient.GetPlaylist(idPlaylist)
 
 	if errGetPlaylist != nil {
 		return nil, errGetPlaylist
 	}
 
-	firstTracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracks(playlist.ID)
-
-	if errGetTracks != nil {
-		return nil, errGetTracks
-	}
-
 	// get all tracks from playlist with pagination
-	offset := 0
+	var offset = 0
 	limit := 100
+	var playlistTracks []spotifyAPI.PlaylistTrack
 
 	for {
 		tracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
@@ -32,18 +34,23 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 			return nil, errGetTracks
 		}
 
-		if len(tracks.Tracks) == 0 {
+		playlistTracks = append(playlistTracks, tracks.Tracks...)
+
+		if len(tracks.Tracks) < limit {
 			break
 		}
 
-		firstTracks.Tracks = append(firstTracks.Tracks, tracks.Tracks...)
-
-		offset += 100
+		offset += limit
 	}
-	return firstTracks.Tracks, nil
+
+	return playlistTracks, nil
 }
 
 func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
+	if playlisthelper.CheckIfValidId(idPlaylist) {
+		return errors.New("invalid playlist ID")
+	}
+
 	trackIDs, errConvertIDs := utils.ConvertTracksToID(tracks)
 	if errConvertIDs != nil {
 		return errConvertIDs

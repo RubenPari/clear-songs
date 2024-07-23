@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,9 @@ func main() {
 
 	// set routes
 	routes.SetUpRoutes(server)
+
+	// init cache
+	cacheManager.Init()
 
 	// connect to database
 	if errConnectDb := database.Init(); errConnectDb != nil {
