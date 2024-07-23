@@ -1,11 +1,18 @@
 package services
 
 import (
+	"errors"
+
+	playlisthelper "github.com/RubenPari/clear-songs/src/playlistHelper"
 	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
+	if playlisthelper.CheckIfValidId(idPlaylist) {
+		return nil, errors.New("invalid playlist ID")
+	}
+
 	playlist, errGetPlaylist := utils.SpotifyClient.GetPlaylist(idPlaylist)
 
 	if errGetPlaylist != nil {
@@ -40,6 +47,10 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 }
 
 func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
+	if playlisthelper.CheckIfValidId(idPlaylist) {
+		return errors.New("invalid playlist ID")
+	}
+
 	trackIDs, errConvertIDs := utils.ConvertTracksToID(tracks)
 	if errConvertIDs != nil {
 		return errConvertIDs
