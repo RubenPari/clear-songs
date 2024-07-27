@@ -7,6 +7,8 @@ import (
 )
 
 func SetUpRoutes(server *gin.Engine) {
+	server.GET("/", middlewares.NotFound())
+
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
 	{
