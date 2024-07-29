@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/RubenPari/clear-songs/src/cacheManager"
+	"github.com/RubenPari/clear-songs/src/models"
 
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 
 var configAuth *oauth2.Config = nil
 
-func Login(c *gin.Context) {
+func LoginApi(c *gin.Context) {
 	configAuth = utils.GetOAuth2Config()
 
 	// create url for spotify login
@@ -26,7 +27,50 @@ func Login(c *gin.Context) {
 	c.Redirect(302, url)
 }
 
-func Callback(c *gin.Context) {
+func LoginFront(c *gin.Context) {
+	var accessTokenRequest models.AccessTokenRequest
+
+	// parse access token from body request already got from front-end
+	errParsingBody := c.ShouldBindJSON(&accessTokenRequest)
+
+	if errParsingBody != nil {
+		c.JSON(400, gin.H{
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	// set token
+	token := &oauth2.Token{
+		AccessToken: accessTokenRequest.AccessToken,
+		TokenType:   "Bearer",
+	}
+
+	// create client
+	client := configAuth.Client(context.Background(), token)
+	spotify := spotifyAPI.NewClient(client)
+
+	// save spotify client in session
+	utils.SpotifyClient = &spotify
+
+	// get user for testing
+	user, errUser := utils.SpotifyClient.CurrentUser()
+
+	if errUser != nil {
+		c.JSON(500, gin.H{
+			"message": "Error authenticating user",
+		})
+	}
+
+	log.Default().Println("Called login from user", user.User.DisplayName)
+
+	c.JSON(200, gin.H{
+		"message": "User authenticated",
+	})
+
+}
+
+func CallbackApi(c *gin.Context) {
 	code := c.Query("code")
 
 	// get token from code
