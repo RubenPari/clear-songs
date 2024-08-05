@@ -71,6 +71,8 @@ func LoginFront(c *gin.Context) {
 }
 
 func Callback(c *gin.Context) {
+	log.Default().Println("Called callback")
+
 	code := c.Query("code")
 
 	// get token from code
@@ -82,6 +84,8 @@ func Callback(c *gin.Context) {
 		})
 	}
 
+	log.Default().Println("got token from code")
+
 	// create client
 	client := configAuth.Client(context.Background(), token)
 	spotify := spotifyAPI.NewClient(client)
@@ -90,6 +94,8 @@ func Callback(c *gin.Context) {
 
 	// save spotify client in session
 	utils.SpotifyClient = &spotify
+
+	log.Default().Println("saved client in session")
 
 	// get user for testing
 	user, errUser := utils.SpotifyClient.CurrentUser()
