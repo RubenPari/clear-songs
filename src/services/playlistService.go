@@ -8,12 +8,12 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
-	if playlisthelper.CheckIfValidId(idPlaylist) {
+func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
+	if playlisthelper.CheckIfValidId(id) {
 		return nil, errors.New("invalid playlist ID")
 	}
 
-	playlist, errGetPlaylist := utils.SpotifyClient.GetPlaylist(idPlaylist)
+	playlist, errGetPlaylist := utils.SpotifyClient.GetPlaylist(id)
 
 	if errGetPlaylist != nil {
 		return nil, errGetPlaylist
@@ -46,8 +46,8 @@ func GetAllPlaylistTracks(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack,
 	return playlistTracks, nil
 }
 
-func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
-	if playlisthelper.CheckIfValidId(idPlaylist) {
+func DeleteTracksPlaylist(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
+	if playlisthelper.CheckIfValidId(id) {
 		return errors.New("invalid playlist ID")
 	}
 
@@ -66,7 +66,7 @@ func DeleteTracksPlaylist(idPlaylist spotifyAPI.ID, tracks []spotifyAPI.Playlist
 
 		tracks100 := trackIDs[i:end]
 
-		_, errDeleteTracks := utils.SpotifyClient.RemoveTracksFromPlaylist(idPlaylist, tracks100...)
+		_, errDeleteTracks := utils.SpotifyClient.RemoveTracksFromPlaylist(id, tracks100...)
 
 		if errDeleteTracks != nil {
 			return errDeleteTracks
