@@ -70,7 +70,7 @@ func LoginFront(c *gin.Context) {
 
 }
 
-func CallbackApi(c *gin.Context) {
+func Callback(c *gin.Context) {
 	code := c.Query("code")
 
 	// get token from code

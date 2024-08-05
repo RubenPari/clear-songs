@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/RubenPari/clear-songs/src/cacheManager"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
@@ -26,7 +24,7 @@ func main() {
 	}
 
 	// start server
-	if server.Run(":"+os.Getenv("PORT")) != nil {
+	if server.Run(":8080") != nil {
 		panic("Error starting server")
 	}
 }

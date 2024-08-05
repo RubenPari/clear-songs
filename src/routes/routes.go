@@ -17,7 +17,7 @@ func SetUpRoutes(server *gin.Engine) {
 	{
 		auth.GET("/login-api", controllers.LoginApi)
 		auth.GET("/login-front", controllers.LoginFront)
-		auth.GET("/callback-api", controllers.CallbackApi)
+		auth.GET("/callback", controllers.Callback)
 		auth.GET("/logout", controllers.Logout)
 	}
 
