@@ -11,9 +11,9 @@ import (
 // DeleteAllPlaylistTracks deletes
 // all tracks from a playlist
 func DeleteAllPlaylistTracks(c *gin.Context) {
-	idPlaylist := c.Query("id_playlist")
+	id := c.Query("id")
 
-	if idPlaylist == "" {
+	if id == "" {
 		c.JSON(400, gin.H{
 			"message": "Playlist id is required",
 		})
@@ -24,12 +24,12 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 	var tracksPlaylist []spotifyAPI.PlaylistTrack
 	var errTrackPlaylist error
 
-	value, found := cacheManager.Get("tracksPlaylist" + idPlaylist)
+	value, found := cacheManager.Get("tracksPlaylist" + id)
 
 	if found {
 		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(idPlaylist))
+		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
 		if errTrackPlaylist != nil {
 			c.JSON(500, gin.H{
@@ -38,10 +38,10 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 			return
 		}
 
-		cacheManager.Set("tracksPlaylist"+idPlaylist, tracksPlaylist)
+		cacheManager.Set("tracksPlaylist"+id, tracksPlaylist)
 	}
 
-	errDelete := services.DeleteTracksPlaylist(spotifyAPI.ID(idPlaylist), tracksPlaylist)
+	errDelete := services.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -58,9 +58,9 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 // DeleteAllPlaylistAndUserTracks deletes all tracks
 // from a playlist and from the user's library
 func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
-	idPlaylist := c.Query("id_playlist")
+	id := c.Query("id")
 
-	if idPlaylist == "" {
+	if id == "" {
 		c.JSON(400, gin.H{
 			"message": "Playlist id is required",
 		})
@@ -71,11 +71,11 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 	var tracksPlaylist []spotifyAPI.PlaylistTrack
 	var errTrackPlaylist error
 
-	value, _ := cacheManager.Get("tracksPlaylist" + idPlaylist)
+	value, _ := cacheManager.Get("tracksPlaylist" + id)
 	if value != nil {
 		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(idPlaylist))
+		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
 		if errTrackPlaylist != nil {
 			c.JSON(500, gin.H{
@@ -84,7 +84,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 			return
 		}
 
-		cacheManager.Set("tracksPlaylist"+idPlaylist, tracksPlaylist)
+		cacheManager.Set("tracksPlaylist"+id, tracksPlaylist)
 	}
 
 	errSaveTracksFile := utils.SaveTracksBackup(tracksPlaylist)
@@ -96,7 +96,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := services.DeleteTracksPlaylist(spotifyAPI.ID(idPlaylist), tracksPlaylist)
+	errDeletePlaylistTracks := services.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
 
 	tracksPlaylistIDs, errConvertIDs := utils.ConvertTracksToID(tracksPlaylist)
 
