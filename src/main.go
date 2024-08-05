@@ -24,7 +24,7 @@ func main() {
 	}
 
 	// start server
-	if server.Run(":8080") != nil {
+	if server.Run("0.0.0.0:8080") != nil {
 		panic("Error starting server")
 	}
 }
