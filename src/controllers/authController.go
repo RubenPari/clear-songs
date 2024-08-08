@@ -70,7 +70,7 @@ func LoginFront(c *gin.Context) {
 
 }
 
-func CallbackApi(c *gin.Context) {
+func Callback(c *gin.Context) {
 	code := c.Query("code")
 
 	// get token from code
@@ -79,6 +79,7 @@ func CallbackApi(c *gin.Context) {
 	if errToken != nil {
 		c.JSON(500, gin.H{
 			"message": "Error authenticating user",
+			"error":   errToken.Error(),
 		})
 	}
 
@@ -91,12 +92,15 @@ func CallbackApi(c *gin.Context) {
 	// save spotify client in session
 	utils.SpotifyClient = &spotify
 
+	log.Default().Println("Called callback, saved client in session")
+
 	// get user for testing
 	user, errUser := utils.SpotifyClient.CurrentUser()
 
 	if errUser != nil {
 		c.JSON(500, gin.H{
-			"message": "Error authenticating user",
+			"message": "Error getting user info",
+			"error":   errUser.Error(),
 		})
 	}
 
