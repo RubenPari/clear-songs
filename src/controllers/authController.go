@@ -81,6 +81,7 @@ func Callback(c *gin.Context) {
 	if errToken != nil {
 		c.JSON(500, gin.H{
 			"message": "Error authenticating user",
+			"error":   errToken.Error(),
 		})
 	}
 
@@ -102,8 +103,8 @@ func Callback(c *gin.Context) {
 
 	if errUser != nil {
 		c.JSON(500, gin.H{
-			"message": "Error authenticating user",
-			"error":   errUser,
+			"message": "Error getting user info",
+			"error":   errUser.Error(),
 		})
 	}
 
