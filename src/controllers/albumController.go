@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/RubenPari/clear-songs/src/cacheManager"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/RubenPari/clear-songs/src/cacheManager"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"

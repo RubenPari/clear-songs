@@ -1,4 +1,4 @@
-package playlisthelper
+package helpers
 
 import (
 	"github.com/RubenPari/clear-songs/src/utils"

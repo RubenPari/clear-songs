@@ -1,4 +1,4 @@
-package cacheManager
+package cache
 
 import (
 	"time"
