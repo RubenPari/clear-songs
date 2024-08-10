@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/cacheManager"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/models"
 
 	"github.com/RubenPari/clear-songs/src/utils"

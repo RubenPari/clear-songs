@@ -3,7 +3,7 @@ package controllers
 import (
 	"strconv"
 
-	"github.com/RubenPari/clear-songs/src/cacheManager"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 
 	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"

@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 
-	playlisthelper "github.com/RubenPari/clear-songs/src/playlistHelper"
+	playlisthelper "github.com/RubenPari/clear-songs/src/helpers"
 	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
