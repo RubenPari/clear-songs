@@ -12,6 +12,7 @@ func SetUpRoutes(server *gin.Engine) {
 	api := server.Group("/api")
 	apiV1 := api.Group("/v1")
 
+	// TODO: simplify auth
 	// ####### AUTHENTICATION #######
 	auth := apiV1.Group("/auth")
 	{
@@ -21,6 +22,7 @@ func SetUpRoutes(server *gin.Engine) {
 		auth.GET("/logout", controllers.Logout)
 	}
 
+	// TODO: remove summary
 	// ####### TRACK #######
 	track := apiV1.Group("/track")
 	{
@@ -35,6 +37,7 @@ func SetUpRoutes(server *gin.Engine) {
 			controllers.DeleteTrackByRange)
 	}
 
+	// TODO: microservices apart from
 	// ####### ALBUMS #######
 	album := apiV1.Group("/album")
 	{
