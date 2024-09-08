@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"log"
+
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
-	"log"
 )
 
 func Logout(c *gin.Context) {
