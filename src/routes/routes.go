@@ -9,13 +9,9 @@ import (
 func SetUpRoutes(server *gin.Engine) {
 	server.GET("/", middlewares.NotFound())
 
-	// TODO: simplify auth
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
 	{
-		auth.GET("/login-api", controllers.LoginApi)
-		auth.GET("/login-front", controllers.LoginFront)
-		auth.GET("/callback", controllers.Callback)
 		auth.GET("/logout", controllers.Logout)
 	}
 

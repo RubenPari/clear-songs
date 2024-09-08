@@ -11,32 +11,10 @@ import (
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
-var SpotifyClient *spotifyAPI.Client
-
-func GetOAuth2Config() *oauth2.Config {
-	return &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URL"),
-		Scopes: []string{
-			"user-read-private",
-			"user-read-email",
-			"user-library-read",
-			"user-library-modify",
-			"playlist-read-private",
-			"playlist-read-collaborative",
-			"playlist-modify-public",
-			"playlist-modify-private",
-		},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  spotifyAPI.AuthURL,
-			TokenURL: spotifyAPI.TokenURL,
-		}}
-}
+var SpotifyClient spotifyAPI.Client
 
 // FilterSummaryByRange returns an array of
 // artist summary that have at least the
