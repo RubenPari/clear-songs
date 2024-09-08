@@ -2,15 +2,16 @@ package middlewares
 
 import (
 	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"io"
-	"log"
-	"net/http"
-	"os"
 )
 
 func CheckAuth() gin.HandlerFunc {
