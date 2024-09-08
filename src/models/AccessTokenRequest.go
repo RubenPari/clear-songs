@@ -1,5 +1,6 @@
 package models
 
-type AccessTokenRequest struct {
-	AccessToken string `json:"access_token"`
+type AccessTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }

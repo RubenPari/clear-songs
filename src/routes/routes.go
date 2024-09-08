@@ -9,20 +9,15 @@ import (
 func SetUpRoutes(server *gin.Engine) {
 	server.GET("/", middlewares.NotFound())
 
-	api := server.Group("/api")
-	apiV1 := api.Group("/v1")
-
 	// ####### AUTHENTICATION #######
-	auth := apiV1.Group("/auth")
+	auth := server.Group("/auth")
 	{
-		auth.GET("/login-api", controllers.LoginApi)
-		auth.GET("/login-front", controllers.LoginFront)
-		auth.GET("/callback", controllers.Callback)
 		auth.GET("/logout", controllers.Logout)
 	}
 
+	// TODO: remove summary
 	// ####### TRACK #######
-	track := apiV1.Group("/track")
+	track := server.Group("/track")
 	{
 		track.GET("/summary",
 			middlewares.CheckAuth(),
@@ -35,8 +30,9 @@ func SetUpRoutes(server *gin.Engine) {
 			controllers.DeleteTrackByRange)
 	}
 
+	// TODO: microservices apart from
 	// ####### ALBUMS #######
-	album := apiV1.Group("/album")
+	album := server.Group("/album")
 	{
 		album.GET("/all",
 			middlewares.CheckAuth(),
@@ -50,7 +46,7 @@ func SetUpRoutes(server *gin.Engine) {
 	}
 
 	// ####### PLAYLIST #######
-	playlist := apiV1.Group("/playlist")
+	playlist := server.Group("/playlist")
 	{
 		playlist.DELETE("/delete-tracks",
 			middlewares.CheckAuth(),
