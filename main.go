@@ -1,9 +1,9 @@
 package main
 
 import (
-	cacheManager "github.com/RubenPari/clear-songs/src/cache"
-	"github.com/RubenPari/clear-songs/src/database"
-	"github.com/RubenPari/clear-songs/src/routes"
+	cacheManager "github.com/RubenPari/clear-songs/cache"
+	"github.com/RubenPari/clear-songs/database"
+	"github.com/RubenPari/clear-songs/routes"
 	"github.com/gin-gonic/gin"
 )
 

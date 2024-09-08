@@ -3,8 +3,8 @@ package controllers
 import (
 	"log"
 
-	cacheManager "github.com/RubenPari/clear-songs/src/cache"
-	"github.com/RubenPari/clear-songs/src/utils"
+	cacheManager "github.com/RubenPari/clear-songs/cache"
+	"github.com/RubenPari/clear-songs/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )

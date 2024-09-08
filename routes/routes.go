@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/RubenPari/clear-songs/src/controllers"
-	"github.com/RubenPari/clear-songs/src/middlewares"
+	"github.com/RubenPari/clear-songs/controllers"
+	"github.com/RubenPari/clear-songs/middlewares"
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,8 +2,8 @@ package utils
 
 import (
 	"errors"
-	"github.com/RubenPari/clear-songs/src/database"
-	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/database"
+	"github.com/RubenPari/clear-songs/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"gorm.io/gorm"
 	"log"

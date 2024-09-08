@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

@@ -3,10 +3,10 @@ package controllers
 import (
 	"strconv"
 
-	cacheManager "github.com/RubenPari/clear-songs/src/cache"
+	cacheManager "github.com/RubenPari/clear-songs/cache"
 
-	"github.com/RubenPari/clear-songs/src/services"
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/services"
+	"github.com/RubenPari/clear-songs/utils"
 
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"

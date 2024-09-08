@@ -3,7 +3,7 @@ package services
 import (
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/models"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/models"
+	"github.com/RubenPari/clear-songs/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
