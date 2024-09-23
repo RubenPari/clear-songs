@@ -5,16 +5,42 @@ import (
 	"errors"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
-var SpotifyClient spotifyAPI.Client
+var SpotifyClient = spotifyAPI.Client{}
+
+// GetOAuth2Config returns a pointer to an oauth2.Config with the client id, client
+// secret, redirect url, and scopes set from the environment variables CLIENT_ID,
+// CLIENT_SECRET, REDIRECT_URL, and SPOTIFY_SCOPES, respectively. The endpoint is set
+// to the Spotify endpoints.
+func GetOAuth2Config() *oauth2.Config {
+	return &oauth2.Config{
+		ClientID:     os.Getenv("CLIENT_ID"),
+		ClientSecret: os.Getenv("CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("REDIRECT_URL"),
+		Scopes: []string{
+			"user-read-private",
+			"user-read-email",
+			"user-library-read",
+			"user-library-modify",
+			"playlist-read-private",
+			"playlist-read-collaborative",
+			"playlist-modify-public",
+			"playlist-modify-private",
+		},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  spotifyAPI.AuthURL,
+			TokenURL: spotifyAPI.TokenURL,
+		}}
+}
 
 // FilterSummaryByRange returns an array of
 // artist summary that have at least the
@@ -77,6 +103,23 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 	return trackIDs, nil
 }
 
+// SaveTracksBackup saves a list of tracks
+// in a SQLite database as a backup
+//
+// The tracks are saved in the `tracks` table
+// with the following columns:
+// - `id`: the track's ID as a string
+// - `name`: the track's name
+// - `artist`: the track's artist
+// - `album`: the track's album
+// - `uri`: the track's URI as a string
+// - `url`: the track's URL on Spotify
+//
+// If a track already exists in the database,
+// it is not inserted again
+//
+// If an error occurs while saving the tracks,
+// it is returned as an error
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	for _, trackPlaylist := range tracksPlaylist {
 		track := models.TrackDB{
@@ -118,8 +161,10 @@ func LoadEnvVariables() {
 		log.Fatalf("error getting current working directory: %v", errCwd)
 	}
 
-	// add .env file to the path
-	envPath := path.Join(cwd, ".env")
+	// move up one level folder
+	cwd = filepath.Dir(cwd)
+
+	envPath := filepath.Join(cwd, ".env")
 
 	file, errOpenFile := os.Open(envPath)
 
