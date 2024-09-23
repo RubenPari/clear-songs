@@ -2,14 +2,13 @@ package utils
 
 import (
 	"errors"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/RubenPari/clear-songs/database"
+	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
+	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 var SpotifyClient = spotifyAPI.Client{}

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	cacheManager "github.com/RubenPari/clear-songs/cache"
-	"github.com/RubenPari/clear-songs/services"
-	"github.com/RubenPari/clear-songs/utils"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
+	services2 "github.com/RubenPari/clear-songs/src/services"
+	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -29,7 +29,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 	if found {
 		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
+		tracksPlaylist, errTrackPlaylist = services2.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
 		if errTrackPlaylist != nil {
 			c.JSON(500, gin.H{
@@ -41,7 +41,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		cacheManager.Set("tracksPlaylist"+id, tracksPlaylist)
 	}
 
-	errDelete := services.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
+	errDelete := services2.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -75,7 +75,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 	if value != nil {
 		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracksPlaylist, errTrackPlaylist = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
+		tracksPlaylist, errTrackPlaylist = services2.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
 		if errTrackPlaylist != nil {
 			c.JSON(500, gin.H{
@@ -96,7 +96,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := services.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
+	errDeletePlaylistTracks := services2.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
 
 	tracksPlaylistIDs, errConvertIDs := utils.ConvertTracksToID(tracksPlaylist)
 
@@ -107,7 +107,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeleteTrackUser := services.DeleteTracksUser(tracksPlaylistIDs)
+	errDeleteTrackUser := services2.DeleteTracksUser(tracksPlaylistIDs)
 
 	if errDeletePlaylistTracks != nil || errDeleteTrackUser != nil {
 		c.JSON(500, gin.H{

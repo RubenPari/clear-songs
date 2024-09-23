@@ -2,10 +2,10 @@ package database
 
 import (
 	"fmt"
+	"github.com/RubenPari/clear-songs/src/models"
 	"log"
 	"os"
 
-	"github.com/RubenPari/clear-songs/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

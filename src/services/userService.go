@@ -1,9 +1,9 @@
 package services
 
 import (
+	"github.com/RubenPari/clear-songs/src/utils"
 	"log"
 
-	"github.com/RubenPari/clear-songs/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

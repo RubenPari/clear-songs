@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/RubenPari/clear-songs/utils"
+	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
