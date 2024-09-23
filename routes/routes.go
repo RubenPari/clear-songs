@@ -12,10 +12,11 @@ func SetUpRoutes(server *gin.Engine) {
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
 	{
+		auth.GET("/login", controllers.Login)
+		auth.GET("/callback", controllers.Callback)
 		auth.GET("/logout", controllers.Logout)
 	}
 
-	// TODO: remove summary
 	// ####### TRACK #######
 	track := server.Group("/track")
 	{
@@ -30,7 +31,6 @@ func SetUpRoutes(server *gin.Engine) {
 			controllers.DeleteTrackByRange)
 	}
 
-	// TODO: microservices apart from
 	// ####### ALBUMS #######
 	album := server.Group("/album")
 	{
