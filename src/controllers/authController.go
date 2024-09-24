@@ -76,3 +76,18 @@ func Logout(c *gin.Context) {
 		"message": "User logged out",
 	})
 }
+
+func IsAuth(c *gin.Context) {
+	// check if spotify client is set
+	if _, err := utils.SpotifyClient.CurrentUser(); err != nil {
+		c.JSON(401, gin.H{
+			"status":  "error",
+			"message": "Unauthorized",
+		})
+	} else {
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": "User authenticated",
+		})
+	}
+}
