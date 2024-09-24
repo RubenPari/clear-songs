@@ -1,58 +1,59 @@
 package routes
 
 import (
-	controllers2 "github.com/RubenPari/clear-songs/src/controllers"
-	middlewares2 "github.com/RubenPari/clear-songs/src/middlewares"
+	controllers "github.com/RubenPari/clear-songs/src/controllers"
+	middlewares "github.com/RubenPari/clear-songs/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func SetUpRoutes(server *gin.Engine) {
-	server.GET("/", middlewares2.NotFound())
+	server.GET("/", middlewares.NotFound())
 
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
 	{
-		auth.GET("/login", controllers2.Login)
-		auth.GET("/callback", controllers2.Callback)
-		auth.GET("/logout", controllers2.Logout)
+		auth.GET("/login", controllers.Login)
+		auth.GET("/callback", controllers.Callback)
+		auth.GET("/logout", controllers.Logout)
+		auth.GET("/is-auth", controllers.IsAuth)
 	}
 
 	// ####### TRACK #######
 	track := server.Group("/track")
 	{
 		track.GET("/summary",
-			middlewares2.CheckAuth(),
-			controllers2.GetTrackSummary)
+			middlewares.CheckAuth(),
+			controllers.GetTrackSummary)
 		track.DELETE("/by-artist/:id_artist",
-			middlewares2.CheckAuth(),
-			controllers2.DeleteTrackByArtist)
+			middlewares.CheckAuth(),
+			controllers.DeleteTrackByArtist)
 		track.DELETE("/by-range",
-			middlewares2.CheckAuth(),
-			controllers2.DeleteTrackByRange)
+			middlewares.CheckAuth(),
+			controllers.DeleteTrackByRange)
 	}
 
 	// ####### ALBUMS #######
 	album := server.Group("/album")
 	{
 		album.GET("/all",
-			middlewares2.CheckAuth(),
-			controllers2.GetAll)
+			middlewares.CheckAuth(),
+			controllers.GetAll)
 		album.GET("/by-artist/:id_artist",
-			middlewares2.CheckAuth(),
-			controllers2.GetAlbumByArtist)
+			middlewares.CheckAuth(),
+			controllers.GetAlbumByArtist)
 		album.PUT("/convert-to-songs",
-			middlewares2.CheckAuth(),
-			controllers2.ConvertAlbumToSongs)
+			middlewares.CheckAuth(),
+			controllers.ConvertAlbumToSongs)
 	}
 
 	// ####### PLAYLIST #######
 	playlist := server.Group("/playlist")
 	{
 		playlist.DELETE("/delete-tracks",
-			middlewares2.CheckAuth(),
-			controllers2.DeleteAllPlaylistTracks)
+			middlewares.CheckAuth(),
+			controllers.DeleteAllPlaylistTracks)
 		playlist.DELETE("/delete-tracks-and-library",
-			middlewares2.CheckAuth(),
-			controllers2.DeleteAllPlaylistAndUserTracks)
+			middlewares.CheckAuth(),
+			controllers.DeleteAllPlaylistAndUserTracks)
 	}
 }
