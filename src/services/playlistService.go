@@ -9,7 +9,7 @@ import (
 )
 
 func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
-	if playlisthelper.CheckIfValidId(id) {
+	if !playlisthelper.CheckIfValidId(id) {
 		return nil, errors.New("invalid playlist ID")
 	}
 
@@ -47,7 +47,7 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 }
 
 func DeleteTracksPlaylist(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
-	if playlisthelper.CheckIfValidId(id) {
+	if !playlisthelper.CheckIfValidId(id) {
 		return errors.New("invalid playlist ID")
 	}
 
