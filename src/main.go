@@ -28,7 +28,7 @@ func main() {
 	}
 
 	// start server
-	if server.Run(":3000") != nil {
+	if server.Run(":8080") != nil {
 		panic("Error starting server")
 	}
 }

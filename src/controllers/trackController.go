@@ -44,7 +44,7 @@ func GetTrackSummary(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := services.GetArtistsSummary(tracks)
+	artistSummaryArray := utils.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
@@ -134,7 +134,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := services.GetArtistsSummary(tracks)
+	artistSummaryArray := utils.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 

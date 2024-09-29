@@ -55,5 +55,8 @@ func SetUpRoutes(server *gin.Engine) {
 		playlist.DELETE("/delete-tracks-and-library",
 			middlewares.CheckAuth(),
 			controllers.DeleteAllPlaylistAndUserTracks)
+		playlist.POST("/create-tracks-minor",
+			middlewares.CheckAuth(),
+			controllers.CreatePlaylistTracksMinor)
 	}
 }
