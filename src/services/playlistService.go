@@ -2,8 +2,10 @@ package services
 
 import (
 	"errors"
+	"github.com/RubenPari/clear-songs/src/constants"
+	"log"
 
-	playlisthelper "github.com/RubenPari/clear-songs/src/helpers"
+	"github.com/RubenPari/clear-songs/src/helpers"
 	"github.com/RubenPari/clear-songs/src/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -13,7 +15,7 @@ import (
 // id is the unique identifier of the Spotify playlist.
 // Returns a slice of spotifyAPI.PlaylistTrack and an error if the operation fails.
 func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
-	if !playlisthelper.CheckIfValidId(id) {
+	if !helpers.CheckIfValidId(id) {
 		return nil, errors.New("invalid playlist ID")
 	}
 
@@ -24,8 +26,8 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 	}
 
 	// get all tracks from playlist with pagination
-	var offset = 0
-	limit := 100
+	limit := constants.LimitGetPlaylistTracks
+	offset := constants.Offset
 	var playlistTracks []spotifyAPI.PlaylistTrack
 
 	for {
@@ -50,12 +52,12 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 	return playlistTracks, nil
 }
 
-// DeleteTracksPlaylist deletes tracks from a Spotify playlist.
+// DeletePlaylistTracks deletes tracks from a Spotify playlist.
 //
 // id is the unique identifier of the Spotify playlist and tracks is a slice of spotifyAPI.PlaylistTrack to be deleted.
 // Returns an error if the operation fails.
-func DeleteTracksPlaylist(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
-	if !playlisthelper.CheckIfValidId(id) {
+func DeletePlaylistTracks(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) error {
+	if !helpers.CheckIfValidId(id) {
 		return errors.New("invalid playlist ID")
 	}
 
@@ -64,17 +66,20 @@ func DeleteTracksPlaylist(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) e
 		return errConvertIDs
 	}
 
-	// remove tracks from playlist 100 at a time
-	for i := 0; i < len(trackIDs); i += 100 {
-		end := i + 100
+	// remove tracks from playlist
+	limit := constants.LimitRemovePlaylistTracks
+	offset := constants.Offset
+
+	for i := offset; i < len(trackIDs); i += limit {
+		end := i + limit
 
 		if end > len(trackIDs) {
 			end = len(trackIDs)
 		}
 
-		tracks100 := trackIDs[i:end]
+		tracksPagination := trackIDs[i:end]
 
-		_, errDeleteTracks := utils.SpotifyClient.RemoveTracksFromPlaylist(id, tracks100...)
+		_, errDeleteTracks := utils.SpotifyClient.RemoveTracksFromPlaylist(id, tracksPagination...)
 
 		if errDeleteTracks != nil {
 			return errDeleteTracks
@@ -90,26 +95,20 @@ func DeleteTracksPlaylist(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) e
 // tracks is a slice of spotifyAPI.SavedTrack to be filtered and added to the playlist.
 // Returns an error if the operation fails.
 func CreatePlaylistTracksMinor(tracks []spotifyAPI.SavedTrack) error {
-	// get user id
-	user, errorUser := utils.SpotifyClient.CurrentUser()
+	log.Default().Println("Creating playlist with minor songs")
 
-	if errorUser != nil {
-		return errorUser
-	}
-
-	userId := user.ID
-
+	userId, _ := utils.GetUserId()
 	var idPlaylistMinorSongs *spotifyAPI.ID
 
 	// check if "MinorSongs" playlist already exists
-	playlistsUser, errplaylistsUser := utils.SpotifyClient.GetPlaylistsForUser(userId)
+	playlistsUser, errPlaylistsUser := utils.SpotifyClient.GetPlaylistsForUser(string(userId))
 
-	if errplaylistsUser != nil {
-		return errplaylistsUser
+	if errPlaylistsUser != nil {
+		return errPlaylistsUser
 	}
 
 	for _, playlist := range playlistsUser.Playlists {
-		if playlist.Name == "MinorSongs" {
+		if playlist.Name == constants.PlaylistNameWithMinorSongs {
 			idPlaylistMinorSongs = &playlist.ID
 		}
 	}
@@ -117,9 +116,9 @@ func CreatePlaylistTracksMinor(tracks []spotifyAPI.SavedTrack) error {
 	if idPlaylistMinorSongs == nil {
 		// create playlist
 		playlistMinorSongs, errCreate := utils.SpotifyClient.CreatePlaylistForUser(
-			userId,
-			"MinorSongs",
-			"MinorSongs",
+			string(userId),
+			constants.PlaylistNameWithMinorSongs,
+			constants.DescriptionPlaylistNameWithMinorSongs,
 			false,
 		)
 
@@ -130,17 +129,19 @@ func CreatePlaylistTracksMinor(tracks []spotifyAPI.SavedTrack) error {
 		idPlaylistMinorSongs = &playlistMinorSongs.ID
 	}
 
-	artistsSummary := utils.GetArtistsSummary(tracks)
+	artistsSummary := helpers.GetArtistsSummary(tracks)
 
 	// find all tracks that belong to artists with less than 5 songs
 	var tracksToKeep []spotifyAPI.SavedTrack
 	for _, artistSummary := range artistsSummary {
 		if artistSummary.Count <= 5 {
+			log.Default().Printf("Artist %s has less than 5 songs, start getting tracks", artistSummary.Name)
 			for _, track := range tracks {
 				if track.Artists[0].ID == spotifyAPI.ID(artistSummary.Id) {
 					tracksToKeep = append(tracksToKeep, track)
 				}
 			}
+			log.Default().Printf("Getted %d tracks from artist %s", len(tracksToKeep), artistSummary.Name)
 		}
 	}
 
@@ -151,11 +152,13 @@ func CreatePlaylistTracksMinor(tracks []spotifyAPI.SavedTrack) error {
 	}
 
 	// insert tracks into playlist with pagination
-	var offset = 0
-	limit := 100
+	var offset = constants.Offset
+	limit := constants.LimitInsertPlaylistTracks
 
 	for {
 		_, errGetTracks := utils.SpotifyClient.AddTracksToPlaylist(*idPlaylistMinorSongs, trackIDs[offset:offset+limit]...)
+
+		log.Default().Printf("Added tracks from offset %d to %d", offset, offset+limit)
 
 		if errGetTracks != nil {
 			return errGetTracks

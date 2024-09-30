@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"github.com/RubenPari/clear-songs/src/services"
+	spotifyAPI "github.com/zmb3/spotify"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -29,4 +31,48 @@ func Get(key string) (interface{}, bool) {
 		return value, true
 	}
 	return nil, false
+}
+
+// GetCachedAlbumsOrSet retrieves a list of albums from the cache, or if not present,
+// fetches the albums from the Spotify API and stores them in the cache.
+// It returns the list of albums.
+func GetCachedAlbumsOrSet() []spotifyAPI.SavedAlbum {
+	var albums []spotifyAPI.SavedAlbum
+
+	value, found := Get("albums")
+
+	if found {
+		albums = value.([]spotifyAPI.SavedAlbum)
+	} else {
+		albums = services.GetAllUserAlbums()
+
+		Set("albums", albums)
+	}
+
+	return albums
+}
+
+// GetCachedPlaylistTracksOrSet retrieves a list of tracks from the cache, or if not present,
+// fetches the tracks from the Spotify API and stores them in the cache.
+// It returns the list of tracks.
+// The cache is stored with the key "tracksPlaylist" + idPlaylist.
+func GetCachedPlaylistTracksOrSet(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
+	var playlistTracks []spotifyAPI.PlaylistTrack
+
+	value, found := Get("tracksPlaylist" + idPlaylist.String())
+
+	if found {
+		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
+	} else {
+		tracks, errGetAllPlaylistTracks := services.GetAllPlaylistTracks(idPlaylist)
+
+		if errGetAllPlaylistTracks != nil {
+			return nil, errGetAllPlaylistTracks
+		}
+
+		Set("tracksPlaylist"+idPlaylist.String(), tracks)
+		playlistTracks = tracks
+	}
+
+	return playlistTracks, nil
 }

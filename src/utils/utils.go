@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"errors"
+	"github.com/RubenPari/clear-songs/src/constants"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,16 +27,7 @@ func GetOAuth2Config() *oauth2.Config {
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("REDIRECT_URL"),
-		Scopes: []string{
-			"user-read-private",
-			"user-read-email",
-			"user-library-read",
-			"user-library-modify",
-			"playlist-read-private",
-			"playlist-read-collaborative",
-			"playlist-modify-public",
-			"playlist-modify-private",
-		},
+		Scopes:       constants.Scopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  spotifyAPI.AuthURL,
 			TokenURL: spotifyAPI.TokenURL,
@@ -97,7 +89,7 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 			}
 		}
 	default:
-		return nil, errors.New("type not supported")
+		return nil, errors.New(" ConvertTracksToID: Type input not supported")
 	}
 
 	return trackIDs, nil
@@ -121,6 +113,8 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 // If an error occurs while saving the tracks,
 // it is returned as an error
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
+	log.Default().Println("Saving tracks backup started")
+
 	for _, trackPlaylist := range tracksPlaylist {
 		track := models.TrackDB{
 			Id:     trackPlaylist.Track.ID.String(),
@@ -131,19 +125,21 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
 		}
 
+		log.Default().Printf("Created TrackDB: Name: %s, Artist: %s\n", track.Name, track.Artist)
+
 		var existingTrack models.TrackDB
 		alreadyExistTrack := database.Db.First(&existingTrack, "id = ?", track.Id)
 
 		if alreadyExistTrack != nil {
 			if !errors.Is(alreadyExistTrack.Error, gorm.ErrRecordNotFound) {
-				log.Printf("Error querying track: %v\n", alreadyExistTrack)
+				log.Printf("Error querying alreadyExistTrack: %v\n", alreadyExistTrack)
 				return alreadyExistTrack.Error
 			}
 
 			insertTrack := database.Db.Create(&track)
 
 			if insertTrack.Error != nil {
-				log.Printf("Error inserting track: %v\n", insertTrack.Error)
+				log.Printf("Error inserting track: %v - %v\n", track, insertTrack.Error)
 				return insertTrack.Error
 			}
 		}
@@ -217,42 +213,19 @@ func LoadEnvVariables() {
 	}
 }
 
-// GetArtistsSummary returns a
-// map with the number of tracks
-// of each artist
-func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
-	log.Default().Println("Getting artists summary array")
+// GetUserId returns the Spotify user ID.
+//
+// It uses the Spotify client to get the user and then returns the user ID.
+//
+// If the operation fails, it returns an empty ID and the error.
+func GetUserId() (spotifyAPI.ID, error) {
+	// get user
+	user, errorUser := SpotifyClient.CurrentUser()
 
-	var artistSummary = make(map[string]struct {
-		count int
-		id    string
-	})
-
-	for _, track := range tracks {
-		// Check if artist is already in the map
-		if artist, exists := artistSummary[track.Artists[0].Name]; exists {
-			artist.count++
-			artistSummary[track.Artists[0].Name] = artist
-		} else {
-			artistSummary[track.Artists[0].Name] = struct {
-				count int
-				id    string
-			}{
-				count: 1,
-				id:    string(track.Artists[0].ID),
-			}
-		}
+	if errorUser != nil {
+		return "", errorUser
 	}
 
-	var artistSummaryArray []models.ArtistSummary
-
-	for artist, summary := range artistSummary {
-		artistSummaryArray = append(artistSummaryArray, models.ArtistSummary{
-			Name:  artist,
-			Id:    summary.id,
-			Count: summary.count,
-		})
-	}
-
-	return artistSummaryArray
+	// return user ID
+	return spotifyAPI.ID(user.ID), nil
 }

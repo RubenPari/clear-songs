@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/RubenPari/clear-songs/src/helpers"
 	"strconv"
 
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
@@ -44,7 +45,7 @@ func GetTrackSummary(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := utils.GetArtistsSummary(tracks)
+	artistSummaryArray := helpers.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
@@ -134,7 +135,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := utils.GetArtistsSummary(tracks)
+	artistSummaryArray := helpers.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
