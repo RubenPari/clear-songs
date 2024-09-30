@@ -24,8 +24,5 @@ WORKDIR /root/
 # Copia il binario compilato dal builder
 COPY --from=builder /app/main .
 
-# Copia i file di configurazione necessari (se presenti)
-COPY --from=builder /app/.env* ./
-
 # Esegui il binario
 CMD ["./main"]
