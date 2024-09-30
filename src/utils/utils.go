@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/RubenPari/clear-songs/src/constants"
+
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -143,4 +144,21 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	}
 
 	return nil
+}
+
+// GetUserId returns the Spotify user ID.
+//
+// It uses the Spotify client to get the user and then returns the user ID.
+//
+// If the operation fails, it returns an empty ID and the error.
+func GetUserId() (spotifyAPI.ID, error) {
+	// get user
+	user, errorUser := SpotifyClient.CurrentUser()
+
+	if errorUser != nil {
+		return "", errorUser
+	}
+
+	// return user ID
+	return spotifyAPI.ID(user.ID), nil
 }
