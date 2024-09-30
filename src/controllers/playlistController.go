@@ -1,15 +1,25 @@
 package controllers
 
 import (
+	"fmt"
+
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
-	services2 "github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// DeleteAllPlaylistTracks deletes
-// all tracks from a playlist
+// DeleteAllPlaylistTracks deletes all tracks from a playlist.
+//
+// The playlist ID is required and must be passed as a query parameter.
+//
+// The function first retrieves all tracks from the playlist, either from the cache
+// or by calling the Spotify Web API. Then, it deletes all tracks from the playlist.
+//
+// If an error occurs while deleting the tracks, the function returns a JSON response
+// with a 500 status code and an error message.
+//
+// Otherwise, it returns a JSON response with a 200 status code and a success message.
 func DeleteAllPlaylistTracks(c *gin.Context) {
 	id := c.Query("id")
 
@@ -20,32 +30,21 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	// get all playlist tracks
-	var tracksPlaylist []spotifyAPI.PlaylistTrack
-	var errTrackPlaylist error
+	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(spotifyAPI.ID(id))
 
-	value, found := cacheManager.Get("tracksPlaylist" + id)
-
-	if found {
-		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
-	} else {
-		tracksPlaylist, errTrackPlaylist = services2.GetAllPlaylistTracks(spotifyAPI.ID(id))
-
-		if errTrackPlaylist != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting playlist tracks",
-			})
-			return
-		}
-
-		cacheManager.Set("tracksPlaylist"+id, tracksPlaylist)
+	if errPlaylistTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting playlist tracks",
+		})
+		return
 	}
 
-	errDelete := services2.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
+	errDeletePlaylistTracks := services.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
 
-	if errDelete != nil {
+	if errDeletePlaylistTracks != nil {
 		c.JSON(500, gin.H{
-			"message": "Error deleting tracks",
+			"message": fmt.Sprintf("Error deleting tracks from playlist: id %s", id),
+			"error":   errDeletePlaylistTracks.Error(),
 		})
 		return
 	}
@@ -68,37 +67,38 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 	}
 
 	// get all playlist tracks
-	var tracksPlaylist []spotifyAPI.PlaylistTrack
-	var errTrackPlaylist error
+	var playlistTracks []spotifyAPI.PlaylistTrack
+	var errPlaylistTracks error
 
 	value, _ := cacheManager.Get("tracksPlaylist" + id)
 	if value != nil {
-		tracksPlaylist = value.([]spotifyAPI.PlaylistTrack)
+		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracksPlaylist, errTrackPlaylist = services2.GetAllPlaylistTracks(spotifyAPI.ID(id))
+		playlistTracks, errPlaylistTracks = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
-		if errTrackPlaylist != nil {
+		if errPlaylistTracks != nil {
 			c.JSON(500, gin.H{
 				"message": "Error getting playlist tracks",
 			})
 			return
 		}
 
-		cacheManager.Set("tracksPlaylist"+id, tracksPlaylist)
+		cacheManager.Set("tracksPlaylist"+id, playlistTracks)
 	}
 
-	errSaveTracksFile := utils.SaveTracksBackup(tracksPlaylist)
+	errSaveTracksFile := utils.SaveTracksBackup(playlistTracks)
 
 	if errSaveTracksFile != nil {
 		c.JSON(500, gin.H{
-			"message": "Error saving backup tracks to file",
+			"message": "Error saving backup tracks to DB",
+			"error":   errSaveTracksFile.Error(),
 		})
 		return
 	}
 
-	errDeletePlaylistTracks := services2.DeleteTracksPlaylist(spotifyAPI.ID(id), tracksPlaylist)
+	errDeletePlaylistTracks := services.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
 
-	tracksPlaylistIDs, errConvertIDs := utils.ConvertTracksToID(tracksPlaylist)
+	playlistTracksIDs, errConvertIDs := utils.ConvertTracksToID(playlistTracks)
 
 	if errConvertIDs != nil {
 		c.JSON(500, gin.H{
@@ -107,7 +107,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeleteTrackUser := services2.DeleteTracksUser(tracksPlaylistIDs)
+	errDeleteTrackUser := services.DeleteTracksUser(playlistTracksIDs)
 
 	if errDeletePlaylistTracks != nil || errDeleteTrackUser != nil {
 		c.JSON(500, gin.H{
@@ -118,5 +118,46 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"message": "Tracks deleted",
+	})
+}
+
+// CreatePlaylistTracksMinor create a playlist with all
+// the tracks in the user library that belong to artists
+// for which the user owns a maximum of 5 tracks
+func CreatePlaylistTracksMinor(c *gin.Context) {
+	// get all tracks from user
+	var tracks []spotifyAPI.SavedTrack
+	var errTracks error
+
+	value, found := cacheManager.Get("userTracks")
+
+	if found {
+		tracks = value.([]spotifyAPI.SavedTrack)
+	} else {
+		tracks, errTracks = services.GetAllUserTracks()
+
+		if errTracks != nil {
+			c.JSON(500, gin.H{
+				"message": "Error getting tracks",
+			})
+			return
+		}
+
+		// save user tracks in cacheManager
+		cacheManager.Set("userTracks", tracks)
+	}
+
+	// create playlist
+	errCreatePlaylistTracksMinor := services.CreatePlaylistTracksMinor(tracks)
+
+	if errCreatePlaylistTracksMinor != nil {
+		c.JSON(500, gin.H{
+			"message": "Error creating playlist",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Playlist created",
 	})
 }

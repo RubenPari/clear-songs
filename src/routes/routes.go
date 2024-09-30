@@ -7,7 +7,13 @@ import (
 )
 
 func SetUpRoutes(server *gin.Engine) {
-	server.GET("/", middlewares.NotFound())
+	// 404 Not Found Route
+	server.NoRoute(func(c *gin.Context) {
+		c.JSON(404, gin.H{
+			"status":  "error",
+			"message": "not found path",
+		})
+	})
 
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
@@ -55,5 +61,8 @@ func SetUpRoutes(server *gin.Engine) {
 		playlist.DELETE("/delete-tracks-and-library",
 			middlewares.CheckAuth(),
 			controllers.DeleteAllPlaylistAndUserTracks)
+		playlist.POST("/create-tracks-minor",
+			middlewares.CheckAuth(),
+			controllers.CreatePlaylistTracksMinor)
 	}
 }

@@ -1,10 +1,15 @@
 package controllers
 
 import (
+	"strconv"
+
+	"github.com/RubenPari/clear-songs/src/helpers"
+
+	"strconv"
+
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	services2 "github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -42,7 +47,7 @@ func GetTrackSummary(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := services2.GetArtistsSummary(tracks)
+	artistSummaryArray := helpers.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
@@ -132,7 +137,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := services2.GetArtistsSummary(tracks)
+	artistSummaryArray := helpers.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 

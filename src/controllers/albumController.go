@@ -8,19 +8,7 @@ import (
 )
 
 func GetAll(c *gin.Context) {
-	// get albums from user
-	var albums []spotifyAPI.SavedAlbum
-
-	value, found := cacheManager.Get("albums")
-
-	if found {
-		albums = value.([]spotifyAPI.SavedAlbum)
-	} else {
-		albums = services.GetAllUserAlbums()
-
-		// save user albums in cacheManager
-		cacheManager.Set("albums", albums)
-	}
+	var albums = cacheManager.GetCachedAlbumsOrSet()
 
 	c.JSON(200, albums)
 }
@@ -28,19 +16,7 @@ func GetAll(c *gin.Context) {
 func GetAlbumByArtist(c *gin.Context) {
 	idArtist := spotifyAPI.ID(c.Param("id_artist"))
 
-	// get albums from user
-	var albums []spotifyAPI.SavedAlbum
-
-	value, found := cacheManager.Get("albums")
-
-	if found {
-		albums = value.([]spotifyAPI.SavedAlbum)
-	} else {
-		albums = services.GetAllUserAlbums()
-
-		// save user albums in cacheManager
-		cacheManager.Set("albums", albums)
-	}
+	albums := cacheManager.GetCachedAlbumsOrSet()
 
 	albumsArtist := services.GetAllUserAlbumsByArtist(idArtist, albums)
 

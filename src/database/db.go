@@ -36,7 +36,7 @@ func Init() error {
 	errTestDb := db.Exec("SELECT 1").Error
 
 	if errTestDb != nil {
-		log.Printf("Error test connection: %v", errTestDb)
+		log.Printf("Error testing connection to DB: %v", errTestDb)
 		return errTestDb
 	}
 
@@ -44,7 +44,7 @@ func Init() error {
 	errMigration := db.AutoMigrate(&models.TrackDB{})
 
 	if errMigration != nil {
-		log.Printf("Error migration: %v", errMigration)
+		log.Printf("Error run auto-migration DB: %v", errMigration)
 		return errMigration
 	}
 

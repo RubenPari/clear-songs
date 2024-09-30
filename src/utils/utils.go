@@ -2,13 +2,15 @@ package utils
 
 import (
 	"errors"
+	"log"
+	"os"
+
+	"github.com/RubenPari/clear-songs/src/constants"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
 var SpotifyClient = spotifyAPI.Client{}
@@ -22,16 +24,7 @@ func GetOAuth2Config() *oauth2.Config {
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("REDIRECT_URL"),
-		Scopes: []string{
-			"user-read-private",
-			"user-read-email",
-			"user-library-read",
-			"user-library-modify",
-			"playlist-read-private",
-			"playlist-read-collaborative",
-			"playlist-modify-public",
-			"playlist-modify-private",
-		},
+		Scopes:       constants.Scopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  spotifyAPI.AuthURL,
 			TokenURL: spotifyAPI.TokenURL,
@@ -93,7 +86,7 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 			}
 		}
 	default:
-		return nil, errors.New("type not supported")
+		return nil, errors.New(" ConvertTracksToID: Type input not supported")
 	}
 
 	return trackIDs, nil
@@ -117,6 +110,8 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 // If an error occurs while saving the tracks,
 // it is returned as an error
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
+	log.Default().Println("Saving tracks backup started")
+
 	for _, trackPlaylist := range tracksPlaylist {
 		track := models.TrackDB{
 			Id:     trackPlaylist.Track.ID.String(),
@@ -127,19 +122,21 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
 		}
 
+		log.Default().Printf("Created TrackDB: Name: %s, Artist: %s\n", track.Name, track.Artist)
+
 		var existingTrack models.TrackDB
 		alreadyExistTrack := database.Db.First(&existingTrack, "id = ?", track.Id)
 
 		if alreadyExistTrack != nil {
 			if !errors.Is(alreadyExistTrack.Error, gorm.ErrRecordNotFound) {
-				log.Printf("Error querying track: %v\n", alreadyExistTrack)
+				log.Printf("Error querying alreadyExistTrack: %v\n", alreadyExistTrack)
 				return alreadyExistTrack.Error
 			}
 
 			insertTrack := database.Db.Create(&track)
 
 			if insertTrack.Error != nil {
-				log.Printf("Error inserting track: %v\n", insertTrack.Error)
+				log.Printf("Error inserting track: %v - %v\n", track, insertTrack.Error)
 				return insertTrack.Error
 			}
 		}
