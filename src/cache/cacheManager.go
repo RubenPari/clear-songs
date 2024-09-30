@@ -1,9 +1,10 @@
 package cache
 
 import (
+	"time"
+
 	"github.com/RubenPari/clear-songs/src/services"
 	spotifyAPI "github.com/zmb3/spotify"
-	"time"
 
 	"github.com/patrickmn/go-cache"
 )

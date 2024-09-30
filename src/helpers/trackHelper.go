@@ -1,9 +1,10 @@
 package helpers
 
 import (
+	"log"
+
 	"github.com/RubenPari/clear-songs/src/models"
 	spotifyAPI "github.com/zmb3/spotify"
-	"log"
 )
 
 // GetArtistsSummary returns a

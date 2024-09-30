@@ -3,11 +3,12 @@ package utils
 import (
 	"bufio"
 	"errors"
-	"github.com/RubenPari/clear-songs/src/constants"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/RubenPari/clear-songs/src/constants"
 
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
