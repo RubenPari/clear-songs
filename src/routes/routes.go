@@ -27,9 +27,6 @@ func SetUpRoutes(server *gin.Engine) {
 	// ####### TRACK #######
 	track := server.Group("/track")
 	{
-		track.GET("/summary",
-			middlewares.CheckAuth(),
-			controllers.GetTrackSummary)
 		track.DELETE("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
 			controllers.DeleteTrackByArtist)
@@ -39,18 +36,9 @@ func SetUpRoutes(server *gin.Engine) {
 	}
 
 	// ####### ALBUMS #######
-	album := server.Group("/album")
-	{
-		album.GET("/all",
-			middlewares.CheckAuth(),
-			controllers.GetAll)
-		album.GET("/by-artist/:id_artist",
-			middlewares.CheckAuth(),
-			controllers.GetAlbumByArtist)
-		album.PUT("/convert-to-songs",
-			middlewares.CheckAuth(),
-			controllers.ConvertAlbumToSongs)
-	}
+	server.POST("/album/convert-to-songs",
+		middlewares.CheckAuth(),
+		controllers.ConvertAlbumToSongs)
 
 	// ####### PLAYLIST #######
 	playlist := server.Group("/playlist")
@@ -61,8 +49,5 @@ func SetUpRoutes(server *gin.Engine) {
 		playlist.DELETE("/delete-tracks-and-library",
 			middlewares.CheckAuth(),
 			controllers.DeleteAllPlaylistAndUserTracks)
-		playlist.POST("/create-tracks-minor",
-			middlewares.CheckAuth(),
-			controllers.CreatePlaylistTracksMinor)
 	}
 }

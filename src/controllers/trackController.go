@@ -14,45 +14,6 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// GetTrackSummary returns a summary of the user's tracks
-func GetTrackSummary(c *gin.Context) {
-	// get min query parameter (if exists)
-	minStr := c.Query("min")
-	minCount, _ := strconv.Atoi(minStr)
-
-	// get max query parameter (if exists)
-	maxStr := c.Query("max")
-	maxCount, _ := strconv.Atoi(maxStr)
-
-	// get tracks from user
-	var tracks []spotifyAPI.SavedTrack
-	var errTracks error
-
-	value, found := cacheManager.Get("userTracks")
-
-	if found {
-		tracks = value.([]spotifyAPI.SavedTrack)
-	} else {
-		tracks, errTracks = services.GetAllUserTracks()
-
-		if errTracks != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting tracks",
-			})
-			return
-		}
-
-		// save user tracks in cacheManager
-		cacheManager.Set("userTracks", tracks)
-	}
-
-	artistSummaryArray := helpers.GetArtistsSummary(tracks)
-
-	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
-
-	c.JSON(200, artistSummaryFiltered)
-}
-
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
 	// get artist id from url

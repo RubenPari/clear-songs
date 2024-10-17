@@ -9,25 +9,21 @@ import (
 )
 
 func main() {
-	// initialize server
+	// TODO: migliorare o scrivere commenti per funzioni
+
 	gin.SetMode(gin.DebugMode)
 	server := gin.Default()
 
-	// set routes
 	routes.SetUpRoutes(server)
 
-	// load environment variables
 	utils.LoadEnvVariables()
 
-	// init cache
 	cacheManager.Init()
 
-	// connect to database
 	if errConnectDb := database.Init(); errConnectDb != nil {
 		panic("Error connecting to database")
 	}
 
-	// start server
 	if server.Run(":8080") != nil {
 		panic("Error starting server")
 	}

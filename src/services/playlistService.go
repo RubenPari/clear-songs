@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"log"
 
 	"github.com/RubenPari/clear-songs/src/constants"
 
@@ -85,91 +84,6 @@ func DeletePlaylistTracks(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) e
 		if errDeleteTracks != nil {
 			return errDeleteTracks
 		}
-	}
-
-	return nil
-}
-
-// CreatePlaylistTracksMinor creates a playlist with all tracks from the user library
-// that belong to artists for which the user owns a maximum of 5 tracks.
-//
-// tracks is a slice of spotifyAPI.SavedTrack to be filtered and added to the playlist.
-// Returns an error if the operation fails.
-func CreatePlaylistTracksMinor(tracks []spotifyAPI.SavedTrack) error {
-	log.Default().Println("Creating playlist with minor songs")
-
-	userId, _ := utils.GetUserId()
-	var idPlaylistMinorSongs *spotifyAPI.ID
-
-	// check if "MinorSongs" playlist already exists
-	playlistsUser, errPlaylistsUser := utils.SpotifyClient.GetPlaylistsForUser(string(userId))
-
-	if errPlaylistsUser != nil {
-		return errPlaylistsUser
-	}
-
-	for _, playlist := range playlistsUser.Playlists {
-		if playlist.Name == constants.PlaylistNameWithMinorSongs {
-			idPlaylistMinorSongs = &playlist.ID
-		}
-	}
-
-	if idPlaylistMinorSongs == nil {
-		// create playlist
-		playlistMinorSongs, errCreate := utils.SpotifyClient.CreatePlaylistForUser(
-			string(userId),
-			constants.PlaylistNameWithMinorSongs,
-			constants.DescriptionPlaylistNameWithMinorSongs,
-			false,
-		)
-
-		if errCreate != nil {
-			return errCreate
-		}
-
-		idPlaylistMinorSongs = &playlistMinorSongs.ID
-	}
-
-	artistsSummary := helpers.GetArtistsSummary(tracks)
-
-	// find all tracks that belong to artists with less than 5 songs
-	var tracksToKeep []spotifyAPI.SavedTrack
-	for _, artistSummary := range artistsSummary {
-		if artistSummary.Count <= 5 {
-			log.Default().Printf("Artist %s has less than 5 songs, start getting tracks", artistSummary.Name)
-			for _, track := range tracks {
-				if track.Artists[0].ID == spotifyAPI.ID(artistSummary.Id) {
-					tracksToKeep = append(tracksToKeep, track)
-				}
-			}
-			log.Default().Printf("Getted %d tracks from artist %s", len(tracksToKeep), artistSummary.Name)
-		}
-	}
-
-	// convert tracks to IDs
-	trackIDs, errConvertIDs := utils.ConvertTracksToID(tracksToKeep)
-	if errConvertIDs != nil {
-		return errConvertIDs
-	}
-
-	// insert tracks into playlist with pagination
-	var offset = constants.Offset
-	limit := constants.LimitInsertPlaylistTracks
-
-	for {
-		_, errGetTracks := utils.SpotifyClient.AddTracksToPlaylist(*idPlaylistMinorSongs, trackIDs[offset:offset+limit]...)
-
-		log.Default().Printf("Added tracks from offset %d to %d", offset, offset+limit)
-
-		if errGetTracks != nil {
-			return errGetTracks
-		}
-
-		if len(trackIDs[offset:offset+limit]) < limit {
-			break
-		}
-
-		offset += limit
 	}
 
 	return nil

@@ -34,25 +34,6 @@ func Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
-// GetCachedAlbumsOrSet retrieves a list of albums from the cache, or if not present,
-// fetches the albums from the Spotify API and stores them in the cache.
-// It returns the list of albums.
-func GetCachedAlbumsOrSet() []spotifyAPI.SavedAlbum {
-	var albums []spotifyAPI.SavedAlbum
-
-	value, found := Get("albums")
-
-	if found {
-		albums = value.([]spotifyAPI.SavedAlbum)
-	} else {
-		albums = services.GetAllUserAlbums()
-
-		Set("albums", albums)
-	}
-
-	return albums
-}
-
 // GetCachedPlaylistTracksOrSet retrieves a list of tracks from the cache, or if not present,
 // fetches the tracks from the Spotify API and stores them in the cache.
 // It returns the list of tracks.

@@ -1,28 +1,16 @@
 package controllers
 
 import (
-	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-func GetAll(c *gin.Context) {
-	var albums = cacheManager.GetCachedAlbumsOrSet()
-
-	c.JSON(200, albums)
-}
-
-func GetAlbumByArtist(c *gin.Context) {
-	idArtist := spotifyAPI.ID(c.Param("id_artist"))
-
-	albums := cacheManager.GetCachedAlbumsOrSet()
-
-	albumsArtist := services.GetAllUserAlbumsByArtist(idArtist, albums)
-
-	c.JSON(200, albumsArtist)
-}
-
+// ConvertAlbumToSongs converts an album to songs and saves them to the user library.
+//
+// It takes the album ID as a query parameter and returns a JSON response with a 200 status
+// code and a success message if the conversion is successful. Otherwise, it returns a JSON
+// response with a 400 status code and an error message.
 func ConvertAlbumToSongs(c *gin.Context) {
 	idAlbum := spotifyAPI.ID(c.Query("id_album"))
 

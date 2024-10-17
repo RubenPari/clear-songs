@@ -96,62 +96,6 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
-// GetAllUserAlbums
-// returns all albums of user
-func GetAllUserAlbums() []spotifyAPI.SavedAlbum {
-	log.Default().Println("Getting all user albums")
-
-	var allAlbums []spotifyAPI.SavedAlbum
-	var offset = 0
-	var limit = 50
-
-	for {
-		albums, err := utils.SpotifyClient.CurrentUsersAlbumsOpt(&spotifyAPI.Options{
-			Limit:  &limit,
-			Offset: &offset,
-		})
-
-		log.Default().Println("Getting albums from offset: ", offset)
-
-		if err != nil {
-			log.Default().Println("Error getting user albums")
-			return nil
-		}
-
-		if len(albums.Albums) == 0 {
-			break
-		}
-
-		allAlbums = append(allAlbums, albums.Albums...)
-
-		offset += 50
-	}
-
-	log.Println("Total albums: ", len(allAlbums))
-
-	return allAlbums
-}
-
-// GetAllUserAlbumsByArtist
-// returns all albums of user
-// by artist id
-func GetAllUserAlbumsByArtist(idArtist spotifyAPI.ID, albums []spotifyAPI.SavedAlbum) []spotifyAPI.SavedAlbum {
-	log.Default().Println("Getting all user albums by artist")
-
-	var filteredAlbums []spotifyAPI.SavedAlbum
-
-	for _, album := range albums {
-		if album.Artists[0].ID == idArtist {
-			filteredAlbums = append(filteredAlbums, album)
-			log.Default().Println("Album: ", album.Name, " - ", album.Artists[0].Name, " founded")
-		}
-	}
-
-	log.Println("Total albums: ", len(filteredAlbums))
-
-	return filteredAlbums
-}
-
 // ConvertAlbumToSongs
 // converts album to songs
 func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
