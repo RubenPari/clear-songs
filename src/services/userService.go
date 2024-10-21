@@ -7,9 +7,12 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// GetAllUserTracks
-// returns all tracks
-// of user
+// GetAllUserTracks retrieves all tracks saved by the user.
+//
+// The function retrieves all tracks saved by the user, with pagination.
+// The number of tracks retrieved at each iteration is limited to 50.
+// The function returns a slice of spotifyAPI.SavedTrack and an error if the
+// operation fails.
 func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	var allTracks []spotifyAPI.SavedTrack
 	var offset = 0
@@ -44,9 +47,12 @@ func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	return allTracks, nil
 }
 
-// GetAllUserTracksByArtist
-// returns all tracks of user
-// by artist id
+// GetAllUserTracksByArtist retrieves all tracks from a given artist saved by the user.
+//
+// id is the unique identifier of the Spotify artist.
+// tracks is a slice of spotifyAPI.SavedTrack.
+// The function returns a slice of spotifyAPI.ID and an error if the
+// operation fails.
 func GetAllUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.ID, error) {
 	log.Default().Println("Getting all user tracks by artist")
 
@@ -64,8 +70,11 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) 
 	return filteredTracks, nil
 }
 
-// DeleteTracksUser deletes
-// specified tracks from user
+// DeleteTracksUser removes a list of tracks from the user's library.
+//
+// tracks is a slice of spotifyAPI.ID representing the track IDs to be deleted.
+// The function processes the deletions in batches of 50 tracks at a time.
+// If an error occurs while deleting the tracks, it returns the error.
 func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	log.Default().Println("Deleting user tracks")
 
@@ -96,8 +105,12 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 	return nil
 }
 
-// ConvertAlbumToSongs
-// converts album to songs
+// ConvertAlbumToSongs converts an album to songs and saves them to the user library.
+//
+// idAlbum is the unique identifier of the Spotify album.
+// The function first retrieves the album's info and then all its tracks.
+// After that, it adds the tracks to the user library.
+// If an error occurs while converting the album, it returns the error.
 func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	log.Default().Println("Converting album to songs")
 

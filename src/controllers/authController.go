@@ -10,12 +10,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Login gestisce la richiesta di login dell'utente.
+// Login redirects to Spotify's authentication address.
 //
-// Effettua la seguente logica:
-// 1. Ottiene la configurazione OAuth2.
-// 2. Crea l'URL di login per Spotify.
-// 3. Reindirizza l'utente all'URL di login.
+// The function uses the value of oauth2.AccessTypeOffline to get
+// an offline access token that can be used to make
+// API calls in the future without having to prompt the user to authenticate
+// again.
 func Login(c *gin.Context) {
 	configAuth := utils.GetOAuth2Config()
 
@@ -26,17 +26,17 @@ func Login(c *gin.Context) {
 	c.Redirect(302, url)
 }
 
-// Callback gestisce la callback ricevuta da Spotify in seguito alla richiesta
-// di login dell'utente.
+// Callback handles the callback received from Spotify after the user
+// login request.
 //
-// Effettua la seguente logica:
-//  1. Ottiene il codice di autorizzazione ricevuto nella query string.
-//  2. Effettua l'exchange del codice con il token di accesso.
-//  3. Crea un client Spotify utilizzando il token di accesso.
-//  4. Salva il client Spotify nella sessione.
-//  5. Esegue una chiamata di test per verificare l'autenticazione.
-//  6. Restituisce un JSON di successo se l'autenticazione va a buon fine,
-//     altrimenti restituisce un JSON di errore.
+// Performs the following logic:
+// 1. Gets the authorization code received in the query string.
+// 2. Exchanges the code with the access token.
+// 3. Creates a Spotify client using the access token.
+// 4. Saves the Spotify client to the session.
+// 5. Makes a test call to verify authentication.
+// 6. Returns a success JSON if authentication is successful,
+// otherwise returns an error JSON.
 func Callback(c *gin.Context) {
 	// get code from query parameters
 	code := c.Query("code")
@@ -77,13 +77,13 @@ func Callback(c *gin.Context) {
 	})
 }
 
-// Logout cancella l'autenticazione dell'utente cancellando il client Spotify
-// dalla sessione.
+// Logout clears the user authentication by clearing the Spotify client
+// from the session.
 //
-// Effettua la seguente logica:
-//  1. Cancella il client Spotify dalla sessione.
-//  2. Restituisce un JSON di successo se l'autenticazione va a buon fine,
-//     altrimenti restituisce un JSON di errore.
+// Performs the following logic:
+// 1. Clears the Spotify client from the session.
+// 2. Returns a success JSON if authentication is successful,
+// otherwise returns an error JSON.
 func Logout(c *gin.Context) {
 	// delete spotify client from session
 	utils.SpotifyClient = spotifyAPI.Client{}
@@ -96,14 +96,14 @@ func Logout(c *gin.Context) {
 	})
 }
 
-// IsAuth verifica se l'utente è autenticato.
+// IsAuth checks if the user is authenticated.
 //
-// Effettua la seguente logica:
-//  1. Verifica se il client Spotify è settato.
-//  2. Se il client Spotify non è settato, restituisce un JSON di errore con
-//     lo stato 401 e un messaggio di errore.
-//  3. Se il client Spotify è settato, restituisce un JSON di successo con
-//     lo stato 200 e un messaggio di successo.
+// Performs the following logic:
+// 1. Checks if Spotify client is set.
+// 2. If Spotify client is not set, returns an error JSON with
+// status 401 and an error message.
+// 3. If Spotify client is set, returns a success JSON with
+// status 200 and a success message.
 func IsAuth(c *gin.Context) {
 	// check if spotify client is set
 	if _, err := utils.SpotifyClient.CurrentUser(); err != nil {

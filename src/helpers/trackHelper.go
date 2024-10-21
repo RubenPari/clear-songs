@@ -7,9 +7,14 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// GetArtistsSummary returns a
-// map with the number of tracks
-// of each artist
+// GetArtistsSummary generates an array of ArtistSummary based on the tracks provided.
+// It counts the number of tracks for each artist and creates a summary with the artist's name, ID, and track count.
+//
+// Parameters:
+//   - tracks: a slice of spotifyAPI.SavedTrack representing the tracks to analyze
+//
+// Returns:
+//   - []models.ArtistSummary: an array of ArtistSummary with name, ID, and track count for each artist
 func GetArtistsSummary(tracks []spotifyAPI.SavedTrack) []models.ArtistSummary {
 	log.Default().Println("Getting artists summary array")
 

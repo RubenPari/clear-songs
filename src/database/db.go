@@ -12,6 +12,13 @@ import (
 
 var Db *gorm.DB = nil
 
+// Init connects to the MySQL database and performs auto-migration to create the
+// tables as necessary. It sets the Db global variable to the connected database.
+//
+// This function returns an error if it fails to connect to the database, test the
+// connection, or perform the auto-migration. If the function is successful, it
+// will log a message to the console indicating that the database connection was
+// successful.
 func Init() error {
 	// mysql credential
 	host := os.Getenv("DB_HOST")

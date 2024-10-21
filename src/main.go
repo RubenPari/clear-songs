@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	// TODO: migliorare o scrivere commenti per funzioni
-
 	gin.SetMode(gin.DebugMode)
 	server := gin.Default()
 
