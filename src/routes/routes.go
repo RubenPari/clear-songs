@@ -1,7 +1,10 @@
 package routes
 
 import (
-	"github.com/RubenPari/clear-songs/src/controllers"
+	"github.com/RubenPari/clear-songs/src/controllers/albumController"
+	"github.com/RubenPari/clear-songs/src/controllers/authController"
+	"github.com/RubenPari/clear-songs/src/controllers/playlistController"
+	"github.com/RubenPari/clear-songs/src/controllers/trackController"
 	"github.com/RubenPari/clear-songs/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
@@ -18,10 +21,10 @@ func SetUpRoutes(server *gin.Engine) {
 	// ####### AUTHENTICATION #######
 	auth := server.Group("/auth")
 	{
-		auth.GET("/login", controllers.Login)
-		auth.GET("/callback", controllers.Callback)
-		auth.GET("/logout", controllers.Logout)
-		auth.GET("/is-auth", controllers.IsAuth)
+		auth.GET("/login", authController.Login)
+		auth.GET("/callback", authController.Callback)
+		auth.GET("/logout", authController.Logout)
+		auth.GET("/is-auth", authController.IsAuth)
 	}
 
 	// ####### TRACK #######
@@ -29,25 +32,25 @@ func SetUpRoutes(server *gin.Engine) {
 	{
 		track.DELETE("/by-artist/:id_artist",
 			middlewares.CheckAuth(),
-			controllers.DeleteTrackByArtist)
+			trackController.DeleteTrackByArtist)
 		track.DELETE("/by-range",
 			middlewares.CheckAuth(),
-			controllers.DeleteTrackByRange)
+			trackController.DeleteTrackByRange)
 	}
 
 	// ####### ALBUMS #######
 	server.POST("/album/convert-to-songs",
 		middlewares.CheckAuth(),
-		controllers.ConvertAlbumToSongs)
+		albumController.ConvertAlbumToSongs)
 
 	// ####### PLAYLIST #######
 	playlist := server.Group("/playlist")
 	{
 		playlist.DELETE("/delete-tracks",
 			middlewares.CheckAuth(),
-			controllers.DeleteAllPlaylistTracks)
+			playlistController.DeleteAllPlaylistTracks)
 		playlist.DELETE("/delete-tracks-and-library",
 			middlewares.CheckAuth(),
-			controllers.DeleteAllPlaylistAndUserTracks)
+			playlistController.DeleteAllPlaylistAndUserTracks)
 	}
 }

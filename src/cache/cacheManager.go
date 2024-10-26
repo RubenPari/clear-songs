@@ -3,7 +3,8 @@ package cache
 import (
 	"time"
 
-	"github.com/RubenPari/clear-songs/src/services"
+	"github.com/RubenPari/clear-songs/src/services/playlistService"
+
 	spotifyAPI "github.com/zmb3/spotify"
 
 	"github.com/patrickmn/go-cache"
@@ -46,7 +47,7 @@ func GetCachedPlaylistTracksOrSet(idPlaylist spotifyAPI.ID) ([]spotifyAPI.Playli
 	if found {
 		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		tracks, errGetAllPlaylistTracks := services.GetAllPlaylistTracks(idPlaylist)
+		tracks, errGetAllPlaylistTracks := playlistService.GetAllPlaylistTracks(idPlaylist)
 
 		if errGetAllPlaylistTracks != nil {
 			return nil, errGetAllPlaylistTracks

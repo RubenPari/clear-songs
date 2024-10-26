@@ -1,13 +1,13 @@
-package controllers
+package trackController
 
 import (
 	"strconv"
 
-	"github.com/RubenPari/clear-songs/src/helpers"
+	"github.com/RubenPari/clear-songs/src/helpers/trackHelper"
+	"github.com/RubenPari/clear-songs/src/services/userService"
 
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 
-	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = services.GetAllUserTracks()
+		tracks, errTracks = userService.GetAllUserTracks()
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -43,7 +43,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	// filter all tracks by artist
-	tracksFilterers, errTracks := services.GetAllUserTracksByArtist(idArtist, tracks)
+	tracksFilterers, errTracks := userService.GetAllUserTracksByArtist(idArtist, tracks)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -53,7 +53,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	// delete tracks from artist
-	errDelete := services.DeleteTracksUser(tracksFilterers)
+	errDelete := userService.DeleteTracksUser(tracksFilterers)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -84,7 +84,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = services.GetAllUserTracks()
+		tracks, errTracks = userService.GetAllUserTracks()
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -97,14 +97,14 @@ func DeleteTrackByRange(c *gin.Context) {
 		cacheManager.Set("userTracks", tracks)
 	}
 
-	artistSummaryArray := helpers.GetArtistsSummary(tracks)
+	artistSummaryArray := trackHelper.GetArtistsSummary(tracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
 	// delete all tracks from artists present
 	// in the summary object
 	for artistObj := range artistSummaryFiltered {
-		tracksFilters, errTracks := services.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)), tracks)
+		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)), tracks)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -114,7 +114,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		}
 
 		// delete tracks from artist
-		errDelete := services.DeleteTracksUser(tracksFilters)
+		errDelete := userService.DeleteTracksUser(tracksFilters)
 
 		if errDelete != nil {
 			c.JSON(500, gin.H{

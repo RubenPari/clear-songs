@@ -1,10 +1,12 @@
-package controllers
+package playlistController
 
 import (
 	"fmt"
 
+	"github.com/RubenPari/clear-songs/src/services/playlistService"
+	"github.com/RubenPari/clear-songs/src/services/userService"
+
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
-	"github.com/RubenPari/clear-songs/src/services"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -40,7 +42,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := services.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
+	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
 
 	if errDeletePlaylistTracks != nil {
 		c.JSON(500, gin.H{
@@ -75,7 +77,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 	if value != nil {
 		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
 	} else {
-		playlistTracks, errPlaylistTracks = services.GetAllPlaylistTracks(spotifyAPI.ID(id))
+		playlistTracks, errPlaylistTracks = playlistService.GetAllPlaylistTracks(spotifyAPI.ID(id))
 
 		if errPlaylistTracks != nil {
 			c.JSON(500, gin.H{
@@ -97,7 +99,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := services.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
+	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
 
 	playlistTracksIDs, errConvertIDs := utils.ConvertTracksToID(playlistTracks)
 
@@ -108,7 +110,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeleteTrackUser := services.DeleteTracksUser(playlistTracksIDs)
+	errDeleteTrackUser := userService.DeleteTracksUser(playlistTracksIDs)
 
 	if errDeletePlaylistTracks != nil || errDeleteTrackUser != nil {
 		c.JSON(500, gin.H{

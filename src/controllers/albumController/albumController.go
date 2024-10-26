@@ -1,7 +1,7 @@
-package controllers
+package albumController
 
 import (
-	"github.com/RubenPari/clear-songs/src/services"
+	"github.com/RubenPari/clear-songs/src/services/userService"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -14,7 +14,7 @@ import (
 func ConvertAlbumToSongs(c *gin.Context) {
 	idAlbum := spotifyAPI.ID(c.Query("id_album"))
 
-	errConvert := services.ConvertAlbumToSongs(idAlbum)
+	errConvert := userService.ConvertAlbumToSongs(idAlbum)
 
 	if errConvert != nil {
 		c.JSON(400, gin.H{
