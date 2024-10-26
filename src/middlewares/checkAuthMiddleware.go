@@ -8,7 +8,7 @@ import (
 func CheckAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// check if spotify client is set
-		if _, err := utils.SpotifyClient.CurrentUser(); err != nil {
+		if _, err := utils.SpotifySvc.GetSpotifyClient().CurrentUser(); err != nil {
 			c.AbortWithStatusJSON(401, gin.H{
 				"status":  "error",
 				"message": "Unauthorized",
