@@ -22,7 +22,7 @@ func main() {
 		panic("Error connecting to database")
 	}
 
-	if server.Run(":8080") != nil {
+	if server.Run(":3000") != nil {
 		panic("Error starting server")
 	}
 }
