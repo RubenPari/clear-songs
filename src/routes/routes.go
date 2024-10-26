@@ -10,7 +10,7 @@ import (
 )
 
 func SetUpRoutes(server *gin.Engine) {
-	// 404 Not Found Route
+	// ####### NOT FOUND ROUTE #######
 	server.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{
 			"status":  "error",
