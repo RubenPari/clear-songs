@@ -2,10 +2,11 @@ package userService
 
 import (
 	"errors"
+	"log"
+
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
-	"log"
 )
 
 // GetAllUserTracks retrieves all tracks saved by the user.

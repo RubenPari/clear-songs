@@ -3,12 +3,13 @@ package utils
 import (
 	"bufio"
 	"errors"
-	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
-	"github.com/gin-gonic/gin"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
+	"github.com/gin-gonic/gin"
 
 	"github.com/RubenPari/clear-songs/src/constants"
 
