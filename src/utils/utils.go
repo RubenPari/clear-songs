@@ -3,6 +3,8 @@ package utils
 import (
 	"bufio"
 	"errors"
+	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
+	"github.com/gin-gonic/gin"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,7 +19,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var SpotifyClient = spotifyAPI.Client{}
+var (
+	configAuth = GetOAuth2Config()
+	SpotifySvc = SpotifyService.NewSpotifyService(configAuth.ClientID, configAuth.ClientSecret, configAuth.RedirectURL)
+)
 
 // GetOAuth2Config returns a pointer to an oauth2.Config with the client id, client
 // secret, redirect url, and scopes set from the environment variables CLIENT_ID,
@@ -147,6 +152,16 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	}
 
 	return nil
+}
+
+// GetSpotifyService retrieves the SpotifyService from the gin context.
+// It returns nil if the SpotifyService is not found in the context.
+func GetSpotifyService(c *gin.Context) *SpotifyService.SpotifyService {
+	service, exists := c.Get("spotifyService")
+	if !exists {
+		return nil
+	}
+	return service.(*SpotifyService.SpotifyService)
 }
 
 // LoadEnvVariables load environment variables from a file path

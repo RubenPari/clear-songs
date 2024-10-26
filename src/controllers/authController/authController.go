@@ -6,8 +6,11 @@ import (
 
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
-	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+)
+
+var (
+	configAuth = utils.GetOAuth2Config()
 )
 
 // Login redirects to Spotify's authentication address.
@@ -17,8 +20,6 @@ import (
 // API calls in the future without having to prompt the user to authenticate
 // again.
 func Login(c *gin.Context) {
-	configAuth := utils.GetOAuth2Config()
-
 	url := configAuth.AuthCodeURL("state", oauth2.AccessTypeOffline)
 
 	log.Default().Printf("Redirecting to %s", url)
@@ -41,8 +42,6 @@ func Callback(c *gin.Context) {
 	// get code from query parameters
 	code := c.Query("code")
 
-	configAuth := utils.GetOAuth2Config()
-
 	token, errToken := configAuth.Exchange(context.Background(), code)
 
 	if errToken != nil {
@@ -52,17 +51,13 @@ func Callback(c *gin.Context) {
 		})
 	}
 
-	// create spotify client
-	client := configAuth.Client(context.Background(), token)
-	spotify := spotifyAPI.NewClient(client)
+	// set token in spotifyService for dependency injection
+	utils.SpotifySvc.SetAccessToken(token)
 
 	log.Default().Println("Called callback, created spotify wrapper")
 
-	// save spotify client in session
-	utils.SpotifyClient = spotify
-
 	// get user info for testing
-	_, errUser := spotify.CurrentUser()
+	_, errUser := utils.SpotifySvc.GetSpotifyClient().CurrentUser()
 
 	if errUser != nil {
 		c.JSON(500, gin.H{
@@ -85,8 +80,7 @@ func Callback(c *gin.Context) {
 // 2. Returns a success JSON if authentication is successful,
 // otherwise returns an error JSON.
 func Logout(c *gin.Context) {
-	// delete spotify client from session
-	utils.SpotifyClient = spotifyAPI.Client{}
+	utils.SpotifySvc.SetAccessToken(nil)
 
 	log.Default().Println("Called logout, deleted client from session")
 
@@ -105,8 +99,7 @@ func Logout(c *gin.Context) {
 // 3. If Spotify client is set, returns a success JSON with
 // status 200 and a success message.
 func IsAuth(c *gin.Context) {
-	// check if spotify client is set
-	if _, err := utils.SpotifyClient.CurrentUser(); err != nil {
+	if _, err := utils.SpotifySvc.GetSpotifyClient().CurrentUser(); err != nil {
 		c.JSON(401, gin.H{
 			"status":  "error",
 			"message": "Unauthorized",

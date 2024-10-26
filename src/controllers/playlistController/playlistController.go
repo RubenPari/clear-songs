@@ -110,7 +110,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeleteTrackUser := userService.DeleteTracksUser(playlistTracksIDs)
+	errDeleteTrackUser := userService.DeleteTracksUser(c, playlistTracksIDs)
 
 	if errDeletePlaylistTracks != nil || errDeleteTrackUser != nil {
 		c.JSON(500, gin.H{

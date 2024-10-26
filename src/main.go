@@ -3,6 +3,7 @@ package main
 import (
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/database"
+	"github.com/RubenPari/clear-songs/src/middlewares"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,9 @@ func main() {
 	server := gin.Default()
 
 	routes.SetUpRoutes(server)
+
+	// middleware for spotify dependency injection
+	server.Use(middlewares.SpotifyServiceInjection(utils.SpotifySvc))
 
 	utils.LoadEnvVariables()
 

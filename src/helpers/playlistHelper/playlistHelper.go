@@ -18,7 +18,7 @@ func CheckIfValidId(id spotifyAPI.ID) bool {
 		return false
 	}
 
-	_, errGetPlaylist := utils.SpotifyClient.GetPlaylist(id)
+	_, errGetPlaylist := utils.SpotifySvc.GetSpotifyClient().GetPlaylist(id)
 
 	return errGetPlaylist == nil
 }

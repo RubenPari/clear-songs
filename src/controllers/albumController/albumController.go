@@ -14,7 +14,7 @@ import (
 func ConvertAlbumToSongs(c *gin.Context) {
 	idAlbum := spotifyAPI.ID(c.Query("id_album"))
 
-	errConvert := userService.ConvertAlbumToSongs(idAlbum)
+	errConvert := userService.ConvertAlbumToSongs(c, idAlbum)
 
 	if errConvert != nil {
 		c.JSON(400, gin.H{

@@ -29,7 +29,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = userService.GetAllUserTracks()
+		tracks, errTracks = userService.GetAllUserTracks(c)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -53,7 +53,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	// delete tracks from artist
-	errDelete := userService.DeleteTracksUser(tracksFilterers)
+	errDelete := userService.DeleteTracksUser(c, tracksFilterers)
 
 	if errDelete != nil {
 		c.JSON(500, gin.H{
@@ -84,7 +84,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = userService.GetAllUserTracks()
+		tracks, errTracks = userService.GetAllUserTracks(c)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -114,7 +114,7 @@ func DeleteTrackByRange(c *gin.Context) {
 		}
 
 		// delete tracks from artist
-		errDelete := userService.DeleteTracksUser(tracksFilters)
+		errDelete := userService.DeleteTracksUser(c, tracksFilters)
 
 		if errDelete != nil {
 			c.JSON(500, gin.H{

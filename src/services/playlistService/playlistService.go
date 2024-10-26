@@ -20,7 +20,7 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 		return nil, errors.New("invalid playlist ID")
 	}
 
-	playlist, errGetPlaylist := utils.SpotifyClient.GetPlaylist(id)
+	playlist, errGetPlaylist := utils.SpotifySvc.GetSpotifyClient().GetPlaylist(id)
 
 	if errGetPlaylist != nil {
 		return nil, errGetPlaylist
@@ -32,7 +32,7 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 	var playlistTracks []spotifyAPI.PlaylistTrack
 
 	for {
-		tracks, errGetTracks := utils.SpotifyClient.GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
+		tracks, errGetTracks := utils.SpotifySvc.GetSpotifyClient().GetPlaylistTracksOpt(playlist.ID, &spotifyAPI.Options{
 			Offset: &offset,
 			Limit:  &limit,
 		}, "")
@@ -80,7 +80,7 @@ func DeletePlaylistTracks(id spotifyAPI.ID, tracks []spotifyAPI.PlaylistTrack) e
 
 		tracksPagination := trackIDs[i:end]
 
-		_, errDeleteTracks := utils.SpotifyClient.RemoveTracksFromPlaylist(id, tracksPagination...)
+		_, errDeleteTracks := utils.SpotifySvc.GetSpotifyClient().RemoveTracksFromPlaylist(id, tracksPagination...)
 
 		if errDeleteTracks != nil {
 			return errDeleteTracks

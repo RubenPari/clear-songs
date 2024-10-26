@@ -1,10 +1,11 @@
 package userService
 
 import (
-	"log"
-
+	"errors"
 	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
+	"log"
 )
 
 // GetAllUserTracks retrieves all tracks saved by the user.
@@ -13,15 +14,25 @@ import (
 // The number of tracks retrieved at each iteration is limited to 50.
 // The function returns a slice of spotifyAPI.SavedTrack and an error if the
 // operation fails.
-func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
+func GetAllUserTracks(c *gin.Context) ([]spotifyAPI.SavedTrack, error) {
+	service := utils.GetSpotifyService(c)
+	if service == nil {
+		return nil, errors.New("spotify service not available")
+	}
+
+	client := service.GetSpotifyClient()
+	if client == nil {
+		return nil, errors.New("spotify client not available")
+	}
+
+	log.Default().Println("Getting all user tracks")
+
 	var allTracks []spotifyAPI.SavedTrack
 	var offset = 0
 	var limit = 50
 
-	log.Default().Println("Getting all user tracks")
-
 	for {
-		tracks, err := utils.SpotifyClient.CurrentUsersTracksOpt(&spotifyAPI.Options{
+		tracks, err := client.CurrentUsersTracksOpt(&spotifyAPI.Options{
 			Limit:  &limit,
 			Offset: &offset,
 		})
@@ -75,7 +86,17 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) 
 // tracks is a slice of spotifyAPI.ID representing the track IDs to be deleted.
 // The function processes the deletions in batches of 50 tracks at a time.
 // If an error occurs while deleting the tracks, it returns the error.
-func DeleteTracksUser(tracks []spotifyAPI.ID) error {
+func DeleteTracksUser(c *gin.Context, tracks []spotifyAPI.ID) error {
+	service := utils.GetSpotifyService(c)
+	if service == nil {
+		return errors.New("spotify service not available")
+	}
+
+	client := service.GetSpotifyClient()
+	if client == nil {
+		return errors.New("spotify client not available")
+	}
+
 	log.Default().Println("Deleting user tracks")
 
 	var offset = 0
@@ -90,7 +111,7 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 			limit = len(tracks) - offset
 		}
 
-		err := utils.SpotifyClient.RemoveTracksFromLibrary(tracks[offset : offset+limit]...)
+		err := client.RemoveTracksFromLibrary(tracks[offset : offset+limit]...)
 
 		if err != nil {
 			log.Default().Println("Error deleting user tracks")
@@ -111,11 +132,21 @@ func DeleteTracksUser(tracks []spotifyAPI.ID) error {
 // The function first retrieves the album's info and then all its tracks.
 // After that, it adds the tracks to the user library.
 // If an error occurs while converting the album, it returns the error.
-func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
+func ConvertAlbumToSongs(c *gin.Context, idAlbum spotifyAPI.ID) error {
+	service := utils.GetSpotifyService(c)
+	if service == nil {
+		return errors.New("spotify service not available")
+	}
+
+	client := service.GetSpotifyClient()
+	if client == nil {
+		return errors.New("spotify client not available")
+	}
+
 	log.Default().Println("Converting album to songs")
 
 	// get album info
-	album, errAlbum := utils.SpotifyClient.GetAlbum(idAlbum)
+	album, errAlbum := client.GetAlbum(idAlbum)
 
 	if errAlbum != nil {
 		return errAlbum
@@ -128,7 +159,7 @@ func ConvertAlbumToSongs(idAlbum spotifyAPI.ID) error {
 	}
 
 	// add tracks to user library
-	errAddTracks := utils.SpotifyClient.AddTracksToLibrary(trackIDs...)
+	errAddTracks := client.AddTracksToLibrary(trackIDs...)
 
 	if errAddTracks != nil {
 		return errAddTracks
