@@ -2,12 +2,11 @@ package database
 
 import (
 	"fmt"
-	"log"
-	"os"
-
+	"github.com/RubenPari/clear-songs/src/constants"
 	"github.com/RubenPari/clear-songs/src/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log"
 )
 
 var Db *gorm.DB = nil
@@ -21,11 +20,11 @@ var Db *gorm.DB = nil
 // successful.
 func Init() error {
 	// mysql credential
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
+	host := constants.GetDbHost()
+	port := constants.GetDbPort()
+	user := constants.GetDbUser()
+	password := constants.GetDbPassword()
+	dbname := constants.GetDbName()
 
 	// create the connection string
 	mysqlInfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbname)

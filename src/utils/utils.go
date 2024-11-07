@@ -1,17 +1,11 @@
 package utils
 
 import (
-	"bufio"
 	"errors"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
-
+	"github.com/RubenPari/clear-songs/src/constants"
 	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
 	"github.com/gin-gonic/gin"
-
-	"github.com/RubenPari/clear-songs/src/constants"
+	"log"
 
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
@@ -31,9 +25,9 @@ var (
 // to the Spotify endpoints.
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URL"),
+		ClientID:     constants.GetClientId(),
+		ClientSecret: constants.GetClientSecret(),
+		RedirectURL:  constants.GetRedirectUrl(),
 		Scopes:       constants.Scopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  spotifyAPI.AuthURL,
@@ -163,69 +157,4 @@ func GetSpotifyService(c *gin.Context) *SpotifyService.SpotifyService {
 		return nil
 	}
 	return service.(*SpotifyService.SpotifyService)
-}
-
-// LoadEnvVariables load environment variables from a file path
-func LoadEnvVariables() {
-	// get current working directory
-	cwd, errCwd := os.Getwd()
-
-	if errCwd != nil {
-		log.Fatalf("error getting current working directory: %v", errCwd)
-	}
-
-	// move up one level folder
-	cwd = filepath.Dir(cwd)
-
-	envPath := filepath.Join(cwd, ".env")
-
-	file, errOpenFile := os.Open(envPath)
-
-	if errOpenFile != nil {
-		log.Fatalf("error opening .env file: %v", errOpenFile)
-	}
-
-	defer func(file *os.File) {
-		_ = file.Close()
-	}(file)
-
-	scanner := bufio.NewScanner(file)
-
-	// read the file line by line
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// skip empty lines and comments
-		if len(line) == 0 || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		// split the line into key and value
-		parts := strings.SplitN(line, "=", 2)
-
-		if len(parts) != 2 {
-			log.Fatalf("invalid line in .env file: %s", line)
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		// remove quotes "" from the value
-		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) {
-			value = strings.Trim(value, `"`)
-		}
-
-		// set the environment variable
-		errSetEnvVar := os.Setenv(key, value)
-
-		if errSetEnvVar != nil {
-			log.Fatalf("error setting environment variable: %v", errSetEnvVar)
-		}
-	}
-
-	errReadFile := scanner.Err()
-
-	if errReadFile != nil {
-		log.Fatalf("error reading .env file: %v", errReadFile)
-	}
 }

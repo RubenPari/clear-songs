@@ -15,10 +15,7 @@ func main() {
 
 	routes.SetUpRoutes(server)
 
-	// middleware for spotify dependency injection
 	server.Use(middlewares.SpotifyServiceInjection(utils.SpotifySvc))
-
-	utils.LoadEnvVariables()
 
 	cacheManager.Init()
 

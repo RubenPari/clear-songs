@@ -39,7 +39,6 @@ func Login(c *gin.Context) {
 // 6. Returns a success JSON if authentication is successful,
 // otherwise returns an error JSON.
 func Callback(c *gin.Context) {
-	// get code from query parameters
 	code := c.Query("code")
 
 	token, errToken := configAuth.Exchange(context.Background(), code)
@@ -51,7 +50,7 @@ func Callback(c *gin.Context) {
 		})
 	}
 
-	// set token in spotifyService for dependency injection
+	// set token in spotifyService instance for dependency injection
 	utils.SpotifySvc.SetAccessToken(token)
 
 	log.Default().Println("Called callback, created spotify wrapper")

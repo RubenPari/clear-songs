@@ -6,6 +6,7 @@ toolchain go1.23.1
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/joho/godotenv v1.5.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	gorm.io/gorm v1.25.12
 )
