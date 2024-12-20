@@ -3,7 +3,6 @@ package main
 import (
 	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"github.com/RubenPari/clear-songs/src/database"
-	"github.com/RubenPari/clear-songs/src/middlewares"
 	"github.com/RubenPari/clear-songs/src/routes"
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,7 @@ func main() {
 
 	routes.SetUpRoutes(server)
 
-	server.Use(middlewares.SpotifyServiceInjection(utils.SpotifySvc))
+	utils.LoadEnvVariables()
 
 	cacheManager.Init()
 
