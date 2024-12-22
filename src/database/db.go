@@ -2,11 +2,12 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/RubenPari/clear-songs/src/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
 var Db *gorm.DB = nil

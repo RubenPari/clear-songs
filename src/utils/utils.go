@@ -2,6 +2,11 @@ package utils
 
 import (
 	"errors"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+
 	"github.com/RubenPari/clear-songs/src/constants"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
@@ -11,10 +16,6 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
-	"log"
-	"os"
-	"path/filepath"
-	"runtime"
 )
 
 var (
