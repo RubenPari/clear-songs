@@ -72,7 +72,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 // DeleteAllPlaylistAndUserTracks godoc
 // @Summary Delete tracks from playlist and user library
 // @Schemes
-// @Description Removes all tracks from both the playlist and user's library
+// @Description Removes all tracks from the playlist and user's library and save the tracks on DB for backup before deleting them
 // @Tags playlist
 // @Accept json
 // @Produce json
