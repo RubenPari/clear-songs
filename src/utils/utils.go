@@ -3,15 +3,18 @@ package utils
 import (
 	"errors"
 	"github.com/RubenPari/clear-songs/src/constants"
-	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
-	"github.com/gin-gonic/gin"
-	"log"
-
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
 )
 
 var (
@@ -25,9 +28,9 @@ var (
 // to the Spotify endpoints.
 func GetOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     constants.GetClientId(),
-		ClientSecret: constants.GetClientSecret(),
-		RedirectURL:  constants.GetRedirectUrl(),
+		ClientID:     os.Getenv("CLIENT_ID"),
+		ClientSecret: os.Getenv("CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("REDIRECT_URL"),
 		Scopes:       constants.Scopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  spotifyAPI.AuthURL,
@@ -157,4 +160,31 @@ func GetSpotifyService(c *gin.Context) *SpotifyService.SpotifyService {
 		return nil
 	}
 	return service.(*SpotifyService.SpotifyService)
+}
+
+// LoadEnvVariables loads the environment variables from the .env file in the
+// current working directory.
+func LoadEnvVariables() {
+	// get current working directory
+	cwd, errCwd := os.Getwd()
+
+	if errCwd != nil {
+		log.Fatalf("error getting current working directory: %v", errCwd)
+	}
+
+	// check if the OS is Windows
+	if runtime.GOOS == "windows" {
+		// move up one level folder
+		cwd = filepath.Dir(cwd)
+	}
+
+	envPath := filepath.Join(cwd, ".env")
+
+	errLoadFilePath := godotenv.Load(envPath)
+
+	if errLoadFilePath != nil {
+		log.Fatalf("error loading .env file: %v", errLoadFilePath)
+	}
+
+	log.Println("Loaded environment variables from .env file")
 }
