@@ -1,0 +1,253 @@
+basePath: /
+info:
+  contact: {}
+  description: API for managing Spotify playlists and tracks
+  title: Clear Songs API
+  version: "1.0"
+paths:
+  /album/convert:
+    post:
+      consumes:
+      - application/json
+      description: Converts an album to individual songs and saves them to the user
+        library
+      parameters:
+      - description: Spotify Album ID
+        in: query
+        name: id_album
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Album converted to songs'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 'message: Error converting album to songs'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Convert album to individual songs
+      tags:
+      - album
+  /auth/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handles the callback from Spotify OAuth process
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: success, message: User authenticated'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'status: error, message: Error authenticating user'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle Spotify OAuth callback
+      tags:
+      - auth
+  /auth/login:
+    get:
+      consumes:
+      - application/json
+      description: Redirects user to Spotify's authentication page
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to Spotify
+          schema:
+            type: string
+      summary: Redirect to Spotify login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Clears user authentication session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: success, message: User logged out'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Logout user
+      tags:
+      - auth
+  /auth/status:
+    get:
+      consumes:
+      - application/json
+      description: Checks if user is currently authenticated
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: success, message: User authenticated'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 'status: error, message: Unauthorized'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check authentication status
+      tags:
+      - auth
+  /playlist/tracks:
+    delete:
+      consumes:
+      - application/json
+      description: Removes all tracks from a specified playlist
+      parameters:
+      - description: Playlist ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Tracks deleted'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 'message: Playlist id is required'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'message: Error deleting tracks from playlist'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete all tracks from playlist
+      tags:
+      - playlist
+  /playlist/tracks/all:
+    delete:
+      consumes:
+      - application/json
+      description: Removes all tracks from both the playlist and user's library
+      parameters:
+      - description: Playlist ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Tracks deleted'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 'message: Playlist id is required'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'message: Error deleting tracks'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete tracks from playlist and user library
+      tags:
+      - playlist
+  /track/artist/{id_artist}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes all tracks from a specific artist from user's library
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id_artist
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Tracks deleted'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'message: Error deleting tracks'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete all tracks by artist
+      tags:
+      - track
+  /track/range:
+    delete:
+      consumes:
+      - application/json
+      description: Removes tracks that fall within a specified play count range
+      parameters:
+      - description: Minimum play count
+        in: query
+        name: min
+        type: integer
+      - description: Maximum play count
+        in: query
+        name: max
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Tracks deleted'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'message: Error deleting tracks'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete tracks within play count range
+      tags:
+      - track
+swagger: "2.0"

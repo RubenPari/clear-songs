@@ -14,6 +14,17 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
+// DeleteTrackByArtist godoc
+// @Summary Delete all tracks by artist
+// @Schemes
+// @Description Removes all tracks from a specific artist from user's library
+// @Tags track
+// @Accept json
+// @Produce json
+// @Param id_artist path string true "Artist ID"
+// @Success 200 {object} map[string]string "message: Tracks deleted"
+// @Failure 500 {object} map[string]string "message: Error deleting tracks"
+// @Router /track/artist/{id_artist} [delete]
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
 	// get artist id from url
@@ -67,6 +78,20 @@ func DeleteTrackByArtist(c *gin.Context) {
 	})
 }
 
+// DeleteTrackByRange godoc
+// @Summary Delete tracks within play count range
+// @Schemes
+// @Description Removes tracks that fall within a specified play count range
+// @Tags track
+// @Accept json
+// @Produce json
+// @Param min query integer false "Minimum play count"
+// @Param max query integer false "Maximum play count"
+// @Success 200 {object} map[string]string "message: Tracks deleted"
+// @Failure 500 {object} map[string]string "message: Error deleting tracks"
+// @Router /track/range [delete]
+// DeleteTrackByRange deletes tracks within a play count range
+// from the user's library
 func DeleteTrackByRange(c *gin.Context) {
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
