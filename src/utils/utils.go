@@ -2,20 +2,16 @@ package utils
 
 import (
 	"errors"
-	"log"
-	"os"
-	"path/filepath"
-	"runtime"
-
 	"github.com/RubenPari/clear-songs/src/constants"
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/models"
 	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 var (
@@ -161,31 +157,4 @@ func GetSpotifyService(c *gin.Context) *SpotifyService.SpotifyService {
 		return nil
 	}
 	return service.(*SpotifyService.SpotifyService)
-}
-
-// LoadEnvVariables loads the environment variables from the .env file in the
-// current working directory.
-func LoadEnvVariables() {
-	// get current working directory
-	cwd, errCwd := os.Getwd()
-
-	if errCwd != nil {
-		log.Fatalf("error getting current working directory: %v", errCwd)
-	}
-
-	// check if the OS is Windows
-	if runtime.GOOS == "windows" {
-		// move up one level folder
-		cwd = filepath.Dir(cwd)
-	}
-
-	envPath := filepath.Join(cwd, ".env")
-
-	errLoadFilePath := godotenv.Load(envPath)
-
-	if errLoadFilePath != nil {
-		log.Fatalf("error loading .env file: %v", errLoadFilePath)
-	}
-
-	log.Println("Loaded environment variables from .env file")
 }

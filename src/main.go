@@ -5,7 +5,6 @@ import (
 	"github.com/RubenPari/clear-songs/src/database"
 	"github.com/RubenPari/clear-songs/src/docs"
 	"github.com/RubenPari/clear-songs/src/routes"
-	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -16,7 +15,7 @@ import (
 // @description API for managing Spotify playlists and tracks
 // @BasePath /
 func main() {
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	server := gin.Default()
 
 	docs.SwaggerInfo.BasePath = "/"
@@ -24,15 +23,13 @@ func main() {
 
 	routes.SetUpRoutes(server)
 
-	utils.LoadEnvVariables()
-
 	cacheManager.Init()
 
 	if errConnectDb := database.Init(); errConnectDb != nil {
 		panic("Error connecting to database")
 	}
 
-	if server.Run(":3000") != nil {
+	if server.Run("0.0.0.0:8080") != nil {
 		panic("Error starting server")
 	}
 }
