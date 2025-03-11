@@ -9,10 +9,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var (
-	configAuth = utils.GetOAuth2Config()
-)
-
 // Login godoc
 // @Summary Redirect to Spotify login
 // @Schemes
@@ -28,7 +24,7 @@ var (
 // API calls in the future without having to prompt the user to authenticate
 // again.
 func Login(c *gin.Context) {
-	url := configAuth.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	url := utils.GetOAuth2Config().AuthCodeURL("state", oauth2.AccessTypeOffline)
 
 	log.Default().Printf("Redirecting to %s", url)
 
@@ -59,7 +55,7 @@ func Login(c *gin.Context) {
 func Callback(c *gin.Context) {
 	code := c.Query("code")
 
-	token, errToken := configAuth.Exchange(context.Background(), code)
+	token, errToken := utils.GetOAuth2Config().Exchange(context.Background(), code)
 
 	if errToken != nil {
 		c.JSON(500, gin.H{

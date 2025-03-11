@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"github.com/RubenPari/clear-songs/src/controllers/albumController"
 	"github.com/RubenPari/clear-songs/src/controllers/authController"
 	"github.com/RubenPari/clear-songs/src/controllers/playlistController"
 	"github.com/RubenPari/clear-songs/src/controllers/trackController"
@@ -37,11 +36,6 @@ func SetUpRoutes(server *gin.Engine) {
 			middlewares.CheckAuth(),
 			trackController.DeleteTrackByRange)
 	}
-
-	// ####### ALBUMS #######
-	server.POST("/album/convert-to-songs",
-		middlewares.CheckAuth(),
-		albumController.ConvertAlbumToSongs)
 
 	// ####### PLAYLIST #######
 	playlist := server.Group("/playlist")

@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "C:\\Users\\ruben\\Documents\\clear-songs\\src\\main.go"
+            "program": "${fileDirname}"
         }
     ]
 }
