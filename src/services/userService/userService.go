@@ -15,17 +15,7 @@ import (
 // The number of tracks retrieved at each iteration is limited to 50.
 // The function returns a slice of spotifyAPI.SavedTrack and an error if the
 // operation fails.
-func GetAllUserTracks(c *gin.Context) ([]spotifyAPI.SavedTrack, error) {
-	service := utils.GetSpotifyService(c)
-	if service == nil {
-		return nil, errors.New("spotify service not available")
-	}
-
-	client := service.GetSpotifyClient()
-	if client == nil {
-		return nil, errors.New("spotify client not available")
-	}
-
+func GetAllUserTracks(client *spotifyAPI.Client) ([]spotifyAPI.SavedTrack, error) {
 	log.Default().Println("Getting all user tracks")
 
 	var allTracks []spotifyAPI.SavedTrack

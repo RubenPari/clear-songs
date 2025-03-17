@@ -2,6 +2,7 @@ package authController
 
 import (
 	"context"
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"log"
 
 	"github.com/RubenPari/clear-songs/src/utils"
@@ -65,6 +66,7 @@ func Callback(c *gin.Context) {
 	}
 
 	// set token in spotifyService instance for dependency injection
+	cacheManager.Set("spotify_token", token)
 	utils.SpotifySvc.SetAccessToken(token)
 
 	log.Default().Println("Called callback, created spotify wrapper")
@@ -78,6 +80,9 @@ func Callback(c *gin.Context) {
 			"message": "Error authenticating user",
 		})
 	}
+
+	// set spotifyService instance for dependency injection
+	c.Set("spotifyService", utils.SpotifySvc)
 
 	c.JSON(200, gin.H{
 		"status":  "success",

@@ -27,6 +27,8 @@ import (
 // @Router /track/artist/{id_artist} [delete]
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
+	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+
 	// get artist id from url
 	idArtistString := c.Param("id_artist")
 	idArtist := spotifyAPI.ID(idArtistString)
@@ -40,7 +42,7 @@ func DeleteTrackByArtist(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = userService.GetAllUserTracks(c)
+		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -93,6 +95,8 @@ func DeleteTrackByArtist(c *gin.Context) {
 // DeleteTrackByRange deletes tracks within a play count range
 // from the user's library
 func DeleteTrackByRange(c *gin.Context) {
+	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
 	minCount, _ := strconv.Atoi(minStr)
@@ -109,7 +113,7 @@ func DeleteTrackByRange(c *gin.Context) {
 	if found {
 		tracks = value.([]spotifyAPI.SavedTrack)
 	} else {
-		tracks, errTracks = userService.GetAllUserTracks(c)
+		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{

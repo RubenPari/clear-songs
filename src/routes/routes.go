@@ -9,6 +9,8 @@ import (
 )
 
 func SetUpRoutes(server *gin.Engine) {
+	server.Use(middlewares.SessionMiddleware())
+
 	// ####### NOT FOUND ROUTE #######
 	server.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{
@@ -30,10 +32,10 @@ func SetUpRoutes(server *gin.Engine) {
 	track := server.Group("/track")
 	{
 		track.DELETE("/by-artist/:id_artist",
-			middlewares.CheckAuth(),
+			middlewares.SpotifyAuthMiddleware(),
 			trackController.DeleteTrackByArtist)
 		track.DELETE("/by-range",
-			middlewares.CheckAuth(),
+			middlewares.SpotifyAuthMiddleware(),
 			trackController.DeleteTrackByRange)
 	}
 
@@ -41,10 +43,10 @@ func SetUpRoutes(server *gin.Engine) {
 	playlist := server.Group("/playlist")
 	{
 		playlist.DELETE("/delete-tracks",
-			middlewares.CheckAuth(),
+			middlewares.SpotifyAuthMiddleware(),
 			playlistController.DeleteAllPlaylistTracks)
 		playlist.DELETE("/delete-tracks-and-library",
-			middlewares.CheckAuth(),
+			middlewares.SpotifyAuthMiddleware(),
 			playlistController.DeleteAllPlaylistAndUserTracks)
 	}
 }
