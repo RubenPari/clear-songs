@@ -1,6 +1,7 @@
 package trackController
 
 import (
+	"sort"
 	"strconv"
 
 	"github.com/RubenPari/clear-songs/src/helpers/trackHelper"
@@ -156,4 +157,60 @@ func DeleteTrackByRange(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Tracks deleted",
 	})
+}
+
+// GetTrackSummary godoc
+// @Summary Get artists track count summary
+// @Schemes
+// @Description Returns a summary of tracks per artist, sorted by track count
+// @Tags track
+// @Accept json
+// @Produce json
+// @Param min query integer false "Minimum track count filter"
+// @Param max query integer false "Maximum track count filter"
+// @Success 200 {array} trackHelper.ArtistSummary
+// @Failure 500 {object} map[string]string "message: Error getting tracks"
+// @Router /track/summary [get]
+func GetTrackSummary(c *gin.Context) {
+	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+
+	minStr := c.Query("min")
+	maxStr := c.Query("max")
+	minCount, _ := strconv.Atoi(minStr)
+	maxCount, _ := strconv.Atoi(maxStr)
+
+	var tracks []spotifyAPI.SavedTrack
+	var errTracks error
+
+	value, found := cacheManager.Get("userTracks")
+
+	if found {
+		tracks = value.([]spotifyAPI.SavedTrack)
+	} else {
+		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
+
+		if errTracks != nil {
+			c.JSON(500, gin.H{
+				"message": "Error getting tracks",
+				"details": errTracks.Error(),
+			})
+			return
+		}
+
+		cacheManager.Set("userTracks", tracks)
+	}
+
+	artistSummaryArray := trackHelper.GetArtistsSummary(tracks)
+
+	// Apply range filters if provided
+	if minStr != "" || maxStr != "" {
+		artistSummaryArray = utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
+	}
+
+	// Sort by track count descending
+	sort.Slice(artistSummaryArray, func(i, j int) bool {
+		return artistSummaryArray[i].Count > artistSummaryArray[j].Count
+	})
+
+	c.JSON(200, artistSummaryArray)
 }

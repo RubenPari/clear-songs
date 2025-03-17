@@ -31,6 +31,9 @@ func SetUpRoutes(server *gin.Engine) {
 	// ####### TRACK #######
 	track := server.Group("/track")
 	{
+		track.GET("/summary",
+			middlewares.SpotifyAuthMiddleware(),
+			trackController.GetTrackSummary)
 		track.DELETE("/by-artist/:id_artist",
 			middlewares.SpotifyAuthMiddleware(),
 			trackController.DeleteTrackByArtist)
