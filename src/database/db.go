@@ -6,13 +6,13 @@ import (
 	"os"
 
 	"github.com/RubenPari/clear-songs/src/models"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB = nil
 
-// Init connects to the MySQL database and performs auto-migration to create the
+// Init connects to the Postgres database and performs auto-migration to create the
 // tables as necessary. It sets the Db global variable to the connected database.
 //
 // This function returns an error if it fails to connect to the database, test the
@@ -20,7 +20,7 @@ var Db *gorm.DB = nil
 // will log a message to the console indicating that the database connection was
 // successful.
 func Init() error {
-	// mysql credential
+	// postgres credentials
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -28,11 +28,11 @@ func Init() error {
 	dbname := os.Getenv("DB_NAME")
 
 	// create the connection string
-	mysqlInfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbname)
+	postgresInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, port, user, password, dbname)
 
 	// Open the connection
 	var errConnectDb error
-	db, errConnectDb := gorm.Open(mysql.Open(mysqlInfo), &gorm.Config{})
+	db, errConnectDb := gorm.Open(postgres.Open(postgresInfo), &gorm.Config{})
 
 	if errConnectDb != nil {
 		log.Printf("Error connect database: %v", errConnectDb)
