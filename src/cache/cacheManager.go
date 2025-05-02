@@ -10,6 +10,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+// TODO: Implement cache reset whenever an edit operation is performed
+
 var cacheStore *cache.Cache
 
 // Init creates a cacheManager with a default
