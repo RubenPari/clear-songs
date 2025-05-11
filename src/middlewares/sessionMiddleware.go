@@ -9,8 +9,8 @@ import (
 
 func SessionMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		value, found := cacheManager.Get("spotify_token")
-		if found {
+		value := cacheManager.Get("spotify_token")
+		if value != nil {
 			token := value.(*oauth2.Token)
 			utils.SpotifySvc.SetAccessToken(token)
 			c.Set("spotifyService", utils.SpotifySvc)

@@ -3,6 +3,8 @@ package cache
 import (
 	"time"
 
+	"github.com/RubenPari/clear-songs/src/services/userService"
+
 	"github.com/RubenPari/clear-songs/src/services/playlistService"
 
 	spotifyAPI "github.com/zmb3/spotify"
@@ -29,12 +31,12 @@ func Set(key string, value interface{}) {
 
 // Get retrieves an item from the cache
 // If the item does not exist, it returns nil
-func Get(key string) (interface{}, bool) {
+func Get(key string) interface{} {
 	value, found := cacheStore.Get(key)
 	if found {
-		return value, true
+		return value
 	}
-	return nil, false
+	return nil
 }
 
 // GetCachedPlaylistTracksOrSet retrieves a list of tracks from the cache, or if not present,
@@ -44,9 +46,9 @@ func Get(key string) (interface{}, bool) {
 func GetCachedPlaylistTracksOrSet(idPlaylist spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
 	var playlistTracks []spotifyAPI.PlaylistTrack
 
-	value, found := Get("tracksPlaylist" + idPlaylist.String())
+	value := Get("tracksPlaylist" + idPlaylist.String())
 
-	if found {
+	if value != nil {
 		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
 	} else {
 		tracks, errGetAllPlaylistTracks := playlistService.GetAllPlaylistTracks(idPlaylist)

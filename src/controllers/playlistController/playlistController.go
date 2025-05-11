@@ -93,24 +93,13 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	// get all playlist tracks
-	var playlistTracks []spotifyAPI.PlaylistTrack
-	var errPlaylistTracks error
+	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(spotifyAPI.ID(id))
 
-	value, _ := cacheManager.Get("tracksPlaylist" + id)
-	if value != nil {
-		playlistTracks = value.([]spotifyAPI.PlaylistTrack)
-	} else {
-		playlistTracks, errPlaylistTracks = playlistService.GetAllPlaylistTracks(spotifyAPI.ID(id))
-
-		if errPlaylistTracks != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting playlist tracks",
-			})
-			return
-		}
-
-		cacheManager.Set("tracksPlaylist"+id, playlistTracks)
+	if errPlaylistTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting playlist tracks",
+		})
+		return
 	}
 
 	errSaveTracksFile := utils.SaveTracksBackup(playlistTracks)

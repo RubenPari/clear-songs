@@ -34,30 +34,17 @@ func DeleteTrackByArtist(c *gin.Context) {
 	idArtistString := c.Param("id_artist")
 	idArtist := spotifyAPI.ID(idArtistString)
 
-	// get all tracks from user
-	var tracks []spotifyAPI.SavedTrack
-	var errTracks error
+	userTracks, errUserTracks := cacheManager.GetCachedUserTracksOrSet()
 
-	value, found := cacheManager.Get("userTracks")
-
-	if found {
-		tracks = value.([]spotifyAPI.SavedTrack)
-	} else {
-		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
-
-		if errTracks != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting tracks",
-			})
-			return
-		}
-
-		// save user tracks in cacheManager
-		cacheManager.Set("userTracks", tracks)
+	if errUserTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting tracks",
+		})
+		return
 	}
 
 	// filter all tracks by artist
-	tracksFilterers, errTracks := userService.GetAllUserTracksByArtist(idArtist, tracks)
+	tracksFilterers, errTracks := userService.GetAllUserTracksByArtist(idArtist, userTracks)
 
 	if errTracks != nil {
 		c.JSON(500, gin.H{
@@ -105,36 +92,23 @@ func DeleteTrackByRange(c *gin.Context) {
 	maxStr := c.Query("max")
 	maxCount, _ := strconv.Atoi(maxStr)
 
-	// get tracks from user
-	var tracks []spotifyAPI.SavedTrack
-	var errTracks error
+	userTracks, errUserTracks := cacheManager.GetCachedUserTracksOrSet()
 
-	value, found := cacheManager.Get("userTracks")
-
-	if found {
-		tracks = value.([]spotifyAPI.SavedTrack)
-	} else {
-		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
-
-		if errTracks != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting tracks",
-			})
-			return
-		}
-
-		// save user tracks in cacheManager
-		cacheManager.Set("userTracks", tracks)
+	if errUserTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting tracks",
+		})
+		return
 	}
 
-	artistSummaryArray := trackHelper.GetArtistsSummary(tracks)
+	artistSummaryArray := trackHelper.GetArtistsSummary(userTracks)
 
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
 	// delete all tracks from artists present
 	// in the summary object
 	for artistObj := range artistSummaryFiltered {
-		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)), tracks)
+		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)), userTracks)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -179,25 +153,13 @@ func GetTrackSummary(c *gin.Context) {
 	minCount, _ := strconv.Atoi(minStr)
 	maxCount, _ := strconv.Atoi(maxStr)
 
-	var tracks []spotifyAPI.SavedTrack
-	var errTracks error
+	tracks, errUserTracks := cacheManager.GetCachedUserTracksOrSet()
 
-	value, found := cacheManager.Get("userTracks")
-
-	if found {
-		tracks = value.([]spotifyAPI.SavedTrack)
-	} else {
-		tracks, errTracks = userService.GetAllUserTracks(spotifyClient)
-
-		if errTracks != nil {
-			c.JSON(500, gin.H{
-				"message": "Error getting tracks",
-				"details": errTracks.Error(),
-			})
-			return
-		}
-
-		cacheManager.Set("userTracks", tracks)
+	if errUserTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting tracks",
+		})
+		return
 	}
 
 	artistSummaryArray := trackHelper.GetArtistsSummary(tracks)
