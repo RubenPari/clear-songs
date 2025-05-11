@@ -63,3 +63,28 @@ func GetCachedPlaylistTracksOrSet(idPlaylist spotifyAPI.ID) ([]spotifyAPI.Playli
 
 	return playlistTracks, nil
 }
+
+func GetCachedUserTracksOrSet() ([]spotifyAPI.SavedTrack, error) {
+	var userTracks []spotifyAPI.SavedTrack
+
+	value := Get("userTracks")
+
+	if value != nil {
+		userTracks = value.([]spotifyAPI.SavedTrack)
+	} else {
+		tracks, errTracks := userService.GetAllUserTracks()
+
+		if errTracks != nil {
+			return nil, errTracks
+		}
+
+		Set("userTracks", tracks)
+		userTracks = tracks
+	}
+
+	return userTracks, nil
+}
+
+func Reset() {
+	cacheStore.Flush()
+}
