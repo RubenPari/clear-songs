@@ -15,7 +15,7 @@ import (
 // The number of tracks retrieved at each iteration is limited to 50.
 // The function returns a slice of spotifyAPI.SavedTrack and an error if the
 // operation fails.
-func GetAllUserTracks(client *spotifyAPI.Client) ([]spotifyAPI.SavedTrack, error) {
+func GetAllUserTracks() ([]spotifyAPI.SavedTrack, error) {
 	log.Default().Println("Getting all user tracks")
 
 	var allTracks []spotifyAPI.SavedTrack
@@ -23,7 +23,7 @@ func GetAllUserTracks(client *spotifyAPI.Client) ([]spotifyAPI.SavedTrack, error
 	var limit = 50
 
 	for {
-		tracks, err := client.CurrentUsersTracksOpt(&spotifyAPI.Options{
+		tracks, err := utils.SpotifySvc.GetSpotifyClient().CurrentUsersTracksOpt(&spotifyAPI.Options{
 			Limit:  &limit,
 			Offset: &offset,
 		})
