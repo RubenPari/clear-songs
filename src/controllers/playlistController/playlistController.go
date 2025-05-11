@@ -36,6 +36,12 @@ import (
 //
 // Otherwise, it returns a JSON response with a 200 status code and a success message.
 func DeleteAllPlaylistTracks(c *gin.Context) {
+	value := cacheManager.Get("modifiedCachedValue")
+
+	if value == true {
+		cacheManager.Reset()
+	}
+
 	id := c.Query("id")
 
 	if id == "" {
@@ -84,6 +90,12 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 // DeleteAllPlaylistAndUserTracks deletes all tracks
 // from a playlist and from the user's library
 func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
+	value := cacheManager.Get("modifiedCachedValue")
+
+	if value == true {
+		cacheManager.Reset()
+	}
+
 	id := c.Query("id")
 
 	if id == "" {

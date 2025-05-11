@@ -28,7 +28,11 @@ import (
 // @Router /track/artist/{id_artist} [delete]
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
-	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+	value := cacheManager.Get("modifiedCachedValue")
+
+	if value == true {
+		cacheManager.Reset()
+	}
 
 	// get artist id from url
 	idArtistString := c.Param("id_artist")
@@ -83,7 +87,11 @@ func DeleteTrackByArtist(c *gin.Context) {
 // DeleteTrackByRange deletes tracks within a play count range
 // from the user's library
 func DeleteTrackByRange(c *gin.Context) {
-	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+	value := cacheManager.Get("modifiedCachedValue")
+
+	if value == true {
+		cacheManager.Reset()
+	}
 
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
@@ -146,7 +154,11 @@ func DeleteTrackByRange(c *gin.Context) {
 // @Failure 500 {object} map[string]string "message: Error getting tracks"
 // @Router /track/summary [get]
 func GetTrackSummary(c *gin.Context) {
-	spotifyClient := c.MustGet("spotifyClient").(*spotifyAPI.Client)
+	value := cacheManager.Get("modifiedCachedValue")
+
+	if value == true {
+		cacheManager.Reset()
+	}
 
 	minStr := c.Query("min")
 	maxStr := c.Query("max")
