@@ -12,18 +12,6 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// DeleteAllPlaylistTracks godoc
-// @Summary Delete all tracks from playlist
-// @Schemes
-// @Description Removes all tracks from a specified playlist
-// @Tags playlist
-// @Accept json
-// @Produce json
-// @Param id query string true "Playlist ID"
-// @Success 200 {object} map[string]string "message: Tracks deleted"
-// @Failure 400 {object} map[string]string "message: Playlist id is required"
-// @Failure 500 {object} map[string]string "message: Error deleting tracks from playlist"
-// @Router /playlist/tracks [delete]
 // DeleteAllPlaylistTracks deletes all tracks from a playlist.
 //
 // The playlist ID is required and must be passed as a query parameter.
@@ -73,18 +61,6 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 	})
 }
 
-// DeleteAllPlaylistAndUserTracks godoc
-// @Summary Delete tracks from playlist and user library
-// @Schemes
-// @Description Removes all tracks from the playlist and user's library and save the tracks on DB for backup before deleting them
-// @Tags playlist
-// @Accept json
-// @Produce json
-// @Param id query string true "Playlist ID"
-// @Success 200 {object} map[string]string "message: Tracks deleted"
-// @Failure 400 {object} map[string]string "message: Playlist id is required"
-// @Failure 500 {object} map[string]string "message: Error deleting tracks"
-// @Router /playlist/tracks/all [delete]
 // DeleteAllPlaylistAndUserTracks deletes all tracks
 // from a playlist and from the user's library
 func DeleteAllPlaylistAndUserTracks(c *gin.Context) {

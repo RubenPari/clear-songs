@@ -10,15 +10,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Login godoc
-// @Summary Redirect to Spotify login
-// @Schemes
-// @Description Redirects user to Spotify's authentication page
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Success 302 {string} string "Redirect to Spotify"
-// @Router /auth/login [get]
 // Login redirects to Spotify's authentication address.
 // The function uses the value of oauth2.AccessTypeOffline to get
 // an offline access token that can be used to make
@@ -32,17 +23,6 @@ func Login(c *gin.Context) {
 	c.Redirect(302, url)
 }
 
-// Callback godoc
-// @Summary Handle Spotify OAuth callback
-// @Schemes
-// @Description Handles the callback from Spotify OAuth process
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param code query string true "Authorization code"
-// @Success 200 {object} map[string]string "status: success, message: User authenticated"
-// @Failure 500 {object} map[string]string "status: error, message: Error authenticating user"
-// @Router /auth/callback [get]
 // Callback handles the callback received from Spotify after the user
 // login request.
 // Performs the following logic:
@@ -90,15 +70,6 @@ func Callback(c *gin.Context) {
 	})
 }
 
-// Logout godoc
-// @Summary Logout user
-// @Schemes
-// @Description Clears user authentication session
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Success 200 {object} map[string]string "status: success, message: User logged out"
-// @Router /auth/logout [post]
 // Logout clears the user authentication by clearing the Spotify client
 // from the session.
 // Performs the following logic:
@@ -116,16 +87,6 @@ func Logout(c *gin.Context) {
 	})
 }
 
-// IsAuth godoc
-// @Summary Check authentication status
-// @Schemes
-// @Description Checks if user is currently authenticated
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Success 200 {object} map[string]string "status: success, message: User authenticated"
-// @Failure 401 {object} map[string]string "status: error, message: Unauthorized"
-// @Router /auth/status [get]
 // IsAuth checks if the user is authenticated.
 // Performs the following logic:
 // 1. Checks if Spotify client is set.
