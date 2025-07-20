@@ -1,91 +1,604 @@
 # Clear Songs
 
-Clear Songs is a REST API service that helps you efficiently manage your Spotify music library by providing powerful bulk deletion capabilities for your tracks and playlists.
+Clear Songs is a powerful REST API service built with Go that helps you efficiently manage your Spotify music library by providing comprehensive bulk deletion capabilities for your tracks and playlists.
 
-## Overview
+![Go Version](https://img.shields.io/badge/Go-1.23+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![API Version](https://img.shields.io/badge/API-v1.0-orange.svg)
+
+## 🎯 Overview
 
 The application allows you to quickly clean up your Spotify library by:
-- Removing all tracks from a specific artist
-- Deleting tracks based on the number of songs per artist
+
+- Removing all tracks from a specific artist across your entire library
+- Deleting tracks based on quantitative criteria (number of songs per artist)
 - Clearing out entire playlists while maintaining the playlist structure
+- Converting albums to individual tracks in your library
+- Comprehensive backup system to prevent accidental data loss
 
-## Features
+## ✨ Features
 
-### Track Management
+### 🎵 Track Management
+
 - **Delete by Artist**: Remove all tracks from a specific artist in your library
 - **Quantitative Deletion**: Delete tracks based on the number of songs you have per artist (e.g., remove all tracks from artists with more than X songs)
-- **Backup System**: Automatically saves deleted tracks to MySQL database for recovery in case of accidental deletion
+- **Range-based Deletion**: Filter and delete tracks within specific count ranges
+- **Track Analysis**: Get detailed summaries of your library organized by artist
 
-### Playlist Management
+### 📋 Playlist Management
+
 - **Playlist Clearing**: Empty any playlist you own while keeping the playlist itself intact
+- **Dual Deletion**: Remove tracks from both playlist and your personal library simultaneously
 - **Bulk Operations**: Perform operations quickly and efficiently through the API
 
-## Setup
+### 🔄 Album Operations
 
-### Environment Variables
+- **Album Conversion**: Convert albums to individual songs in your library
+
+### 🛡️ Safety Features
+
+- **Automatic Backup**: All deleted tracks are automatically saved to PostgreSQL database
+- **Recovery System**: Restore accidentally deleted tracks from the backup
+- **Smart Caching**: Intelligent cache management for optimal performance
+- **Transaction Safety**: Operations are performed safely with proper error handling
+
+## 🏗️ Technical Stack
+
+- **Backend**: Go (Golang) 1.23+
+- **Web Framework**: Gin
+- **Database**: PostgreSQL with GORM
+- **Caching**: In-memory cache with automatic invalidation
+- **Authentication**: OAuth 2.0 with Spotify
+- **Documentation**: Swagger/OpenAPI
+- **External API**: Spotify Web API
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Go 1.23 or higher
+- PostgreSQL database
+- Spotify Developer Account
+- Git
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/RubenPari/clear-songs.git
+   cd clear-songs
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   go mod download
+   ```
+
+3. **Configure environment variables**
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Set up your Spotify App**
+   - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+   - Create a new app
+   - Add your redirect URI (e.g., `http://localhost:3000/auth/callback`)
+   - Copy Client ID and Client Secret to your `.env` file
+
+5. **Run the application**
+
+   ```bash
+   go run src/main.go
+   ```
+
+The server will start on `http://localhost:3000`
+
+## ⚙️ Environment Configuration
+
 Create a `.env` file in the root directory with the following parameters:
 
 ```env
 # Spotify API Credentials
 CLIENT_ID=your_spotify_client_id
 CLIENT_SECRET=your_spotify_client_secret
-REDIRECT_URL=your_callback_url
+REDIRECT_URL=http://localhost:3000/auth/callback
 
 # Database Configuration
-DB_HOST=your_database_host
+DB_HOST=localhost
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-DB_PORT=your_database_port
+DB_NAME=clear_songs
+DB_PORT=5432
 ```
 
-### Database Setup
-The application uses MySQL as its database system for track backup functionality. This feature allows you to:
-- Automatically save tracks before deletion
-- Recover accidentally deleted tracks
-- Maintain a history of your library changes
+### Required Spotify Permissions
 
-You can use any MySQL database of your choice. The application will create the necessary tables on startup.
+The application requires the following Spotify scopes:
 
-## API Endpoints
+- `playlist-read-private` - Read private playlists
+- `playlist-read-collaborative` - Read collaborative playlists
+- `playlist-modify-public` - Modify public playlists
+- `playlist-modify-private` - Modify private playlists
+- `user-library-read` - Read user's saved tracks
+- `user-library-modify` - Modify user's saved tracks
+- `user-read-private` - Read user profile
+- `user-read-email` - Read user email
 
-### Authentication
-- `/auth/login` - Initiates Spotify OAuth flow
-- `/auth/callback` - Handles OAuth callback from Spotify
-- `/auth/logout` - Logs out the current user
-- `/auth/status` - Checks authentication status
+## 📚 API Documentation
 
-### Track Operations
-- `/track/artist/{id_artist}` - Delete all tracks from a specific artist
-- `/track/range` - Delete tracks based on quantity parameters
+### Base URL
 
-### Playlist Operations
-- `/playlist/tracks` - Remove all tracks from a specified playlist
-- `/playlist/tracks/all` - Remove tracks from both playlist and user library
+```
+http://localhost:3000
+```
 
-### Album Operations
-- `/album/convert` - Convert an album to individual songs in your library
+### Interactive Documentation
 
-## Getting Started
+Access the Swagger UI at: `http://localhost:3000/swagger/index.html`
 
-1. Clone the repository
-2. Create and configure your `.env` file with all required parameters
-3. Set up your MySQL database
-4. Configure your Spotify API credentials in the Spotify Developer Dashboard
-5. Start the server
-6. Authenticate with your Spotify account
-7. Begin managing your library through the API endpoints
+---
 
-## Security
+## 🔐 Authentication Endpoints
 
-The application uses OAuth 2.0 for authentication with Spotify and requires appropriate permissions to manage your library and playlists.
+### Login to Spotify
 
-## Technical Stack
+Initiates the OAuth flow to authenticate with Spotify.
 
-- Go (Golang)
-- Gin Web Framework
-- Spotify Web API
-- Redis for caching
-- MySQL for track backup storage
+**Endpoint:** `GET /auth/login`
 
-**Note**: While the application includes a backup system, it's still recommended to be careful when using bulk deletion features. Always verify your selections before performing bulk operations.
+**Response:**
+
+- `302 Redirect` - Redirects to Spotify authentication page
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:3000/auth/login"
+```
+
+### OAuth Callback
+
+Handles the callback from Spotify after user authentication.
+
+**Endpoint:** `GET /auth/callback`
+
+**Query Parameters:**
+
+- `code` (string, required) - Authorization code from Spotify
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "User authenticated"
+}
+```
+
+### Check Authentication Status
+
+Verifies if the user is currently authenticated.
+
+**Endpoint:** `GET /auth/status`
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "User authenticated"
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "status": "error",
+  "message": "Unauthorized"
+}
+```
+
+### Logout
+
+Clears the current user session.
+
+**Endpoint:** `POST /auth/logout`
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "User logged out"
+}
+```
+
+---
+
+## 🎵 Track Management Endpoints
+
+### Get Track Summary
+
+Returns a comprehensive summary of tracks organized by artist, with optional filtering.
+
+**Endpoint:** `GET /track/summary`
+
+**Query Parameters:**
+
+- `min` (integer, optional) - Minimum track count filter
+- `max` (integer, optional) - Maximum track count filter
+
+**Response:**
+
+```json
+[
+  {
+    "id": "4NHQUGzhtTLFvgF5SZesLK",
+    "name": "Radiohead",
+    "count": 45
+  },
+  {
+    "id": "1dfeR4HaWDbWqFHLkxsg1d",
+    "name": "Queen",
+    "count": 32
+  }
+]
+```
+
+**Example:**
+
+```bash
+# Get all artists
+curl -X GET "http://localhost:3000/track/summary"
+
+# Get artists with 10-50 tracks
+curl -X GET "http://localhost:3000/track/summary?min=10&max=50"
+
+# Get artists with more than 20 tracks
+curl -X GET "http://localhost:3000/track/summary?min=20"
+```
+
+### Delete Tracks by Artist
+
+Removes all tracks from a specific artist from your library.
+
+**Endpoint:** `DELETE /track/artist/{id_artist}`
+
+**Path Parameters:**
+
+- `id_artist` (string, required) - Spotify Artist ID
+
+**Response:**
+
+```json
+{
+  "message": "Tracks deleted"
+}
+```
+
+**Example:**
+
+```bash
+curl -X DELETE "http://localhost:3000/track/artist/4NHQUGzhtTLFvgF5SZesLK"
+```
+
+### Delete Tracks by Range
+
+Removes tracks based on the number of songs per artist within a specified range.
+
+**Endpoint:** `DELETE /track/range`
+
+**Query Parameters:**
+
+- `min` (integer, optional) - Minimum track count (artists with at least this many tracks)
+- `max` (integer, optional) - Maximum track count (artists with at most this many tracks)
+
+**Response:**
+
+```json
+{
+  "message": "Tracks deleted"
+}
+```
+
+**Examples:**
+
+```bash
+# Delete tracks from artists with exactly 1 track (likely singles)
+curl -X DELETE "http://localhost:3000/track/range?min=1&max=1"
+
+# Delete tracks from artists with more than 50 tracks
+curl -X DELETE "http://localhost:3000/track/range?min=50"
+
+# Delete tracks from artists with 5-15 tracks
+curl -X DELETE "http://localhost:3000/track/range?min=5&max=15"
+```
+
+---
+
+## 📋 Playlist Management Endpoints
+
+### Delete All Playlist Tracks
+
+Removes all tracks from a specified playlist while keeping the playlist structure intact.
+
+**Endpoint:** `DELETE /playlist/tracks`
+
+**Query Parameters:**
+
+- `id` (string, required) - Spotify Playlist ID
+
+**Response:**
+
+```json
+{
+  "message": "Tracks deleted"
+}
+```
+
+**Example:**
+
+```bash
+curl -X DELETE "http://localhost:3000/playlist/tracks?id=37i9dQZF1DXcBWIGoYBM5M"
+```
+
+### Delete Playlist Tracks and Remove from Library
+
+Removes all tracks from both the specified playlist AND your personal library. Includes automatic backup to database.
+
+**Endpoint:** `DELETE /playlist/tracks/all`
+
+**Query Parameters:**
+
+- `id` (string, required) - Spotify Playlist ID
+
+**Response:**
+
+```json
+{
+  "message": "Tracks deleted"
+}
+```
+
+**Example:**
+
+```bash
+curl -X DELETE "http://localhost:3000/playlist/tracks/all?id=37i9dQZF1DXcBWIGoYBM5M"
+```
+
+**⚠️ Warning:** This operation removes tracks from your library permanently. Tracks are backed up to the database for recovery.
+
+---
+
+## 💿 Album Management Endpoints
+
+### Convert Album to Individual Songs
+
+Converts an album to individual songs in your library.
+
+**Endpoint:** `POST /album/convert`
+
+**Query Parameters:**
+
+- `id_album` (string, required) - Spotify Album ID
+
+**Response:**
+
+```json
+{
+  "message": "Album converted to songs"
+}
+```
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:3000/album/convert?id_album=4aawyAB9vmqN3uQ7FjRGTy"
+```
+
+---
+
+## 🔧 Error Handling
+
+The API uses standard HTTP status codes and returns detailed error messages:
+
+### Common Error Responses
+
+**400 Bad Request**
+
+```json
+{
+  "message": "Playlist id is required"
+}
+```
+
+**401 Unauthorized**
+
+```json
+{
+  "status": "error",
+  "message": "Unauthorized"
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "message": "Error deleting tracks",
+  "error": "detailed error description"
+}
+```
+
+---
+
+## 🎯 Usage Examples
+
+### Complete Workflow Example
+
+1. **Authenticate with Spotify**
+
+   ```bash
+   # Open browser and visit
+   http://localhost:3000/auth/login
+   ```
+
+2. **Analyze your library**
+
+   ```bash
+   curl -X GET "http://localhost:3000/track/summary"
+   ```
+
+3. **Remove artists with only 1 track (cleanup singles)**
+
+   ```bash
+   curl -X DELETE "http://localhost:3000/track/range?min=1&max=1"
+   ```
+
+4. **Clean up a specific playlist**
+
+   ```bash
+   curl -X DELETE "http://localhost:3000/playlist/tracks?id=YOUR_PLAYLIST_ID"
+   ```
+
+5. **Verify changes**
+
+   ```bash
+   curl -X GET "http://localhost:3000/track/summary"
+   ```
+
+### Advanced Use Cases
+
+**Remove duplicate artists (keep only artists with 10+ tracks):**
+
+```bash
+curl -X DELETE "http://localhost:3000/track/range?min=1&max=9"
+```
+
+**Clean library and specific playlist simultaneously:**
+
+```bash
+curl -X DELETE "http://localhost:3000/playlist/tracks/all?id=PLAYLIST_ID"
+```
+
+---
+
+## 🏗️ Architecture & Performance
+
+### Caching System
+
+- **Smart Caching**: Automatic caching of Spotify API responses
+- **Intelligent Invalidation**: Cache automatically updates after modifications
+- **Performance Optimization**: Reduces API calls and improves response times
+
+### Database Backup
+
+- **Automatic Backup**: All deleted tracks are saved to PostgreSQL
+- **Recovery Ready**: Easy restoration of accidentally deleted content
+- **Data Integrity**: GORM ensures safe database operations
+
+### Rate Limiting
+
+The application respects Spotify API rate limits and implements proper pagination for large datasets.
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+src/
+├── cache/              # Cache management
+├── constants/          # Application constants
+├── controllers/        # HTTP handlers
+├── database/          # Database configuration
+├── docs/              # Swagger documentation
+├── helpers/           # Utility helpers
+├── middlewares/       # HTTP middlewares
+├── models/            # Data models
+├── routes/            # Route definitions
+├── services/          # Business logic
+└── utils/             # Utility functions
+```
+
+### Running Tests
+
+```bash
+go test ./...
+```
+
+### Building for Production
+
+```bash
+go build -o clear-songs src/main.go
+```
+
+### API Documentation Generation
+
+```bash
+swag init -g src/main.go
+```
+
+---
+
+## ⚠️ Safety Considerations
+
+### Backup System
+
+- All track deletions are automatically backed up to PostgreSQL
+- Recovery is possible through direct database access
+- Consider implementing a recovery endpoint for easier restoration
+
+### Rate Limiting
+
+- Spotify API has rate limits - the application handles these gracefully
+- Large operations are automatically paginated
+
+### Recommendations
+
+1. **Test First**: Always test with a small playlist or artist first
+2. **Backup**: Although automatic backup is provided, consider exporting your library before major operations
+3. **Verification**: Use the summary endpoint to verify changes
+4. **Gradual Approach**: For large libraries, perform operations in smaller chunks
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Spotify Web API](https://developer.spotify.com/documentation/web-api/) for providing comprehensive music data access
+- [Gin Framework](https://gin-gonic.com/) for the excellent HTTP framework
+- [GORM](https://gorm.io/) for elegant database operations
+
+---
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Issues](https://github.com/RubenPari/clear-songs/issues) page
+2. Create a new issue with detailed information
+3. Include logs and error messages when possible
+
+**Happy music library management! 🎵**
