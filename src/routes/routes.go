@@ -10,6 +10,7 @@ import (
 
 func SetUpRoutes(server *gin.Engine) {
 	server.Use(middlewares.SessionMiddleware())
+	server.Use(middlewares.CacheInvalidationMiddleware())
 
 	// ####### NOT FOUND ROUTE #######
 	server.NoRoute(func(c *gin.Context) {

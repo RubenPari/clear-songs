@@ -36,12 +36,6 @@ import (
 //
 // Otherwise, it returns a JSON response with a 200 status code and a success message.
 func DeleteAllPlaylistTracks(c *gin.Context) {
-	value := cacheManager.Get("modifiedCachedValue")
-
-	if value == true {
-		cacheManager.Reset()
-	}
-
 	id := c.Query("id")
 
 	if id == "" {
@@ -51,7 +45,8 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(spotifyAPI.ID(id))
+	playlistID := spotifyAPI.ID(id)
+	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(playlistID)
 
 	if errPlaylistTracks != nil {
 		c.JSON(500, gin.H{
@@ -60,7 +55,7 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
+	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(playlistID, playlistTracks)
 
 	if errDeletePlaylistTracks != nil {
 		c.JSON(500, gin.H{
@@ -69,6 +64,9 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 		})
 		return
 	}
+
+	// Explicitly invalidate cache for this specific playlist after successful deletion
+	cacheManager.InvalidatePlaylist(playlistID)
 
 	c.JSON(200, gin.H{
 		"message": "Tracks deleted",
@@ -90,12 +88,6 @@ func DeleteAllPlaylistTracks(c *gin.Context) {
 // DeleteAllPlaylistAndUserTracks deletes all tracks
 // from a playlist and from the user's library
 func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
-	value := cacheManager.Get("modifiedCachedValue")
-
-	if value == true {
-		cacheManager.Reset()
-	}
-
 	id := c.Query("id")
 
 	if id == "" {
@@ -105,7 +97,8 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(spotifyAPI.ID(id))
+	playlistID := spotifyAPI.ID(id)
+	playlistTracks, errPlaylistTracks := cacheManager.GetCachedPlaylistTracksOrSet(playlistID)
 
 	if errPlaylistTracks != nil {
 		c.JSON(500, gin.H{
@@ -114,6 +107,7 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
+	// Save tracks backup before deletion
 	errSaveTracksFile := utils.SaveTracksBackup(playlistTracks)
 
 	if errSaveTracksFile != nil {
@@ -124,25 +118,43 @@ func DeleteAllPlaylistAndUserTracks(c *gin.Context) {
 		return
 	}
 
-	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(spotifyAPI.ID(id), playlistTracks)
+	// Delete tracks from playlist
+	errDeletePlaylistTracks := playlistService.DeletePlaylistTracks(playlistID, playlistTracks)
 
+	if errDeletePlaylistTracks != nil {
+		c.JSON(500, gin.H{
+			"message": "Error deleting tracks from playlist",
+			"error":   errDeletePlaylistTracks.Error(),
+		})
+		return
+	}
+
+	// Convert playlist tracks to IDs for user library deletion
 	playlistTracksIDs, errConvertIDs := utils.ConvertTracksToID(playlistTracks)
 
 	if errConvertIDs != nil {
 		c.JSON(500, gin.H{
 			"message": "Error converting tracks to IDs",
+			"error":   errConvertIDs.Error(),
 		})
 		return
 	}
 
+	// Delete tracks from user library
 	errDeleteTrackUser := userService.DeleteTracksUser(c, playlistTracksIDs)
 
-	if errDeletePlaylistTracks != nil || errDeleteTrackUser != nil {
+	if errDeleteTrackUser != nil {
 		c.JSON(500, gin.H{
-			"message": "Error deleting tracks",
+			"message": "Error deleting tracks from user library",
+			"error":   errDeleteTrackUser.Error(),
 		})
 		return
 	}
+
+	// Explicitly invalidate cache after successful deletion
+	// This operation affects both playlist and user data
+	cacheManager.InvalidatePlaylist(playlistID)
+	cacheManager.InvalidateUserData()
 
 	c.JSON(200, gin.H{
 		"message": "Tracks deleted",

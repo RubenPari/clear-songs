@@ -15,25 +15,8 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// DeleteTrackByArtist godoc
-// @Summary Delete all tracks by artist
-// @Schemes
-// @Description Removes all tracks from a specific artist from user's library
-// @Tags track
-// @Accept json
-// @Produce json
-// @Param id_artist path string true "Artist ID"
-// @Success 200 {object} map[string]string "message: Tracks deleted"
-// @Failure 500 {object} map[string]string "message: Error deleting tracks"
-// @Router /track/artist/{id_artist} [delete]
 // DeleteTrackByArtist deletes all tracks from an artist
 func DeleteTrackByArtist(c *gin.Context) {
-	value := cacheManager.Get("modifiedCachedValue")
-
-	if value == true {
-		cacheManager.Reset()
-	}
-
 	// get artist id from url
 	idArtistString := c.Param("id_artist")
 	idArtist := spotifyAPI.ID(idArtistString)
@@ -67,32 +50,16 @@ func DeleteTrackByArtist(c *gin.Context) {
 		return
 	}
 
+	// Explicitly invalidate cache after successful deletion
+	cacheManager.InvalidateUserData()
+
 	c.JSON(200, gin.H{
 		"message": "Tracks deleted",
 	})
 }
 
-// DeleteTrackByRange godoc
-// @Summary Delete tracks within play count range
-// @Schemes
-// @Description Removes tracks that fall within a specified play count range
-// @Tags track
-// @Accept json
-// @Produce json
-// @Param min query integer false "Minimum play count"
-// @Param max query integer false "Maximum play count"
-// @Success 200 {object} map[string]string "message: Tracks deleted"
-// @Failure 500 {object} map[string]string "message: Error deleting tracks"
-// @Router /track/range [delete]
-// DeleteTrackByRange deletes tracks within a play count range
-// from the user's library
+// DeleteTrackByRange deletes tracks within a play count range from the user's library
 func DeleteTrackByRange(c *gin.Context) {
-	value := cacheManager.Get("modifiedCachedValue")
-
-	if value == true {
-		cacheManager.Reset()
-	}
-
 	// get min query parameter (if exists)
 	minStr := c.Query("min")
 	minCount, _ := strconv.Atoi(minStr)
@@ -110,13 +77,14 @@ func DeleteTrackByRange(c *gin.Context) {
 	}
 
 	artistSummaryArray := trackHelper.GetArtistsSummary(userTracks)
-
 	artistSummaryFiltered := utils.FilterSummaryByRange(artistSummaryArray, minCount, maxCount)
 
-	// delete all tracks from artists present
-	// in the summary object
-	for artistObj := range artistSummaryFiltered {
-		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(rune(artistObj)), userTracks)
+	// Track if any deletions occurred
+	deletionsOccurred := false
+
+	// delete all tracks from artists present in the summary object
+	for _, artistObj := range artistSummaryFiltered {
+		tracksFilters, errTracks := userService.GetAllUserTracksByArtist(spotifyAPI.ID(artistObj.Id), userTracks)
 
 		if errTracks != nil {
 			c.JSON(500, gin.H{
@@ -125,15 +93,23 @@ func DeleteTrackByRange(c *gin.Context) {
 			return
 		}
 
-		// delete tracks from artist
-		errDelete := userService.DeleteTracksUser(c, tracksFilters)
+		if len(tracksFilters) > 0 {
+			// delete tracks from artist
+			errDelete := userService.DeleteTracksUser(c, tracksFilters)
 
-		if errDelete != nil {
-			c.JSON(500, gin.H{
-				"message": "Error deleting tracks",
-			})
-			return
+			if errDelete != nil {
+				c.JSON(500, gin.H{
+					"message": "Error deleting tracks",
+				})
+				return
+			}
+			deletionsOccurred = true
 		}
+	}
+
+	// Only invalidate cache if deletions actually occurred
+	if deletionsOccurred {
+		cacheManager.InvalidateUserData()
 	}
 
 	c.JSON(200, gin.H{
@@ -141,25 +117,8 @@ func DeleteTrackByRange(c *gin.Context) {
 	})
 }
 
-// GetTrackSummary godoc
-// @Summary Get artists track count summary
-// @Schemes
-// @Description Returns a summary of tracks per artist, sorted by track count
-// @Tags track
-// @Accept json
-// @Produce json
-// @Param min query integer false "Minimum track count filter"
-// @Param max query integer false "Maximum track count filter"
-// @Success 200 {array} trackHelper.ArtistSummary
-// @Failure 500 {object} map[string]string "message: Error getting tracks"
-// @Router /track/summary [get]
+// GetTrackSummary returns a summary of tracks per artist, sorted by track count
 func GetTrackSummary(c *gin.Context) {
-	value := cacheManager.Get("modifiedCachedValue")
-
-	if value == true {
-		cacheManager.Reset()
-	}
-
 	minStr := c.Query("min")
 	maxStr := c.Query("max")
 	minCount, _ := strconv.Atoi(minStr)
