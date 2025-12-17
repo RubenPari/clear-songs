@@ -12,7 +12,6 @@ func main() {
 	gin.SetMode(gin.DebugMode)
 	server := gin.Default()
 
-
 	routes.SetUpRoutes(server)
 
 	utils.LoadEnvVariables()
