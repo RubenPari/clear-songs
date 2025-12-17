@@ -113,7 +113,75 @@ DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 DB_NAME=clear_songs
 DB_PORT=5432
+
+# Redis Cache Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
 ```
+
+## 🐳 Docker Setup
+
+### Using Docker Compose (Recommended)
+
+The easiest way to run the entire backend stack (API, PostgreSQL, and Redis) is using Docker Compose:
+
+1. **Copy environment example and configure**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Spotify credentials
+   ```
+
+2. **Start all services**
+   ```bash
+   docker compose up --build
+   ```
+
+   This will start:
+   - **API**: Running on `http://localhost:3000`
+   - **PostgreSQL**: Running on `localhost:5432`
+   - **Redis**: Running on `localhost:6379`
+
+3. **Stop services**
+   ```bash
+   docker compose down
+   ```
+
+4. **View logs**
+   ```bash
+   docker compose logs -f api
+   docker compose logs -f postgres
+   docker compose logs -f redis
+   ```
+
+### Docker Compose Services
+
+#### API Service
+- Image: `golang:1.22`
+- Port: `3000`
+- Auto-runs: `go run ./src/main.go`
+- Depends on: PostgreSQL and Redis
+
+#### PostgreSQL Service
+- Image: `postgres:16`
+- Port: `5432`
+- Database: `clear_songs`
+- Volume: `pgdata` (persistent)
+
+#### Redis Service
+- Image: `redis:7`
+- Port: `6379`
+- Persistence: Enabled (`appendonly yes`)
+
+### Environment Variables in Compose
+
+The compose file automatically configures:
+- Database host points to `postgres` service
+- Redis host points to `redis` service
+- All services share a Docker network
+
+Customize via `.env` file before running `docker compose up`.
 
 ### Required Spotify Permissions
 
