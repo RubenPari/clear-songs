@@ -2,8 +2,9 @@ package authController
 
 import (
 	"context"
-	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 	"log"
+
+	cacheManager "github.com/RubenPari/clear-songs/src/cache"
 
 	"github.com/RubenPari/clear-songs/src/utils"
 	"github.com/gin-gonic/gin"
@@ -45,8 +46,8 @@ func Callback(c *gin.Context) {
 		})
 	}
 
-	// set token in spotifyService instance for dependency injection
-	cacheManager.Set("spotify_token", token)
+	// set token in cache for session retrieval and in service instance
+	_ = cacheManager.SetToken(token)
 	utils.SpotifySvc.SetAccessToken(token)
 
 	log.Default().Println("Called callback, created spotify wrapper")
