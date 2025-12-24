@@ -72,6 +72,27 @@ func GetAllUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) 
 	return filteredTracks, nil
 }
 
+// GetUserTracksByArtist retrieves all full track objects from a given artist saved by the user.
+//
+// id is the unique identifier of the Spotify artist.
+// tracks is a slice of spotifyAPI.SavedTrack.
+// The function returns a slice of spotifyAPI.SavedTrack and an error if the operation fails.
+func GetUserTracksByArtist(id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.SavedTrack, error) {
+	log.Default().Println("Getting all user track objects by artist")
+
+	var filteredTracks []spotifyAPI.SavedTrack
+
+	for _, track := range tracks {
+		if track.Artists[0].ID == id {
+			filteredTracks = append(filteredTracks, track)
+		}
+	}
+
+	log.Println("Total tracks found: ", len(filteredTracks))
+
+	return filteredTracks, nil
+}
+
 // DeleteTracksUser removes a list of tracks from the user's library.
 //
 // tracks is a slice of spotifyAPI.ID representing the track IDs to be deleted.
