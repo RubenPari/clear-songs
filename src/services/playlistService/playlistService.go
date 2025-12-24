@@ -53,6 +53,40 @@ func GetAllPlaylistTracks(id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) 
 	return playlistTracks, nil
 }
 
+// GetAllUserPlaylists retrieves all playlists owned or followed by the user.
+//
+// Returns a slice of spotifyAPI.SimplePlaylist and an error if the operation fails.
+func GetAllUserPlaylists() ([]spotifyAPI.SimplePlaylist, error) {
+	var allPlaylists []spotifyAPI.SimplePlaylist
+	var offset = 0
+	var limit = 50
+
+	for {
+		playlists, err := utils.SpotifySvc.GetSpotifyClient().CurrentUsersPlaylistsOpt(&spotifyAPI.Options{
+			Limit:  &limit,
+			Offset: &offset,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if len(playlists.Playlists) == 0 {
+			break
+		}
+
+		allPlaylists = append(allPlaylists, playlists.Playlists...)
+
+		if len(playlists.Playlists) < limit {
+			break
+		}
+
+		offset += limit
+	}
+
+	return allPlaylists, nil
+}
+
 // DeletePlaylistTracks deletes tracks from a Spotify playlist.
 //
 // id is the unique identifier of the Spotify playlist and tracks is a slice of spotifyAPI.PlaylistTrack to be deleted.

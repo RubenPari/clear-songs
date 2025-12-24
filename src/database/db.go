@@ -1,3 +1,30 @@
+/**
+ * Database Package
+ *
+ * This package handles database connection and initialization using GORM
+ * (Go Object-Relational Mapping) with PostgreSQL as the database backend.
+ *
+ * The package provides:
+ * - Database connection management
+ * - Automatic schema migration
+ * - Global database instance for use throughout the application
+ *
+ * Database Schema:
+ * The package uses GORM's AutoMigrate feature to automatically create and
+ * update database tables based on model definitions. Currently manages:
+ * - TrackDB model: Stores track metadata and user library information
+ *
+ * Connection Configuration:
+ * Database credentials are loaded from environment variables:
+ * - DB_HOST: Database host address
+ * - DB_PORT: Database port number
+ * - DB_USER: Database username
+ * - DB_PASSWORD: Database password
+ * - DB_NAME: Database name
+ *
+ * @package database
+ * @author Clear Songs Development Team
+ */
 package database
 
 import (
@@ -10,6 +37,16 @@ import (
 	"gorm.io/gorm"
 )
 
+/**
+ * Global Database Instance
+ *
+ * This variable holds the GORM database connection instance.
+ * It is initialized by the Init() function and can be accessed
+ * throughout the application for database operations.
+ *
+ * The variable is set to nil initially and will be assigned
+ * a valid database connection after successful initialization.
+ */
 var Db *gorm.DB = nil
 
 // Init connects to the Postgres database and performs auto-migration to create the
@@ -27,6 +64,14 @@ func Init() error {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 
+	// Check if database configuration is provided
+	if host == "" || port == "" || user == "" || password == "" || dbname == "" {
+		log.Println("WARNING: Database environment variables not set (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)")
+		log.Println("WARNING: Application will continue without database. Backup functionality will be disabled.")
+		log.Println("WARNING: To enable database, set the required environment variables and restart the application.")
+		return nil // Return nil to allow application to continue without database
+	}
+
 	// create the connection string
 	postgresInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, port, user, password, dbname)
 
@@ -35,24 +80,27 @@ func Init() error {
 	db, errConnectDb := gorm.Open(postgres.Open(postgresInfo), &gorm.Config{})
 
 	if errConnectDb != nil {
-		log.Printf("Error connect database: %v", errConnectDb)
-		return errConnectDb
+		log.Printf("WARNING: Database connection failed: %v", errConnectDb)
+		log.Println("WARNING: Application will continue without database. Backup functionality will be disabled.")
+		return nil // Return nil to allow application to continue without database
 	}
 
 	// test connection
 	errTestDb := db.Exec("SELECT 1").Error
 
 	if errTestDb != nil {
-		log.Printf("Error testing connection to DB: %v", errTestDb)
-		return errTestDb
+		log.Printf("WARNING: Database connection test failed: %v", errTestDb)
+		log.Println("WARNING: Application will continue without database. Backup functionality will be disabled.")
+		return nil // Return nil to allow application to continue without database
 	}
 
 	// auto-migration
 	errMigration := db.AutoMigrate(&models.TrackDB{})
 
 	if errMigration != nil {
-		log.Printf("Error run auto-migration DB: %v", errMigration)
-		return errMigration
+		log.Printf("WARNING: Database migration failed: %v", errMigration)
+		log.Println("WARNING: Application will continue without database. Backup functionality will be disabled.")
+		return nil // Return nil to allow application to continue without database
 	}
 
 	Db = db

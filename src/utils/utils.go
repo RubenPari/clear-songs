@@ -19,24 +19,40 @@ import (
 )
 
 var (
-	configAuth = GetOAuth2Config()
-	SpotifySvc = SpotifyService.NewSpotifyService(configAuth.ClientID, configAuth.ClientSecret, configAuth.RedirectURL)
+	SpotifySvc *SpotifyService.SpotifyService
 )
 
 // GetOAuth2Config returns a pointer to an oauth2.Config with the client id, client
 // secret, redirect url, and scopes set from the environment variables CLIENT_ID,
-// CLIENT_SECRET, REDIRECT_URL, and SPOTIFY_SCOPES, respectively. The endpoint is set
-// to the Spotify endpoints.
+// CLIENT_SECRET, REDIRECT_URL (or REDIRECT_URI as fallback), and SPOTIFY_SCOPES, respectively.
+// The endpoint is set to the Spotify endpoints.
 func GetOAuth2Config() *oauth2.Config {
+	// Try REDIRECT_URL first, fallback to REDIRECT_URI for compatibility
+	redirectURL := os.Getenv("REDIRECT_URL")
+	if redirectURL == "" {
+		redirectURL = os.Getenv("REDIRECT_URI")
+	}
+
+	// Validate that redirect URL is set
+	if redirectURL == "" {
+		log.Fatal("REDIRECT_URL or REDIRECT_URI environment variable is required for OAuth")
+	}
+
 	return &oauth2.Config{
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("REDIRECT_URL"),
+		RedirectURL:  redirectURL,
 		Scopes:       constants.Scopes,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  spotifyAPI.AuthURL,
 			TokenURL: spotifyAPI.TokenURL,
 		}}
+}
+
+// InitOAuth initializes the Spotify service using current environment variables.
+func InitOAuth() {
+	cfg := GetOAuth2Config()
+	SpotifySvc = SpotifyService.NewSpotifyService(cfg.ClientID, cfg.ClientSecret, cfg.RedirectURL)
 }
 
 // FilterSummaryByRange returns an array of
@@ -118,6 +134,12 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 // If an error occurs while saving the tracks,
 // it is returned as an error
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
+	// Check if database is available
+	if database.Db == nil {
+		log.Default().Println("WARNING: Database not available, skipping track backup")
+		return nil // Return nil to allow operation to continue without backup
+	}
+
 	log.Default().Println("Saving tracks backup started")
 
 	for _, trackPlaylist := range tracksPlaylist {
@@ -181,11 +203,23 @@ func LoadEnvVariables() {
 
 	envPath := filepath.Join(cwd, ".env")
 
+	log.Printf("Loading environment variables from: %s", envPath)
+
 	errLoadFilePath := godotenv.Load(envPath)
 
 	if errLoadFilePath != nil {
-		log.Fatalf("error loading .env file: %v", errLoadFilePath)
+		log.Fatalf("error loading .env file from %s: %v", envPath, errLoadFilePath)
 	}
 
 	log.Println("Loaded environment variables from .env file")
+
+	// Verify critical environment variables are loaded
+	redirectURL := os.Getenv("REDIRECT_URL")
+	if redirectURL == "" {
+		redirectURL = os.Getenv("REDIRECT_URI")
+	}
+	if redirectURL == "" {
+		log.Fatal("REDIRECT_URL or REDIRECT_URI not found in environment variables after loading .env file")
+	}
+	log.Printf("OAuth Redirect URL configured: %s", redirectURL)
 }

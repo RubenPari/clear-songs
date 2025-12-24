@@ -12,6 +12,50 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
+// GetUserPlaylists returns all playlists owned or followed by the user.
+//
+// Returns a JSON array of playlists with id, name, and image_url.
+func GetUserPlaylists(c *gin.Context) {
+	playlists, err := playlistService.GetAllUserPlaylists()
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Error getting user playlists",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// Convert to simplified format with only needed fields
+	type PlaylistResponse struct {
+		ID       string `json:"id"`
+		Name     string `json:"name"`
+		ImageURL string `json:"image_url,omitempty"`
+	}
+
+	var response []PlaylistResponse
+	for _, playlist := range playlists {
+		imageURL := ""
+		if len(playlist.Images) > 0 {
+			// Use the smallest image (usually the last one) for better performance
+			for i := len(playlist.Images) - 1; i >= 0; i-- {
+				if playlist.Images[i].Width <= 300 || i == 0 {
+					imageURL = playlist.Images[i].URL
+					break
+				}
+			}
+		}
+
+		response = append(response, PlaylistResponse{
+			ID:       playlist.ID.String(),
+			Name:     playlist.Name,
+			ImageURL: imageURL,
+		})
+	}
+
+	c.JSON(200, response)
+}
+
 // DeleteAllPlaylistTracks deletes all tracks from a playlist.
 //
 // The playlist ID is required and must be passed as a query parameter.
