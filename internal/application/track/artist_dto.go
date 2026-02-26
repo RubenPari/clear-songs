@@ -1,4 +1,4 @@
-package dto
+package track
 
 // ArtistSummary represents an artist summary in API responses
 type ArtistSummary struct {

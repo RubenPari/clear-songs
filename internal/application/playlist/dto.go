@@ -1,4 +1,4 @@
-package dto
+package playlist
 
 // PlaylistResponse represents a playlist in API responses
 type PlaylistResponse struct {

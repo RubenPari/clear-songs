@@ -3,7 +3,7 @@ package trackHelper
 import (
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/models"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres/models"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

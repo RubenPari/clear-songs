@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )

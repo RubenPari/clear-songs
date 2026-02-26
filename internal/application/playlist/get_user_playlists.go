@@ -3,20 +3,20 @@ package playlist
 import (
 	"context"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // GetUserPlaylistsUseCase handles the business logic for getting user playlists
 type GetUserPlaylistsUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
-	cacheRepo   interfaces.CacheRepository
+	spotifyRepo shared.SpotifyRepository
+	cacheRepo   shared.CacheRepository
 }
 
 // NewGetUserPlaylistsUseCase creates a new GetUserPlaylistsUseCase
 func NewGetUserPlaylistsUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *GetUserPlaylistsUseCase {
 	return &GetUserPlaylistsUseCase{
 		spotifyRepo: spotifyRepo,

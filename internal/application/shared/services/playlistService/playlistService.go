@@ -3,11 +3,11 @@ package playlistService
 import (
 	"errors"
 
-	"github.com/RubenPari/clear-songs/src/helpers/playlistHelper"
+	"github.com/RubenPari/clear-songs/internal/application/shared/helpers/playlistHelper"
 
-	"github.com/RubenPari/clear-songs/src/constants"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/constants"
 
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

@@ -20,7 +20,7 @@
 package SpotifyService
 
 import (
-	"github.com/RubenPari/clear-songs/src/constants"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/constants"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )

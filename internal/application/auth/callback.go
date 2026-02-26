@@ -4,22 +4,22 @@ import (
 	"context"
 	"os"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	"golang.org/x/oauth2"
 )
 
 // CallbackUseCase handles the business logic for OAuth callback
 type CallbackUseCase struct {
 	oauthConfig  *oauth2.Config
-	spotifyRepo  interfaces.SpotifyRepository
-	cacheRepo    interfaces.CacheRepository
+	spotifyRepo  shared.SpotifyRepository
+	cacheRepo    shared.CacheRepository
 }
 
 // NewCallbackUseCase creates a new CallbackUseCase
 func NewCallbackUseCase(
 	oauthConfig *oauth2.Config,
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *CallbackUseCase {
 	return &CallbackUseCase{
 		oauthConfig: oauthConfig,

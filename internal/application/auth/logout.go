@@ -3,19 +3,19 @@ package auth
 import (
 	"context"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 )
 
 // LogoutUseCase handles the business logic for user logout
 type LogoutUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
-	cacheRepo   interfaces.CacheRepository
+	spotifyRepo shared.SpotifyRepository
+	cacheRepo   shared.CacheRepository
 }
 
 // NewLogoutUseCase creates a new LogoutUseCase
 func NewLogoutUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *LogoutUseCase {
 	return &LogoutUseCase{
 		spotifyRepo: spotifyRepo,

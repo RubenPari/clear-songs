@@ -1,4 +1,4 @@
-package dto
+package track
 
 // TrackResponse represents a track in API responses
 type TrackResponse struct {

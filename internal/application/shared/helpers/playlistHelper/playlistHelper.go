@@ -1,7 +1,7 @@
 package playlistHelper
 
 import (
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 

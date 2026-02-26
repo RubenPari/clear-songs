@@ -4,23 +4,23 @@ import (
 	"context"
 	"time"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // DeletePlaylistAndLibraryTracksUseCase handles the business logic for deleting tracks from both playlist and library
 type DeletePlaylistAndLibraryTracksUseCase struct {
-	spotifyRepo    interfaces.SpotifyRepository
-	cacheRepo      interfaces.CacheRepository
-	databaseRepo   interfaces.DatabaseRepository
+	spotifyRepo    shared.SpotifyRepository
+	cacheRepo      shared.CacheRepository
+	databaseRepo   shared.DatabaseRepository
 	deletePlaylistUC *DeletePlaylistTracksUseCase
 }
 
 // NewDeletePlaylistAndLibraryTracksUseCase creates a new DeletePlaylistAndLibraryTracksUseCase
 func NewDeletePlaylistAndLibraryTracksUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
-	databaseRepo interfaces.DatabaseRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
+	databaseRepo shared.DatabaseRepository,
 	deletePlaylistUC *DeletePlaylistTracksUseCase,
 ) *DeletePlaylistAndLibraryTracksUseCase {
 	return &DeletePlaylistAndLibraryTracksUseCase{

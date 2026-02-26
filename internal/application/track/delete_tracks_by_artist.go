@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // DeleteTracksByArtistUseCase handles the business logic for deleting tracks by artist
 type DeleteTracksByArtistUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
-	cacheRepo   interfaces.CacheRepository
+	spotifyRepo shared.SpotifyRepository
+	cacheRepo   shared.CacheRepository
 }
 
 // NewDeleteTracksByArtistUseCase creates a new DeleteTracksByArtistUseCase
 func NewDeleteTracksByArtistUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *DeleteTracksByArtistUseCase {
 	return &DeleteTracksByArtistUseCase{
 		spotifyRepo: spotifyRepo,

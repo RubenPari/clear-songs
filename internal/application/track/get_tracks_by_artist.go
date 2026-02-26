@@ -3,21 +3,21 @@ package track
 import (
 	"context"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	spotifyAPI "github.com/zmb3/spotify"
 	"time"
 )
 
 // GetTracksByArtistUseCase handles the business logic for getting tracks by artist
 type GetTracksByArtistUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
-	cacheRepo   interfaces.CacheRepository
+	spotifyRepo shared.SpotifyRepository
+	cacheRepo   shared.CacheRepository
 }
 
 // NewGetTracksByArtistUseCase creates a new GetTracksByArtistUseCase
 func NewGetTracksByArtistUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *GetTracksByArtistUseCase {
 	return &GetTracksByArtistUseCase{
 		spotifyRepo: spotifyRepo,

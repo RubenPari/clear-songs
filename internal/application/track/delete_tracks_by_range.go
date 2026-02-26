@@ -3,22 +3,22 @@ package track
 import (
 	"context"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // DeleteTracksByRangeUseCase handles the business logic for deleting tracks by range
 type DeleteTracksByRangeUseCase struct {
-	spotifyRepo        interfaces.SpotifyRepository
-	cacheRepo          interfaces.CacheRepository
+	spotifyRepo        shared.SpotifyRepository
+	cacheRepo          shared.CacheRepository
 	getTrackSummaryUC  *GetTrackSummaryUseCase
 	deleteByArtistUC   *DeleteTracksByArtistUseCase
 }
 
 // NewDeleteTracksByRangeUseCase creates a new DeleteTracksByRangeUseCase
 func NewDeleteTracksByRangeUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 	getTrackSummaryUC *GetTrackSummaryUseCase,
 	deleteByArtistUC *DeleteTracksByArtistUseCase,
 ) *DeleteTracksByRangeUseCase {

@@ -6,22 +6,22 @@ import (
 	"sort"
 	"time"
 
-	"github.com/RubenPari/clear-songs/src/domain/entities"
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
-	"github.com/RubenPari/clear-songs/src/domain/utils"
+	"github.com/RubenPari/clear-songs/internal/domain/track"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // GetTrackSummaryUseCase handles the business logic for getting track summaries
 type GetTrackSummaryUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
-	cacheRepo  interfaces.CacheRepository
+	spotifyRepo shared.SpotifyRepository
+	cacheRepo  shared.CacheRepository
 }
 
 // NewGetTrackSummaryUseCase creates a new GetTrackSummaryUseCase
 func NewGetTrackSummaryUseCase(
-	spotifyRepo interfaces.SpotifyRepository,
-	cacheRepo interfaces.CacheRepository,
+	spotifyRepo shared.SpotifyRepository,
+	cacheRepo shared.CacheRepository,
 ) *GetTrackSummaryUseCase {
 	return &GetTrackSummaryUseCase{
 		spotifyRepo: spotifyRepo,
@@ -30,7 +30,7 @@ func NewGetTrackSummaryUseCase(
 }
 
 // Execute retrieves track summary grouped by artist, optionally filtered by range
-func (uc *GetTrackSummaryUseCase) Execute(ctx context.Context, min, max int) ([]entities.ArtistSummary, error) {
+func (uc *GetTrackSummaryUseCase) Execute(ctx context.Context, min, max int) ([]track.ArtistSummary, error) {
 	// 1. Check cache (if available)
 	if uc.cacheRepo != nil {
 		cacheKey := "track_summary"
@@ -38,7 +38,7 @@ func (uc *GetTrackSummaryUseCase) Execute(ctx context.Context, min, max int) ([]
 			cacheKey = fmt.Sprintf("track_summary_%d_%d", min, max)
 		}
 		
-		var cached []entities.ArtistSummary
+		var cached []track.ArtistSummary
 		if found, _ := uc.cacheRepo.Get(ctx, cacheKey, &cached); found {
 			return cached, nil
 		}
@@ -99,7 +99,7 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 	ctx context.Context,
 	tracks []spotifyAPI.SavedTrack,
 	min, max int,
-) []entities.ArtistSummary {
+) []track.ArtistSummary {
 	// Group tracks by artist
 	artistMap := make(map[string]struct {
 		count int
@@ -129,7 +129,7 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 	}
 	
 	// Convert to ArtistSummary array
-	var summary []entities.ArtistSummary
+	var summary []track.ArtistSummary
 	for artistName, data := range artistMap {
 		// Apply range filter
 		if min > 0 && data.count < min {
@@ -148,7 +148,7 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 			}
 		}
 		
-		summary = append(summary, entities.ArtistSummary{
+		summary = append(summary, track.ArtistSummary{
 			ID:       data.id,
 			Name:     artistName,
 			Count:    data.count,

@@ -3,16 +3,16 @@ package auth
 import (
 	"context"
 
-	"github.com/RubenPari/clear-songs/src/domain/interfaces"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 )
 
 // IsAuthUseCase handles the business logic for checking authentication status
 type IsAuthUseCase struct {
-	spotifyRepo interfaces.SpotifyRepository
+	spotifyRepo shared.SpotifyRepository
 }
 
 // NewIsAuthUseCase creates a new IsAuthUseCase
-func NewIsAuthUseCase(spotifyRepo interfaces.SpotifyRepository) *IsAuthUseCase {
+func NewIsAuthUseCase(spotifyRepo shared.SpotifyRepository) *IsAuthUseCase {
 	return &IsAuthUseCase{
 		spotifyRepo: spotifyRepo,
 	}
