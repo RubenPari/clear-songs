@@ -1,4 +1,4 @@
-package entities
+package playlist
 
 // Playlist represents a playlist entity
 type Playlist struct {

@@ -1,4 +1,4 @@
-package entities
+package track
 
 // Track represents a track entity in the domain
 type Track struct {

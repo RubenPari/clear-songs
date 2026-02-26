@@ -1,4 +1,4 @@
-package entities
+package track
 
 // ArtistSummary represents a summary of tracks by artist
 type ArtistSummary struct {

@@ -1,4 +1,4 @@
-package interfaces
+package playlist
 
 import (
 	"context"

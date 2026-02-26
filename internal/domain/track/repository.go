@@ -1,15 +1,14 @@
-package interfaces
+package track
 
 import (
 	"context"
-	"github.com/RubenPari/clear-songs/src/domain/entities"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // TrackRepository defines the interface for track-related operations
 type TrackRepository interface {
 	// GetTrackSummary retrieves a summary of tracks grouped by artist
-	GetTrackSummary(ctx context.Context, min, max int) ([]entities.ArtistSummary, error)
+	GetTrackSummary(ctx context.Context, min, max int) ([]ArtistSummary, error)
 	
 	// GetTracksByArtist retrieves all tracks from a specific artist
 	GetTracksByArtist(ctx context.Context, artistID spotifyAPI.ID) ([]spotifyAPI.SavedTrack, error)

@@ -1,4 +1,4 @@
-package interfaces
+package shared
 
 import (
 	spotifyAPI "github.com/zmb3/spotify"

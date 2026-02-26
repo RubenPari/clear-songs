@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/RubenPari/clear-songs/src/constants"
-	"github.com/RubenPari/clear-songs/src/database"
-	"github.com/RubenPari/clear-songs/src/models"
-	"github.com/RubenPari/clear-songs/src/services/SpotifyService"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/constants"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres/models"
+	"github.com/RubenPari/clear-songs/internal/application/shared/services/SpotifyService"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -135,7 +135,7 @@ func ConvertTracksToID(tracks interface{}) ([]spotifyAPI.ID, error) {
 // it is returned as an error
 func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 	// Check if database is available
-	if database.Db == nil {
+	if postgres.Db == nil {
 		log.Default().Println("WARNING: Database not available, skipping track backup")
 		return nil // Return nil to allow operation to continue without backup
 	}
@@ -155,7 +155,7 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 		log.Default().Printf("Created TrackDB: Name: %s, Artist: %s\n", track.Name, track.Artist)
 
 		var existingTrack models.TrackDB
-		alreadyExistTrack := database.Db.First(&existingTrack, "id = ?", track.Id)
+		alreadyExistTrack := postgres.Db.First(&existingTrack, "id = ?", track.Id)
 
 		if alreadyExistTrack != nil {
 			if !errors.Is(alreadyExistTrack.Error, gorm.ErrRecordNotFound) {
@@ -163,7 +163,7 @@ func SaveTracksBackup(tracksPlaylist []spotifyAPI.PlaylistTrack) error {
 				return alreadyExistTrack.Error
 			}
 
-			insertTrack := database.Db.Create(&track)
+			insertTrack := postgres.Db.Create(&track)
 
 			if insertTrack.Error != nil {
 				log.Printf("Error inserting track: %v - %v\n", track, insertTrack.Error)
