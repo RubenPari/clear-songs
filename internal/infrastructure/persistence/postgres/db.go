@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres/models"
 	"gorm.io/driver/postgres"
@@ -85,6 +86,19 @@ func Init() error {
 		return nil // Return nil to allow application to continue without database
 	}
 
+	// Extract the underlying sql.DB to configure connection pooling
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Printf("WARNING: Failed to extract sql.DB for pooling: %v", err)
+	} else {
+		// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+		sqlDB.SetMaxIdleConns(10)
+		// SetMaxOpenConns sets the maximum number of open connections to the database.
+		sqlDB.SetMaxOpenConns(100)
+		// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+		sqlDB.SetConnMaxLifetime(time.Hour)
+	}
+
 	// test connection
 	errTestDb := db.Exec("SELECT 1").Error
 
@@ -105,7 +119,7 @@ func Init() error {
 
 	Db = db
 
-	log.Println("Successfully connected to database!")
+	log.Println("Successfully connected to database with pooling configured!")
 
 	return nil
 }

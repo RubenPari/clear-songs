@@ -1,47 +1,47 @@
-/**
- * Clear Songs Backend - Main Entry Point (Refactored)
- * 
- * This is the refactored main entry point that uses Dependency Injection
- * instead of global variables, following Clean Architecture principles.
- * 
- * @package main
- * @author Clear Songs Development Team
- */
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
-	"github.com/RubenPari/clear-songs/internal/infrastructure/di"
-	"github.com/RubenPari/clear-songs/internal/infrastructure/transport/http"
 	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/di"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
+	httptransport "github.com/RubenPari/clear-songs/internal/infrastructure/transport/http"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-/**
- * Main function - Application entry point (Refactored)
- * 
- * Initializes the application using Dependency Injection:
- * 1. Loads environment variables
- * 2. Creates DI Container with all dependencies
- * 3. Sets up routes with injected dependencies
- * 4. Initializes database (optional)
- * 5. Starts HTTP server
- */
 func main() {
-	// Set Gin to debug mode for development
-	gin.SetMode(gin.DebugMode)
-	
-	// Create a Gin router with default middleware
-	server := gin.Default()
+	// Initialize environment and DI
+	utils.LoadEnvVariables()
 
-	/**
-	 * CORS Configuration
-	 */
-	server.Use(cors.New(cors.Config{
+	// Switch to release mode in production based on env
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
+	container, err := di.NewContainer()
+	if err != nil {
+		log.Fatalf("Failed to initialize DI container: %v", err)
+	}
+
+	// Initialize Database with Pooling
+	if errConnectDb := postgres.Init(); errConnectDb != nil {
+		log.Printf("WARNING: Database initialization failed: %v", errConnectDb)
+	}
+
+	// Setup Gin Router
+	router := gin.Default()
+	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:4200", "http://127.0.0.1:4200"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
@@ -50,49 +50,53 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	/**
-	 * Load Environment Variables
-	 * 
-	 * Must be done before creating DI container as it needs env vars
-	 */
-	utils.LoadEnvVariables()
+	// Setup Routes
+	httptransport.SetUpRoutesRefactored(router, container)
 
-	/**
-	 * Initialize Dependency Injection Container
-	 * 
-	 * This creates all dependencies (repositories, use cases, etc.)
-	 * and makes them available through the container.
-	 */
-	container, err := di.NewContainer()
-	if err != nil {
-		log.Fatalf("Failed to initialize DI container: %v", err)
-	}
-	log.Println("DI Container initialized successfully")
-
-	/**
-	 * Set Up Routes with DI
-	 * 
-	 * Routes are configured with dependencies injected from the container.
-	 * This eliminates the need for global variables.
-	 */
-	http.SetUpRoutesRefactored(server, container)
-
-	/**
-	 * Database Connection (Optional)
-	 * 
-	 * Database is optional - application can function without it.
-	 * Only backup functionality will be disabled.
-	 */
-	if errConnectDb := postgres.Init(); errConnectDb != nil {
-		log.Printf("WARNING: Database initialization failed: %v", errConnectDb)
-		log.Println("WARNING: Application will continue without database. Backup functionality disabled.")
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":3000",
+		Handler: router,
+		// Good practice: enforce timeouts for server
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
-	/**
-	 * Start HTTP Server
-	 */
-	log.Println("Starting server on :3000")
-	if err := server.Run(":3000"); err != nil {
-		log.Fatalf("Error starting server: %v", err)
+	// Run server in a goroutine so that it doesn't block
+	go func() {
+		log.Println("Starting server on :3000")
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need to add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
 	}
+
+	// Properly close database connections
+	if postgres.Db != nil {
+		sqlDB, err := postgres.Db.DB()
+		if err == nil {
+			sqlDB.Close()
+			log.Println("Database connection closed")
+		}
+	}
+
+	log.Println("Server exiting")
 }

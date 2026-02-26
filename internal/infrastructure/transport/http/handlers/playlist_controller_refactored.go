@@ -9,12 +9,17 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
+// PlaylistRequest validates the incoming query parameters
+type PlaylistRequest struct {
+	ID string `form:"id" binding:"required"`
+}
+
 // PlaylistControllerRefactored is the refactored playlist controller using dependency injection
 type PlaylistControllerRefactored struct {
 	BaseController
-	getUserPlaylistsUC          *playlist.GetUserPlaylistsUseCase
-	deletePlaylistTracksUC      *playlist.DeletePlaylistTracksUseCase
-	deletePlaylistAndLibraryUC  *playlist.DeletePlaylistAndLibraryTracksUseCase
+	getUserPlaylistsUC         *playlist.GetUserPlaylistsUseCase
+	deletePlaylistTracksUC     *playlist.DeletePlaylistTracksUseCase
+	deletePlaylistAndLibraryUC *playlist.DeletePlaylistAndLibraryTracksUseCase
 }
 
 // NewPlaylistControllerRefactored creates a new playlist controller
@@ -32,10 +37,10 @@ func NewPlaylistControllerRefactored(
 
 // GetUserPlaylists handles GET /playlist/list
 func (pc *PlaylistControllerRefactored) GetUserPlaylists(c *gin.Context) {
-	ctx := context.Background()
+	ctx := context.Background() // Better approach: use c.Request.Context()
 	playlists, err := pc.getUserPlaylistsUC.Execute(ctx)
 	if err != nil {
-		pc.JSONInternalError(c, "Error getting user playlists")
+		pc.HandleDomainError(c, err)
 		return
 	}
 
@@ -56,17 +61,17 @@ func (pc *PlaylistControllerRefactored) GetUserPlaylists(c *gin.Context) {
 
 // DeleteAllPlaylistTracks handles DELETE /playlist/delete-tracks
 func (pc *PlaylistControllerRefactored) DeleteAllPlaylistTracks(c *gin.Context) {
-	id := c.Query("id")
-	if id == "" {
+	var req PlaylistRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
 		pc.JSONValidationError(c, "Playlist id is required")
 		return
 	}
 
-	playlistID := spotifyAPI.ID(id)
+	playlistID := spotifyAPI.ID(req.ID)
 	ctx := context.Background()
 
 	if err := pc.deletePlaylistTracksUC.Execute(ctx, playlistID); err != nil {
-		pc.JSONInternalError(c, "Error deleting tracks from playlist")
+		pc.HandleDomainError(c, err)
 		return
 	}
 
@@ -75,17 +80,17 @@ func (pc *PlaylistControllerRefactored) DeleteAllPlaylistTracks(c *gin.Context) 
 
 // DeleteAllPlaylistAndUserTracks handles DELETE /playlist/delete-tracks-and-library
 func (pc *PlaylistControllerRefactored) DeleteAllPlaylistAndUserTracks(c *gin.Context) {
-	id := c.Query("id")
-	if id == "" {
+	var req PlaylistRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
 		pc.JSONValidationError(c, "Playlist id is required")
 		return
 	}
 
-	playlistID := spotifyAPI.ID(id)
+	playlistID := spotifyAPI.ID(req.ID)
 	ctx := context.Background()
 
 	if err := pc.deletePlaylistAndLibraryUC.Execute(ctx, playlistID); err != nil {
-		pc.JSONInternalError(c, "Error deleting tracks from playlist and library")
+		pc.HandleDomainError(c, err)
 		return
 	}
 

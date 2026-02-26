@@ -5,7 +5,6 @@ import (
 
 	"github.com/RubenPari/clear-songs/internal/application/track"
 	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
-	"github.com/RubenPari/clear-songs/internal/application/shared/validators"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -36,23 +35,19 @@ func NewTrackControllerComplete(
 
 // GetTrackSummary handles GET /track/summary
 func (tc *TrackControllerComplete) GetTrackSummary(c *gin.Context) {
-	// Validate and parse query parameters
-	params, err := validators.ParseRangeParams(
-		c.Query("min"),
-		c.Query("max"),
-	)
-	if err != nil {
-		tc.JSONValidationError(c, err.Error())
+	var req track.RangeRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		tc.JSONValidationError(c, "Invalid min or max parameters")
 		return
 	}
 
-	min, max := params.GetMinMax()
-
 	// Execute use case
-	ctx := context.Background()
-	result, err := tc.getTrackSummaryUseCase.Execute(ctx, min, max)
+	// Note: the original manual validation fell back to 0 if min/max strings were empty,
+	// which matches how Gin parses missing query integers.
+	ctx := context.Background() // In production, c.Request.Context() is preferred.
+	result, err := tc.getTrackSummaryUseCase.Execute(ctx, req.Min, req.Max)
 	if err != nil {
-		tc.JSONInternalError(c, "Failed to get track summary")
+		tc.HandleDomainError(c, err)
 		return
 	}
 
@@ -82,10 +77,10 @@ func (tc *TrackControllerComplete) GetTracksByArtist(c *gin.Context) {
 	artistID := spotifyAPI.ID(idArtistString)
 
 	// Execute use case
-	ctx := context.Background()
+	ctx := context.Background() // In production, use c.Request.Context()
 	tracks, err := tc.getTracksByArtistUC.Execute(ctx, artistID)
 	if err != nil {
-		tc.JSONInternalError(c, "Failed to get tracks by artist")
+		tc.HandleDomainError(c, err)
 		return
 	}
 
@@ -130,9 +125,9 @@ func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
 	artistID := spotifyAPI.ID(idArtistString)
 
 	// Execute use case
-	ctx := context.Background()
+	ctx := context.Background() // In production, use c.Request.Context()
 	if err := tc.deleteTracksByArtistUC.Execute(ctx, artistID); err != nil {
-		tc.JSONInternalError(c, "Failed to delete tracks by artist")
+		tc.HandleDomainError(c, err)
 		return
 	}
 
@@ -141,28 +136,22 @@ func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
 
 // DeleteTrackByRange handles DELETE /track/by-range
 func (tc *TrackControllerComplete) DeleteTrackByRange(c *gin.Context) {
-	// Validate and parse query parameters
-	params, err := validators.ParseRangeParams(
-		c.Query("min"),
-		c.Query("max"),
-	)
-	if err != nil {
-		tc.JSONValidationError(c, err.Error())
+	var req track.RangeRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		tc.JSONValidationError(c, "Invalid min or max parameters")
 		return
 	}
 
-	min, max := params.GetMinMax()
-
-	// At least one parameter must be provided
-	if params.Min == nil && params.Max == nil {
+	// At least one parameter must be provided for a destructive action
+	if req.Min == 0 && req.Max == 0 && c.Query("min") == "" && c.Query("max") == "" {
 		tc.JSONValidationError(c, "At least one of min or max must be provided")
 		return
 	}
 
 	// Execute use case
-	ctx := context.Background()
-	if err := tc.deleteTracksByRangeUC.Execute(ctx, min, max); err != nil {
-		tc.JSONInternalError(c, "Failed to delete tracks by range")
+	ctx := context.Background() // In production, use c.Request.Context()
+	if err := tc.deleteTracksByRangeUC.Execute(ctx, req.Min, req.Max); err != nil {
+		tc.HandleDomainError(c, err)
 		return
 	}
 
