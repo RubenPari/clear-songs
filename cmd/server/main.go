@@ -13,10 +13,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/RubenPari/clear-songs/src/database"
-	"github.com/RubenPari/clear-songs/src/infrastructure/di"
-	"github.com/RubenPari/clear-songs/src/routes"
-	"github.com/RubenPari/clear-songs/src/utils"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/di"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/transport/http"
+	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -75,7 +75,7 @@ func main() {
 	 * Routes are configured with dependencies injected from the container.
 	 * This eliminates the need for global variables.
 	 */
-	routes.SetUpRoutesRefactored(server, container)
+	http.SetUpRoutesRefactored(server, container)
 
 	/**
 	 * Database Connection (Optional)
@@ -83,7 +83,7 @@ func main() {
 	 * Database is optional - application can function without it.
 	 * Only backup functionality will be disabled.
 	 */
-	if errConnectDb := database.Init(); errConnectDb != nil {
+	if errConnectDb := postgres.Init(); errConnectDb != nil {
 		log.Printf("WARNING: Database initialization failed: %v", errConnectDb)
 		log.Println("WARNING: Application will continue without database. Backup functionality disabled.")
 	}

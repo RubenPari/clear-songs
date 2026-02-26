@@ -5,7 +5,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: bash -c "go mod download && go run ./src/main.go"
+    command: bash -c "go mod download && go run ./cmd/server/main.go"
     environment:
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
