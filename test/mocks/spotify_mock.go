@@ -39,18 +39,33 @@ func (m *MockSpotifyRepository) GetArtist(ctx context.Context, id spotifyAPI.ID)
 	return args.Get(0).(*spotifyAPI.FullArtist), args.Error(1)
 }
 
-// Implement other interface methods with minimal behavior for now
+func (m *MockSpotifyRepository) GetTrackIDsByArtist(ctx context.Context, id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.ID, error) {
+	args := m.Called(ctx, id, tracks)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]spotifyAPI.ID), args.Error(1)
+}
+
+func (m *MockSpotifyRepository) DeleteTracksFromLibrary(ctx context.Context, ids []spotifyAPI.ID) error {
+	args := m.Called(ctx, ids)
+	return args.Error(0)
+}
+
+func (m *MockSpotifyRepository) GetAllUserPlaylists(ctx context.Context) ([]spotifyAPI.SimplePlaylist, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]spotifyAPI.SimplePlaylist), args.Error(1)
+}
+
+// Minimal behavior for remaining methods
 func (m *MockSpotifyRepository) GetUserTracks(ctx context.Context, limit, offset int) ([]spotifyAPI.SavedTrack, error) {
 	return nil, nil
 }
 func (m *MockSpotifyRepository) GetTracksByArtist(ctx context.Context, id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.SavedTrack, error) {
 	return nil, nil
-}
-func (m *MockSpotifyRepository) GetTrackIDsByArtist(ctx context.Context, id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.ID, error) {
-	return nil, nil
-}
-func (m *MockSpotifyRepository) DeleteTracksFromLibrary(ctx context.Context, ids []spotifyAPI.ID) error {
-	return nil
 }
 func (m *MockSpotifyRepository) GetPlaylist(ctx context.Context, id spotifyAPI.ID) (*spotifyAPI.FullPlaylist, error) {
 	return nil, nil
@@ -67,15 +82,9 @@ func (m *MockSpotifyRepository) DeletePlaylistTracks(ctx context.Context, id spo
 func (m *MockSpotifyRepository) GetUserPlaylists(ctx context.Context, limit, offset int) ([]spotifyAPI.SimplePlaylist, error) {
 	return nil, nil
 }
-func (m *MockSpotifyRepository) GetAllUserPlaylists(ctx context.Context) ([]spotifyAPI.SimplePlaylist, error) {
-	return nil, nil
-}
 func (m *MockSpotifyRepository) SetAccessToken(token interface{}) error {
 	return nil
 }
-
-// Ensure interface compliance
-var _ shared.SpotifyRepository = (*MockSpotifyRepository)(nil)
 
 // MockCacheRepository is a mock implementation of CacheRepository
 type MockCacheRepository struct {
@@ -101,14 +110,16 @@ func (m *MockCacheRepository) GetUserTracks(ctx context.Context) ([]spotifyAPI.S
 }
 
 func (m *MockCacheRepository) SetUserTracks(ctx context.Context, tracks []spotifyAPI.SavedTrack, ttl time.Duration) error {
-	return nil
+	args := m.Called(ctx, tracks, ttl)
+	return args.Error(0)
 }
 
 func (m *MockCacheRepository) InvalidateUserTracks(ctx context.Context) error {
-	return nil
+	args := m.Called(ctx)
+	return args.Error(0)
 }
 
-// Implement remaining methods...
+// Minimal behavior for remaining methods
 func (m *MockCacheRepository) SetToken(ctx context.Context, token *oauth2.Token) error { return nil }
 func (m *MockCacheRepository) GetToken(ctx context.Context) (*oauth2.Token, error)     { return nil, nil }
 func (m *MockCacheRepository) ClearToken(ctx context.Context) error                 { return nil }
@@ -123,4 +134,5 @@ func (m *MockCacheRepository) InvalidatePlaylistTracks(ctx context.Context, id s
 }
 func (m *MockCacheRepository) Delete(ctx context.Context, key string) error { return nil }
 
+var _ shared.SpotifyRepository = (*MockSpotifyRepository)(nil)
 var _ shared.CacheRepository = (*MockCacheRepository)(nil)

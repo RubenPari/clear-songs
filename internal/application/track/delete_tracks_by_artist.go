@@ -17,7 +17,7 @@ type DeleteTracksByArtistUseCase struct {
 // NewDeleteTracksByArtistUseCase creates a new DeleteTracksByArtistUseCase
 func NewDeleteTracksByArtistUseCase(
 	spotifyRepo shared.SpotifyRepository,
-	cacheRepo shared.CacheRepository,
+	cacheRepo   shared.CacheRepository,
 ) *DeleteTracksByArtistUseCase {
 	return &DeleteTracksByArtistUseCase{
 		spotifyRepo: spotifyRepo,
