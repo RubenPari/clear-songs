@@ -71,15 +71,21 @@ func (ac *AuthControllerRefactored) IsAuth(c *gin.Context) {
 	ctx := context.Background()
 	userInfo, err := ac.isAuthUC.Execute(ctx)
 	if err != nil {
-		ac.JSONUnauthorized(c)
+		c.JSON(200, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "UNAUTHORIZED",
+				"message": "User not authenticated",
+			},
+		})
 		return
 	}
 
 	ac.JSONSuccess(c, gin.H{
 		"user": gin.H{
-			"spotify_id":   userInfo.SpotifyID,
-			"display_name": userInfo.DisplayName,
-			"email":        userInfo.Email,
+			"spotify_id":    userInfo.SpotifyID,
+			"display_name":  userInfo.DisplayName,
+			"email":         userInfo.Email,
 			"profile_image": userInfo.ProfileImage,
 		},
 	})

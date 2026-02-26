@@ -29,17 +29,20 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Initialize Database with Pooling
+	log.Println("Initializing database...")
+	if errConnectDb := postgres.Init(); errConnectDb != nil {
+		log.Printf("WARNING: Database initialization failed: %v", errConnectDb)
+	}
+
+	log.Println("Initializing DI container...")
 	container, err := di.NewContainer()
 	if err != nil {
 		log.Fatalf("Failed to initialize DI container: %v", err)
 	}
 
-	// Initialize Database with Pooling
-	if errConnectDb := postgres.Init(); errConnectDb != nil {
-		log.Printf("WARNING: Database initialization failed: %v", errConnectDb)
-	}
-
 	// Setup Gin Router
+	log.Println("Setting up router...")
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost", "http://localhost:4200", "http://127.0.0.1:4200"},
