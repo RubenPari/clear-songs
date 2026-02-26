@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"net/http"
+
+	"github.com/RubenPari/clear-songs/internal/application/shared/dto"
 	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
@@ -12,23 +15,21 @@ func SpotifyAuthMiddlewareRefactored() gin.HandlerFunc {
 		// Get Spotify repository from context (set by SessionMiddleware)
 		repo, exists := c.Get("spotifyRepository")
 		if !exists {
-			c.AbortWithStatusJSON(401, gin.H{"message": "Unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, dto.UnauthorizedErr())
 			return
 		}
 
 		spotifyRepo, ok := repo.(shared.SpotifyRepository)
 		if !ok || spotifyRepo == nil {
-			c.AbortWithStatusJSON(401, gin.H{"message": "Invalid Spotify repository"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, dto.UnauthorizedErr())
 			return
 		}
 
 		// Get client from repository (for backward compatibility)
-		// Note: In a fully refactored version, we might not need this
-		// as controllers would use the repository directly
 		if spotifyRepoImpl, ok := spotifyRepo.(interface{ GetClient() *spotifyAPI.Client }); ok {
 			client := spotifyRepoImpl.GetClient()
 			if client == nil {
-				c.AbortWithStatusJSON(401, gin.H{"message": "Invalid Spotify client"})
+				c.AbortWithStatusJSON(http.StatusUnauthorized, dto.UnauthorizedErr())
 				return
 			}
 			c.Set("spotifyClient", client)
