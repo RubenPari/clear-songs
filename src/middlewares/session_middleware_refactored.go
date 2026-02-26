@@ -6,7 +6,6 @@ import (
 
 	"github.com/RubenPari/clear-songs/src/domain/interfaces"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/oauth2"
 )
 
 // SessionMiddlewareRefactored creates a session middleware that uses dependency injection
@@ -16,13 +15,13 @@ func SessionMiddlewareRefactored(
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := context.Background()
-		
+
 		// Retrieve OAuth token from cache
 		token, err := cacheRepo.GetToken(ctx)
 		if err != nil {
 			log.Printf("ERROR: Failed to retrieve token from cache: %v", err)
 		}
-		
+
 		// If token exists, user is authenticated
 		if token != nil {
 			// Configure the Spotify repository with the user's token
@@ -39,7 +38,7 @@ func SessionMiddlewareRefactored(
 				log.Printf("DEBUG: No token found in cache for path: %s", c.Request.URL.Path)
 			}
 		}
-		
+
 		// Continue to next middleware or handler
 		c.Next()
 	}

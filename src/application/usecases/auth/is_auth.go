@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/RubenPari/clear-songs/src/domain/interfaces"
-	spotifyAPI "github.com/zmb3/spotify"
 )
 
 // IsAuthUseCase handles the business logic for checking authentication status
@@ -21,9 +20,9 @@ func NewIsAuthUseCase(spotifyRepo interfaces.SpotifyRepository) *IsAuthUseCase {
 
 // UserInfo represents authenticated user information
 type UserInfo struct {
-	SpotifyID   string
-	DisplayName string
-	Email       string
+	SpotifyID    string
+	DisplayName  string
+	Email        string
 	ProfileImage string
 }
 

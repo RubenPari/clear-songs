@@ -2,7 +2,6 @@ package playlist
 
 import (
 	"context"
-	"time"
 
 	"github.com/RubenPari/clear-songs/src/domain/interfaces"
 	spotifyAPI "github.com/zmb3/spotify"
