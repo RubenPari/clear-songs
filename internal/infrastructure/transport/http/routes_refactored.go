@@ -48,6 +48,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 		container.DeleteTracksByArtistUC,
 		container.DeleteTracksByRangeUC,
 		container.GetTracksByArtistUC,
+		container.DeleteTrackUC,
 	)
 
 	track := server.Group("/track")
@@ -61,6 +62,9 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 		track.DELETE("/by-artist/:id_artist",
 			middleware.SpotifyAuthMiddlewareRefactored(),
 			trackController.DeleteTrackByArtist)
+		track.DELETE("/:id_track",
+			middleware.SpotifyAuthMiddlewareRefactored(),
+			trackController.DeleteTrack)
 		track.DELETE("/by-range",
 			middleware.SpotifyAuthMiddlewareRefactored(),
 			trackController.DeleteTrackByRange)

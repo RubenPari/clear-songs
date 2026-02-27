@@ -39,7 +39,7 @@ func (r *SpotifyRepositoryImpl) SetAccessToken(token interface{}) error {
 	if !ok {
 		return errors.New("invalid token type")
 	}
-	
+
 	r.token = oauthToken
 	client := r.authenticator.NewClient(oauthToken)
 	r.client = &client
@@ -64,7 +64,7 @@ func (r *SpotifyRepositoryImpl) GetUserTracks(ctx context.Context, limit, offset
 	if r.client == nil {
 		return nil, errors.New("spotify client not initialized")
 	}
-	
+
 	page, err := r.client.CurrentUsersTracksOpt(&spotify.Options{
 		Limit:  &limit,
 		Offset: &offset,
@@ -72,7 +72,7 @@ func (r *SpotifyRepositoryImpl) GetUserTracks(ctx context.Context, limit, offset
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return page.Tracks, nil
 }
 
@@ -274,6 +274,14 @@ func (r *SpotifyRepositoryImpl) GetArtist(ctx context.Context, artistID spotify.
 		return nil, errors.New("spotify client not initialized")
 	}
 	return r.client.GetArtist(artistID)
+}
+
+// GetTrack retrieves track information
+func (r *SpotifyRepositoryImpl) GetTrack(ctx context.Context, trackID spotify.ID) (*spotify.FullTrack, error) {
+	if r.client == nil {
+		return nil, errors.New("spotify client not initialized")
+	}
+	return r.client.GetTrack(trackID)
 }
 
 // Ensure SpotifyRepositoryImpl implements SpotifyRepository interface

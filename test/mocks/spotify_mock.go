@@ -39,6 +39,14 @@ func (m *MockSpotifyRepository) GetArtist(ctx context.Context, id spotifyAPI.ID)
 	return args.Get(0).(*spotifyAPI.FullArtist), args.Error(1)
 }
 
+func (m *MockSpotifyRepository) GetTrack(ctx context.Context, id spotifyAPI.ID) (*spotifyAPI.FullTrack, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*spotifyAPI.FullTrack), args.Error(1)
+}
+
 func (m *MockSpotifyRepository) GetTrackIDsByArtist(ctx context.Context, id spotifyAPI.ID, tracks []spotifyAPI.SavedTrack) ([]spotifyAPI.ID, error) {
 	args := m.Called(ctx, id, tracks)
 	if args.Get(0) == nil {
@@ -122,7 +130,7 @@ func (m *MockCacheRepository) InvalidateUserTracks(ctx context.Context) error {
 // Minimal behavior for remaining methods
 func (m *MockCacheRepository) SetToken(ctx context.Context, token *oauth2.Token) error { return nil }
 func (m *MockCacheRepository) GetToken(ctx context.Context) (*oauth2.Token, error)     { return nil, nil }
-func (m *MockCacheRepository) ClearToken(ctx context.Context) error                 { return nil }
+func (m *MockCacheRepository) ClearToken(ctx context.Context) error                    { return nil }
 func (m *MockCacheRepository) GetPlaylistTracks(ctx context.Context, id spotifyAPI.ID) ([]spotifyAPI.PlaylistTrack, error) {
 	return nil, nil
 }

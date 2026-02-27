@@ -47,6 +47,9 @@ type SpotifyRepository interface {
 	// GetArtist retrieves artist information
 	GetArtist(ctx context.Context, artistID spotifyAPI.ID) (*spotifyAPI.FullArtist, error)
 
+	// GetTrack retrieves track information
+	GetTrack(ctx context.Context, trackID spotifyAPI.ID) (*spotifyAPI.FullTrack, error)
+
 	// SetAccessToken sets the OAuth token for authenticated requests
 	SetAccessToken(token interface{}) error
 }

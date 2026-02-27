@@ -12,10 +12,11 @@ import (
 // TrackControllerComplete is the complete refactored track controller
 type TrackControllerComplete struct {
 	BaseController
-	getTrackSummaryUseCase    *track.GetTrackSummaryUseCase
-	deleteTracksByArtistUC    *track.DeleteTracksByArtistUseCase
-	deleteTracksByRangeUC     *track.DeleteTracksByRangeUseCase
-	getTracksByArtistUC       *track.GetTracksByArtistUseCase
+	getTrackSummaryUseCase *track.GetTrackSummaryUseCase
+	deleteTracksByArtistUC *track.DeleteTracksByArtistUseCase
+	deleteTracksByRangeUC  *track.DeleteTracksByRangeUseCase
+	deleteTrackUC          *track.DeleteTrackUseCase
+	getTracksByArtistUC    *track.GetTracksByArtistUseCase
 }
 
 // NewTrackControllerComplete creates a new complete track controller
@@ -24,12 +25,14 @@ func NewTrackControllerComplete(
 	deleteByArtistUC *track.DeleteTracksByArtistUseCase,
 	deleteByRangeUC *track.DeleteTracksByRangeUseCase,
 	getTracksByArtistUC *track.GetTracksByArtistUseCase,
+	deleteTrackUC *track.DeleteTrackUseCase,
 ) *TrackControllerComplete {
 	return &TrackControllerComplete{
 		getTrackSummaryUseCase: getTrackSummaryUC,
 		deleteTracksByArtistUC: deleteByArtistUC,
-		deleteTracksByRangeUC: deleteByRangeUC,
-		getTracksByArtistUC:   getTracksByArtistUC,
+		deleteTracksByRangeUC:  deleteByRangeUC,
+		deleteTrackUC:          deleteTrackUC,
+		getTracksByArtistUC:    getTracksByArtistUC,
 	}
 }
 
@@ -132,6 +135,27 @@ func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
 	}
 
 	tc.JSONSuccess(c, gin.H{"message": "Tracks deleted successfully"})
+}
+
+// DeleteTrack handles DELETE /track/:id_track
+func (tc *TrackControllerComplete) DeleteTrack(c *gin.Context) {
+	// Get track ID from URL
+	idTrackString := c.Param("id_track")
+	if idTrackString == "" {
+		tc.JSONValidationError(c, "Track ID is required")
+		return
+	}
+
+	trackID := spotifyAPI.ID(idTrackString)
+
+	// Execute use case
+	ctx := context.Background() // In production, use c.Request.Context()
+	if err := tc.deleteTrackUC.Execute(ctx, trackID); err != nil {
+		tc.HandleDomainError(c, err)
+		return
+	}
+
+	tc.JSONSuccess(c, gin.H{"message": "Track deleted successfully"})
 }
 
 // DeleteTrackByRange handles DELETE /track/by-range
