@@ -9,17 +9,17 @@ import (
 
 /**
  * SetUpRoutesRefactored configures all HTTP routes using dependency injection
- * 
+ *
  * This version uses the DI container to inject dependencies into controllers
  * and middleware, eliminating the need for global variables.
- * 
+ *
  * @param server - The Gin engine instance to configure routes on
  * @param container - The dependency injection container
  */
 func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	/**
 	 * Global Middleware
-	 * 
+	 *
 	 * These middleware functions are applied to all routes:
 	 * - SessionMiddlewareRefactored: Manages user sessions using DI
 	 * - CacheInvalidationMiddleware: Invalidates cache when data is modified
@@ -42,8 +42,6 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 
 	/**
 	 * Track Management Routes Group
-	 * 
-	 * Uses the complete refactored controller with dependency injection
 	 */
 	trackController := handlers.NewTrackControllerComplete(
 		container.GetTrackSummaryUseCase,
@@ -51,7 +49,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 		container.DeleteTracksByRangeUC,
 		container.GetTracksByArtistUC,
 	)
-	
+
 	track := server.Group("/track")
 	{
 		track.GET("/summary",
@@ -70,8 +68,6 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 
 	/**
 	 * Authentication Routes Group
-	 * 
-	 * Uses the refactored controller with dependency injection
 	 */
 	authController := handlers.NewAuthControllerRefactored(
 		container.LoginUC,
@@ -79,7 +75,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 		container.LogoutUC,
 		container.IsAuthUC,
 	)
-	
+
 	auth := server.Group("/auth")
 	{
 		auth.GET("/login", authController.Login)
@@ -90,15 +86,13 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 
 	/**
 	 * Playlist Management Routes Group
-	 * 
-	 * Uses the refactored controller with dependency injection
 	 */
 	playlistController := handlers.NewPlaylistControllerRefactored(
 		container.GetUserPlaylistsUC,
 		container.DeletePlaylistTracksUC,
 		container.DeletePlaylistAndLibraryUC,
 	)
-	
+
 	playlist := server.Group("/playlist")
 	{
 		playlist.GET("/list",
