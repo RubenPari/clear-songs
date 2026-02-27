@@ -61,8 +61,8 @@ func main() {
 		Addr:    ":3000",
 		Handler: router,
 		// Good practice: enforce timeouts for server
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  120 * time.Second,
+		WriteTimeout: 120 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
