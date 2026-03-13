@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/RubenPari/clear-songs/internal/application/auth"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // AuthControllerRefactored is the refactored auth controller using dependency injection
@@ -45,8 +48,33 @@ func (ac *AuthControllerRefactored) Callback(c *gin.Context) {
 		return
 	}
 
+	// Try to get local User ID from JWT if present
+	localUserID := ""
+	tokenString, errCookie := c.Cookie("auth_token")
+	if errCookie == nil && tokenString != "" {
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "fallback-secret-for-dev"
+		}
+
+		token, errJWT := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method")
+			}
+			return []byte(jwtSecret), nil
+		})
+
+		if errJWT == nil && token.Valid {
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
+				if sub, ok := claims["sub"].(string); ok {
+					localUserID = sub
+				}
+			}
+		}
+	}
+
 	ctx := context.Background()
-	redirectURL, err := ac.callbackUC.Execute(ctx, code)
+	redirectURL, err := ac.callbackUC.Execute(ctx, code, localUserID)
 	if err != nil {
 		ac.JSONInternalError(c, "Error authenticating user")
 		return
