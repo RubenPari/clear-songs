@@ -44,8 +44,14 @@ func main() {
 	// Setup Gin Router
 	log.Println("Setting up router...")
 	router := gin.Default()
+
+	allowedOrigins := []string{"http://localhost", "http://localhost:4200", "http://127.0.0.1:4200"}
+	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+		allowedOrigins = append(allowedOrigins, frontendURL)
+	}
+
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost", "http://localhost:4200", "http://127.0.0.1:4200"},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
