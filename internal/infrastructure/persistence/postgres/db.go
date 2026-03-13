@@ -109,7 +109,12 @@ func Init() error {
 	}
 
 	// auto-migration
-	errMigration := db.AutoMigrate(&models.TrackDB{})
+	errMigration := db.AutoMigrate(
+		&models.UserDB{},
+		&models.VerificationTokenDB{},
+		&models.ResetTokenDB{},
+		&models.TrackDB{},
+	)
 
 	if errMigration != nil {
 		log.Printf("WARNING: Database migration failed: %v", errMigration)
