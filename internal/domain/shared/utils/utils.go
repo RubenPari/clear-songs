@@ -208,10 +208,10 @@ func LoadEnvVariables() {
 	errLoadFilePath := godotenv.Load(envPath)
 
 	if errLoadFilePath != nil {
-		log.Fatalf("error loading .env file from %s: %v", envPath, errLoadFilePath)
+		log.Printf("Warning: error loading .env file from %s: %v. Using system environment variables.", envPath, errLoadFilePath)
 	}
 
-	log.Println("Loaded environment variables from .env file")
+	log.Println("Loaded environment variables from .env file or system")
 
 	// Verify critical environment variables are loaded
 	redirectURL := os.Getenv("REDIRECT_URL")
