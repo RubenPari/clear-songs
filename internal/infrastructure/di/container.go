@@ -8,8 +8,10 @@ import (
 	"github.com/RubenPari/clear-songs/internal/application/auth"
 	"github.com/RubenPari/clear-songs/internal/application/playlist"
 	"github.com/RubenPari/clear-songs/internal/application/track"
+	domainAuth "github.com/RubenPari/clear-songs/internal/domain/auth"
 	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	"github.com/RubenPari/clear-songs/internal/domain/shared/constants"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/external/email"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/external/spotify"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/redis"
@@ -28,6 +30,11 @@ type Container struct {
 	OAuthConfig *oauth2.Config
 
 	// Auth Use Cases
+	AuthService auth.AuthService
+	UserRepo    domainAuth.UserRepository
+	TokenRepo   domainAuth.TokenRepository
+	EmailSvc    domainAuth.EmailService
+
 	LoginUC    *auth.LoginUseCase
 	CallbackUC *auth.CallbackUseCase
 	LogoutUC   *auth.LogoutUseCase
@@ -80,14 +87,19 @@ func NewContainer() (*Container, error) {
 		cacheRepo = redisCache
 	}
 
-	// Initialize auth use cases
-	loginUC := auth.NewLoginUseCase(oauthConfig)
-	callbackUC := auth.NewCallbackUseCase(oauthConfig, spotifyRepo, cacheRepo)
-	logoutUC := auth.NewLogoutUseCase(spotifyRepo, cacheRepo)
-	isAuthUC := auth.NewIsAuthUseCase(spotifyRepo)
-
 	// Initialize database repository (may be nil if database not available)
 	databaseRepo := postgres.NewPostgresRepository(postgres.Db)
+
+	userRepo := postgres.NewUserRepository()
+	tokenRepo := postgres.NewTokenRepository()
+	emailSvc := email.NewMailtrapEmailService()
+	authService := auth.NewAuthService(userRepo, tokenRepo, emailSvc)
+
+	// Initialize auth use cases
+	loginUC := auth.NewLoginUseCase(oauthConfig)
+	callbackUC := auth.NewCallbackUseCase(oauthConfig, spotifyRepo, cacheRepo, userRepo)
+	logoutUC := auth.NewLogoutUseCase(spotifyRepo, cacheRepo)
+	isAuthUC := auth.NewIsAuthUseCase(spotifyRepo)
 
 	// Initialize track use cases
 	getTrackSummaryUseCase := track.NewGetTrackSummaryUseCase(spotifyRepo, cacheRepo)
@@ -120,6 +132,10 @@ func NewContainer() (*Container, error) {
 		CallbackUC:                 callbackUC,
 		LogoutUC:                   logoutUC,
 		IsAuthUC:                   isAuthUC,
+		AuthService:                authService,
+		UserRepo:                   userRepo,
+		TokenRepo:                  tokenRepo,
+		EmailSvc:                   emailSvc,
 		GetTrackSummaryUseCase:     getTrackSummaryUseCase,
 		DeleteTracksByArtistUC:     deleteTracksByArtistUC,
 		DeleteTracksByRangeUC:      deleteTracksByRangeUC,
