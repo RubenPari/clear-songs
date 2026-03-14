@@ -3,28 +3,23 @@ package email
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"net/smtp"
+	"net/http"
 	"os"
 
 	"github.com/RubenPari/clear-songs/internal/domain/auth"
 )
 
 type mailtrapEmailService struct {
-	host        string
-	port        string
-	username    string
-	password    string
+	apiToken    string
 	from        string
 	frontendURL string
 }
 
 func NewMailtrapEmailService() auth.EmailService {
 	return &mailtrapEmailService{
-		host:        os.Getenv("SMTP_HOST"),
-		port:        os.Getenv("SMTP_PORT"),
-		username:    os.Getenv("SMTP_USERNAME"),
-		password:    os.Getenv("SMTP_PASSWORD"),
+		apiToken:    os.Getenv("MAILTRAP_API_TOKEN"),
 		from:        os.Getenv("SMTP_FROM"),
 		frontendURL: os.Getenv("FRONTEND_URL"), // e.g., http://localhost:4200
 	}
@@ -48,24 +43,64 @@ func (s *mailtrapEmailService) SendPasswordResetEmail(ctx context.Context, toEma
 	return s.sendEmail(toEmail, subject, body)
 }
 
+// Mailtrap structures based on the API documentation
+type Recipient struct {
+	Email string `json:"email"`
+}
+
+type Sender struct {
+	Email string `json:"email"`
+	Name  string `json:"name,omitempty"`
+}
+
+type MailtrapRequest struct {
+	From    Sender      `json:"from"`
+	To      []Recipient `json:"to"`
+	Subject string      `json:"subject"`
+	Text    string      `json:"text,omitempty"`
+}
+
 func (s *mailtrapEmailService) sendEmail(toEmail, subject, body string) error {
-	if s.host == "" || s.port == "" || s.username == "" || s.password == "" {
-		return fmt.Errorf("SMTP credentials are not fully configured")
+	if s.apiToken == "" {
+		return fmt.Errorf("MAILTRAP_API_TOKEN is not configured")
 	}
 
-	auth := smtp.PlainAuth("", s.username, s.password, s.host)
+	url := "https://send.api.mailtrap.io/api/send"
 
-	var msg bytes.Buffer
-	msg.WriteString(fmt.Sprintf("From: %s\r\n", s.from))
-	msg.WriteString(fmt.Sprintf("To: %s\r\n", toEmail))
-	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", subject))
-	msg.WriteString("MIME-version: 1.0;\r\nContent-Type: text/plain; charset=\"UTF-8\";\r\n\r\n")
-	msg.WriteString(body)
+	emailBody := MailtrapRequest{
+		From: Sender{
+			Email: s.from,
+			Name:  "Clear Songs",
+		},
+		To: []Recipient{
+			{Email: toEmail},
+		},
+		Subject: subject,
+		Text:    body,
+	}
 
-	addr := fmt.Sprintf("%s:%s", s.host, s.port)
-	err := smtp.SendMail(addr, auth, s.from, []string{toEmail}, msg.Bytes())
+	jsonData, err := json.Marshal(emailBody)
 	if err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
+		return fmt.Errorf("error marshaling email data: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("error creating email request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+s.apiToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending email: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("failed to send email, status code: %d", resp.StatusCode)
 	}
 
 	return nil

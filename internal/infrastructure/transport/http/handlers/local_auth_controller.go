@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -122,8 +123,11 @@ func (ac *LocalAuthController) ForgotPassword(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	// Ignore errors to prevent email enumeration
-	_ = ac.authService.ForgotPassword(ctx, req.Email)
+	// Ignore errors to prevent email enumeration, but log them for debugging
+	if err := ac.authService.ForgotPassword(ctx, req.Email); err != nil {
+		// Log the error but don't expose it to the client
+		log.Printf("WARNING: could not send password reset email: %v", err)
+	}
 
 	ac.JSONSuccess(c, gin.H{"message": "If that email exists, a reset link has been sent."})
 }
