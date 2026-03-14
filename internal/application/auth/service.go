@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	domainAuth "github.com/RubenPari/clear-songs/internal/domain/auth"
@@ -125,7 +126,8 @@ func (s *authService) ConfirmEmail(ctx context.Context, token string) error {
 }
 
 func (s *authService) Login(ctx context.Context, req LoginRequest) (*domainAuth.User, error) {
-	user, err := s.userRepo.GetByEmail(ctx, req.Email)
+	email := strings.ToLower(req.Email)
+	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -145,6 +147,7 @@ func (s *authService) Login(ctx context.Context, req LoginRequest) (*domainAuth.
 }
 
 func (s *authService) ForgotPassword(ctx context.Context, email string) error {
+	email = strings.ToLower(email)
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return err

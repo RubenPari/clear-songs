@@ -37,6 +37,7 @@ func (ac *LocalAuthController) Register(c *gin.Context) {
 			ac.JSONValidationError(c, "User already exists")
 			return
 		}
+		log.Printf("ERROR: Registration failed: %v", err)
 		ac.JSONInternalError(c, "Registration failed")
 		return
 	}
@@ -126,7 +127,7 @@ func (ac *LocalAuthController) ForgotPassword(c *gin.Context) {
 	// Ignore errors to prevent email enumeration, but log them for debugging
 	if err := ac.authService.ForgotPassword(ctx, req.Email); err != nil {
 		// Log the error but don't expose it to the client
-		log.Printf("WARNING: could not send password reset email: %v", err)
+		log.Printf("ERROR: ForgotPassword failed for email %s: %v", req.Email, err)
 	}
 
 	ac.JSONSuccess(c, gin.H{"message": "If that email exists, a reset link has been sent."})

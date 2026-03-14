@@ -100,7 +100,9 @@ func (s *mailtrapEmailService) sendEmail(toEmail, subject, body string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("failed to send email, status code: %d", resp.StatusCode)
+		var respBody bytes.Buffer
+		respBody.ReadFrom(resp.Body)
+		return fmt.Errorf("failed to send email, status code: %d, response: %s", resp.StatusCode, respBody.String())
 	}
 
 	return nil
