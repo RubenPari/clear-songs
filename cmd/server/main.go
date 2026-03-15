@@ -60,7 +60,7 @@ func main() {
 	}))
 
 	// Setup Routes
-	httptransport.SetUpRoutesRefactored(router, container)
+	httptransport.SetUpRoutes(router, container)
 
 	// Create HTTP server
 	srv := &http.Server{

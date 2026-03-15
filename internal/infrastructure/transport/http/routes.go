@@ -8,7 +8,7 @@ import (
 )
 
 /**
- * SetUpRoutesRefactored configures all HTTP routes using dependency injection
+ * SetUpRoutes configures all HTTP routes using dependency injection
  *
  * This version uses the DI container to inject dependencies into controllers
  * and middleware, eliminating the need for global variables.
@@ -16,7 +16,7 @@ import (
  * @param server - The Gin engine instance to configure routes on
  * @param container - The dependency injection container
  */
-func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
+func SetUpRoutes(server *gin.Engine, container *di.Container) {
 	/**
 	 * Global Middleware
 	 *
@@ -24,7 +24,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	 * - SessionMiddlewareRefactored: Manages user sessions using DI
 	 * - CacheInvalidationMiddleware: Invalidates cache when data is modified
 	 */
-	server.Use(middleware.SessionMiddlewareRefactored(
+	server.Use(middleware.SessionMiddleware(
 		container.SpotifyRepo,
 		container.CacheRepo,
 	))
@@ -43,7 +43,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	/**
 	 * Track Management Routes Group
 	 */
-	trackController := handlers.NewTrackControllerComplete(
+	trackController := handlers.NewTrackController(
 		container.GetTrackSummaryUseCase,
 		container.DeleteTracksByArtistUC,
 		container.DeleteTracksByRangeUC,
@@ -54,19 +54,19 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	track := server.Group("/track")
 	{
 		track.GET("/summary",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			trackController.GetTrackSummary)
 		track.GET("/by-artist/:id_artist",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			trackController.GetTracksByArtist)
 		track.DELETE("/by-artist/:id_artist",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			trackController.DeleteTrackByArtist)
 		track.DELETE("/:id_track",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			trackController.DeleteTrack)
 		track.DELETE("/by-range",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			trackController.DeleteTrackByRange)
 	}
 
@@ -93,7 +93,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	/**
 	 * Authentication Routes Group (Spotify)
 	 */
-	authController := handlers.NewAuthControllerRefactored(
+	authController := handlers.NewAuthController(
 		container.LoginUC,
 		container.CallbackUC,
 		container.LogoutUC,
@@ -111,7 +111,7 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	/**
 	 * Playlist Management Routes Group
 	 */
-	playlistController := handlers.NewPlaylistControllerRefactored(
+	playlistController := handlers.NewPlaylistController(
 		container.GetUserPlaylistsUC,
 		container.DeletePlaylistTracksUC,
 		container.DeletePlaylistAndLibraryUC,
@@ -120,13 +120,13 @@ func SetUpRoutesRefactored(server *gin.Engine, container *di.Container) {
 	playlist := server.Group("/playlist")
 	{
 		playlist.GET("/list",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			playlistController.GetUserPlaylists)
 		playlist.DELETE("/delete-tracks",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			playlistController.DeleteAllPlaylistTracks)
 		playlist.DELETE("/delete-tracks-and-library",
-			middleware.SpotifyAuthMiddlewareRefactored(),
+			middleware.SpotifyAuthMiddleware(),
 			playlistController.DeleteAllPlaylistAndUserTracks)
 	}
 }

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -29,8 +28,7 @@ func (ac *LocalAuthController) Register(c *gin.Context) {
 		ac.JSONValidationError(c, "Invalid request payload")
 		return
 	}
-
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	err := ac.authService.Register(ctx, req)
 	if err != nil {
 		if err == auth.ErrUserExists {
@@ -52,7 +50,7 @@ func (ac *LocalAuthController) ConfirmEmail(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	err := ac.authService.ConfirmEmail(ctx, token)
 	if err != nil {
 		ac.JSONError(c, http.StatusBadRequest, "INVALID_TOKEN", "Invalid or expired token")
@@ -69,7 +67,7 @@ func (ac *LocalAuthController) Login(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	user, err := ac.authService.Login(ctx, req)
 	if err != nil {
 		if err == auth.ErrInvalidCredentials {
@@ -87,7 +85,9 @@ func (ac *LocalAuthController) Login(c *gin.Context) {
 	// Generate JWT
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "fallback-secret-for-dev"
+		log.Println("ERROR: JWT_SECRET is not configured")
+		ac.JSONInternalError(c, "Server authentication configuration error")
+		return
 	}
 
 	claims := jwt.MapClaims{
@@ -103,7 +103,8 @@ func (ac *LocalAuthController) Login(c *gin.Context) {
 	}
 
 	// Set as HTTP-only cookie
-	c.SetCookie("auth_token", tokenString, 7*24*3600, "/", "", false, true)
+	secureCookie := os.Getenv("GIN_MODE") == "release"
+	c.SetCookie("auth_token", tokenString, 7*24*3600, "/", "", secureCookie, true)
 
 	ac.JSONSuccess(c, gin.H{
 		"user": gin.H{
@@ -123,7 +124,7 @@ func (ac *LocalAuthController) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	// Ignore errors to prevent email enumeration, but log them for debugging
 	if err := ac.authService.ForgotPassword(ctx, req.Email); err != nil {
 		// Log the error but don't expose it to the client
@@ -140,7 +141,7 @@ func (ac *LocalAuthController) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	err := ac.authService.ResetPassword(ctx, req)
 	if err != nil {
 		ac.JSONError(c, http.StatusBadRequest, "BAD_REQUEST", "Failed to reset password. Token may be invalid.")
@@ -156,6 +157,11 @@ func (ac *LocalAuthController) ChangePassword(c *gin.Context) {
 		ac.JSONError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Unauthorized")
 		return
 	}
+	userIDString, ok := userID.(string)
+	if !ok || userIDString == "" {
+		ac.JSONError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Unauthorized")
+		return
+	}
 
 	var req auth.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -163,8 +169,8 @@ func (ac *LocalAuthController) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-	err := ac.authService.ChangePassword(ctx, userID.(string), req)
+	ctx := c.Request.Context()
+	err := ac.authService.ChangePassword(ctx, userIDString, req)
 	if err != nil {
 		if err == auth.ErrInvalidCredentials {
 			ac.JSONError(c, http.StatusBadRequest, "BAD_REQUEST", "Invalid old password")
@@ -178,6 +184,7 @@ func (ac *LocalAuthController) ChangePassword(c *gin.Context) {
 }
 
 func (ac *LocalAuthController) Logout(c *gin.Context) {
-	c.SetCookie("auth_token", "", -1, "/", "", false, true)
+	secureCookie := os.Getenv("GIN_MODE") == "release"
+	c.SetCookie("auth_token", "", -1, "/", "", secureCookie, true)
 	ac.JSONSuccess(c, gin.H{"message": "Logged out successfully"})
 }

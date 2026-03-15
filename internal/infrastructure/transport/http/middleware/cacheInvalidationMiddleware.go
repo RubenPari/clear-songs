@@ -2,8 +2,7 @@ package middleware
 
 import (
 	"strings"
-
-	cacheManager "github.com/RubenPari/clear-songs/internal/infrastructure/persistence/redis"
+	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
@@ -16,40 +15,54 @@ func CacheInvalidationMiddleware() gin.HandlerFunc {
 
 		// Only invalidate cache if the request was successful
 		if c.Writer.Status() >= 200 && c.Writer.Status() < 300 {
+			// Get CacheRepository from context (set by SessionMiddleware)
+			repo, exists := c.Get("cacheRepository")
+			if !exists {
+				return
+			}
+
+			cacheRepo, ok := repo.(shared.CacheRepository)
+			if !ok || cacheRepo == nil {
+				return
+			}
+
 			path := c.Request.URL.Path
 			method := c.Request.Method
 
 			// Only invalidate on modification operations (DELETE, POST, PUT, PATCH)
 			if method == "DELETE" || method == "POST" || method == "PUT" || method == "PATCH" {
-				invalidateBasedOnEndpoint(c, path)
+				invalidateBasedOnEndpoint(c, cacheRepo, path)
 			}
 		}
 	}
 }
 
-func invalidateBasedOnEndpoint(c *gin.Context, path string) {
+func invalidateBasedOnEndpoint(c *gin.Context, cacheRepo shared.CacheRepository, path string) {
+	ctx := c.Request.Context()
+
 	switch {
 	case strings.HasPrefix(path, "/track/"):
 		// Any track operation affects user data
-		cacheManager.InvalidateUserData()
+		_ = cacheRepo.InvalidateUserTracks(ctx)
 
 	case strings.HasPrefix(path, "/playlist/"):
 		// Playlist operations
 		if playlistID := c.Query("id"); playlistID != "" {
-			cacheManager.InvalidatePlaylist(spotifyAPI.ID(playlistID))
+			_ = cacheRepo.InvalidatePlaylistTracks(ctx, spotifyAPI.ID(playlistID))
 		}
 
 		// If it's a playlist operation that also affects user library
 		if strings.Contains(path, "all") || strings.Contains(path, "library") {
-			cacheManager.InvalidateUserData()
+			_ = cacheRepo.InvalidateUserTracks(ctx)
 		}
 
 	case strings.HasPrefix(path, "/album/"):
 		// Album operations usually affect user library
-		cacheManager.InvalidateUserData()
+		_ = cacheRepo.InvalidateUserTracks(ctx)
 
 	default:
 		// For any other modification operation, do a full reset as a safety measure
-		cacheManager.Reset()
+		// Note: CacheRepository doesn't have a Reset method, so we invalidate user tracks at minimum
+		_ = cacheRepo.InvalidateUserTracks(ctx)
 	}
 }

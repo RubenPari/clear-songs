@@ -31,7 +31,7 @@ func (s *mailtrapEmailService) SendVerificationEmail(ctx context.Context, toEmai
 	link := fmt.Sprintf("%s/confirm-email?token=%s", s.frontendURL, token)
 	body := fmt.Sprintf("Welcome to Clear Songs!\n\nPlease click the link below to verify your email address:\n%s\n\nIf you did not request this, please ignore this email.", link)
 
-	return s.sendEmail(toEmail, subject, body)
+	return s.sendEmail(ctx, toEmail, subject, body)
 }
 
 func (s *mailtrapEmailService) SendPasswordResetEmail(ctx context.Context, toEmail string, token string) error {
@@ -40,7 +40,7 @@ func (s *mailtrapEmailService) SendPasswordResetEmail(ctx context.Context, toEma
 	link := fmt.Sprintf("%s/reset-password?token=%s", s.frontendURL, token)
 	body := fmt.Sprintf("You requested a password reset for Clear Songs.\n\nPlease click the link below to reset your password:\n%s\n\nIf you did not request this, please ignore this email.", link)
 
-	return s.sendEmail(toEmail, subject, body)
+	return s.sendEmail(ctx, toEmail, subject, body)
 }
 
 // Mailtrap structures based on the API documentation
@@ -60,7 +60,7 @@ type MailtrapRequest struct {
 	Text    string      `json:"text,omitempty"`
 }
 
-func (s *mailtrapEmailService) sendEmail(toEmail, subject, body string) error {
+func (s *mailtrapEmailService) sendEmail(ctx context.Context, toEmail, subject, body string) error {
 	if s.apiToken == "" {
 		return fmt.Errorf("MAILTRAP_API_TOKEN is not configured")
 	}
@@ -84,7 +84,7 @@ func (s *mailtrapEmailService) sendEmail(toEmail, subject, body string) error {
 		return fmt.Errorf("error marshaling email data: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating email request: %w", err)
 	}

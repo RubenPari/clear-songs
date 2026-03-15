@@ -55,25 +55,14 @@ type Container struct {
 
 // NewContainer creates and initializes a new dependency injection container
 func NewContainer() (*Container, error) {
-	// Initialize Spotify repository
-	clientID := os.Getenv("CLIENT_ID")
-	clientSecret := os.Getenv("CLIENT_SECRET")
-	redirectURI := os.Getenv("REDIRECT_URL")
-	if redirectURI == "" {
-		redirectURI = os.Getenv("REDIRECT_URI")
-	}
-
-	if clientID == "" || clientSecret == "" || redirectURI == "" {
-		log.Fatal("Missing required environment variables: CLIENT_ID, CLIENT_SECRET, REDIRECT_URL")
-	}
-
-	spotifyRepo := spotify.NewSpotifyRepository(clientID, clientSecret, redirectURI, constants.Scopes)
-
 	// Initialize OAuth config
 	oauthConfig, err := GetOAuth2Config()
 	if err != nil {
 		return nil, err
 	}
+
+	// Initialize Spotify repository
+	spotifyRepo := spotify.NewSpotifyRepository(oauthConfig.ClientID, oauthConfig.ClientSecret, oauthConfig.RedirectURL, constants.Scopes)
 
 	// Initialize cache repository (may fail if Redis is not available)
 	var cacheRepo shared.CacheRepository

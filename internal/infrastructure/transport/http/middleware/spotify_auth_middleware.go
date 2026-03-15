@@ -9,8 +9,8 @@ import (
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// SpotifyAuthMiddlewareRefactored creates an auth middleware that uses dependency injection
-func SpotifyAuthMiddlewareRefactored() gin.HandlerFunc {
+// SpotifyAuthMiddleware requires Spotify authentication
+func SpotifyAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get Spotify repository from context (set by SessionMiddleware)
 		repo, exists := c.Get("spotifyRepository")

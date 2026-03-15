@@ -15,6 +15,23 @@ type PostgresRepository struct {
 	db *gorm.DB
 }
 
+func firstArtistName(artists []spotifyAPI.SimpleArtist) string {
+	if len(artists) == 0 {
+		return "Unknown Artist"
+	}
+	if artists[0].Name == "" {
+		return "Unknown Artist"
+	}
+	return artists[0].Name
+}
+
+func spotifyURL(urls map[string]string) string {
+	if urls == nil {
+		return ""
+	}
+	return urls["spotify"]
+}
+
 // NewPostgresRepository creates a new Postgres repository
 // If db is nil, returns a no-op repository
 func NewPostgresRepository(db *gorm.DB) shared.DatabaseRepository {
@@ -29,13 +46,17 @@ func (r *PostgresRepository) SaveTracksBackup(tracks []spotifyAPI.PlaylistTrack)
 	log.Println("Saving tracks backup started")
 
 	for _, trackPlaylist := range tracks {
+		trackID := trackPlaylist.Track.ID.String()
+		if trackID == "" {
+			continue
+		}
 		track := models.TrackDB{
-			Id:     trackPlaylist.Track.ID.String(),
+			Id:     trackID,
 			Name:   trackPlaylist.Track.Name,
-			Artist: trackPlaylist.Track.Artists[0].Name,
+			Artist: firstArtistName(trackPlaylist.Track.Artists),
 			Album:  trackPlaylist.Track.Album.Name,
 			URI:    string(trackPlaylist.Track.URI),
-			URL:    trackPlaylist.Track.ExternalURLs["spotify"],
+			URL:    spotifyURL(trackPlaylist.Track.ExternalURLs),
 		}
 
 		if err := r.saveToDB(track); err != nil {
@@ -51,13 +72,17 @@ func (r *PostgresRepository) SaveFullTracksBackup(tracks []spotifyAPI.FullTrack)
 	log.Println("Saving full tracks backup started")
 
 	for _, t := range tracks {
+		trackID := t.ID.String()
+		if trackID == "" {
+			continue
+		}
 		track := models.TrackDB{
-			Id:     t.ID.String(),
+			Id:     trackID,
 			Name:   t.Name,
-			Artist: t.Artists[0].Name,
+			Artist: firstArtistName(t.Artists),
 			Album:  t.Album.Name,
 			URI:    string(t.URI),
-			URL:    t.ExternalURLs["spotify"],
+			URL:    spotifyURL(t.ExternalURLs),
 		}
 
 		if err := r.saveToDB(track); err != nil {

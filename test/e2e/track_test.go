@@ -36,7 +36,7 @@ func TestTrackAPI_E2E(t *testing.T) {
 		return
 	}
 	
-	httptransport.SetUpRoutesRefactored(router, container)
+	httptransport.SetUpRoutes(router, container)
 
 	t.Run("GET /track/summary - Unauthenticated", func(t *testing.T) {
 		w := httptest.NewRecorder()

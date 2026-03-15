@@ -17,6 +17,9 @@ func NewLoginUseCase(oauthConfig *oauth2.Config) *LoginUseCase {
 }
 
 // Execute generates the OAuth authorization URL
-func (uc *LoginUseCase) Execute() string {
-	return uc.oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
+func (uc *LoginUseCase) Execute(state string) string {
+	if state == "" {
+		state = "state"
+	}
+	return uc.oauthConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
 }

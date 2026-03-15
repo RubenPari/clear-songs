@@ -32,7 +32,15 @@ func JWTMiddleware() gin.HandlerFunc {
 
 		jwtSecret := os.Getenv("JWT_SECRET")
 		if jwtSecret == "" {
-			jwtSecret = "fallback-secret-for-dev"
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "SERVER_MISCONFIGURATION",
+					"message": "Authentication is not configured",
+				},
+			})
+			c.Abort()
+			return
 		}
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -55,8 +63,23 @@ func JWTMiddleware() gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			c.Set("userID", claims["sub"])
-			c.Set("userEmail", claims["email"])
+			sub, ok := claims["sub"].(string)
+			if !ok || sub == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"error": gin.H{
+						"code":    "UNAUTHORIZED",
+						"message": "Invalid token claims",
+					},
+				})
+				c.Abort()
+				return
+			}
+
+			c.Set("userID", sub)
+			if email, ok := claims["email"].(string); ok {
+				c.Set("userEmail", email)
+			}
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success": false,

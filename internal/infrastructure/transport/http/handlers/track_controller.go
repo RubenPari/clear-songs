@@ -1,16 +1,14 @@
 package handlers
 
 import (
-	"context"
-
 	"github.com/RubenPari/clear-songs/internal/application/track"
 	"github.com/RubenPari/clear-songs/internal/domain/shared/utils"
 	"github.com/gin-gonic/gin"
 	spotifyAPI "github.com/zmb3/spotify"
 )
 
-// TrackControllerComplete is the complete refactored track controller
-type TrackControllerComplete struct {
+// TrackController is the refactored track controller
+type TrackController struct {
 	BaseController
 	getTrackSummaryUseCase *track.GetTrackSummaryUseCase
 	deleteTracksByArtistUC *track.DeleteTracksByArtistUseCase
@@ -19,25 +17,25 @@ type TrackControllerComplete struct {
 	getTracksByArtistUC    *track.GetTracksByArtistUseCase
 }
 
-// NewTrackControllerComplete creates a new complete track controller
-func NewTrackControllerComplete(
-	getTrackSummaryUC *track.GetTrackSummaryUseCase,
-	deleteByArtistUC *track.DeleteTracksByArtistUseCase,
-	deleteByRangeUC *track.DeleteTracksByRangeUseCase,
+// NewTrackController creates a new TrackController
+func NewTrackController(
+	getTrackSummaryUseCase *track.GetTrackSummaryUseCase,
+	deleteTracksByArtistUC *track.DeleteTracksByArtistUseCase,
+	deleteTracksByRangeUC *track.DeleteTracksByRangeUseCase,
 	getTracksByArtistUC *track.GetTracksByArtistUseCase,
 	deleteTrackUC *track.DeleteTrackUseCase,
-) *TrackControllerComplete {
-	return &TrackControllerComplete{
-		getTrackSummaryUseCase: getTrackSummaryUC,
-		deleteTracksByArtistUC: deleteByArtistUC,
-		deleteTracksByRangeUC:  deleteByRangeUC,
+) *TrackController {
+	return &TrackController{
+		getTrackSummaryUseCase: getTrackSummaryUseCase,
+		deleteTracksByArtistUC: deleteTracksByArtistUC,
+		deleteTracksByRangeUC:  deleteTracksByRangeUC,
 		deleteTrackUC:          deleteTrackUC,
 		getTracksByArtistUC:    getTracksByArtistUC,
 	}
 }
 
 // GetTrackSummary handles GET /track/summary
-func (tc *TrackControllerComplete) GetTrackSummary(c *gin.Context) {
+func (tc *TrackController) GetTrackSummary(c *gin.Context) {
 	var req track.RangeRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		tc.JSONValidationError(c, "Invalid min or max parameters")
@@ -47,7 +45,7 @@ func (tc *TrackControllerComplete) GetTrackSummary(c *gin.Context) {
 	// Execute use case
 	// Note: the original manual validation fell back to 0 if min/max strings were empty,
 	// which matches how Gin parses missing query integers.
-	ctx := context.Background() // In production, c.Request.Context() is preferred.
+	ctx := c.Request.Context()
 	result, err := tc.getTrackSummaryUseCase.Execute(ctx, req.Min, req.Max)
 	if err != nil {
 		tc.HandleDomainError(c, err)
@@ -69,7 +67,7 @@ func (tc *TrackControllerComplete) GetTrackSummary(c *gin.Context) {
 }
 
 // GetTracksByArtist handles GET /track/by-artist/:id_artist
-func (tc *TrackControllerComplete) GetTracksByArtist(c *gin.Context) {
+func (tc *TrackController) GetTracksByArtist(c *gin.Context) {
 	// Get artist ID from URL
 	idArtistString := c.Param("id_artist")
 	if idArtistString == "" {
@@ -80,7 +78,7 @@ func (tc *TrackControllerComplete) GetTracksByArtist(c *gin.Context) {
 	artistID := spotifyAPI.ID(idArtistString)
 
 	// Execute use case
-	ctx := context.Background() // In production, use c.Request.Context()
+	ctx := c.Request.Context()
 	tracks, err := tc.getTracksByArtistUC.Execute(ctx, artistID)
 	if err != nil {
 		tc.HandleDomainError(c, err)
@@ -117,7 +115,7 @@ func (tc *TrackControllerComplete) GetTracksByArtist(c *gin.Context) {
 }
 
 // DeleteTrackByArtist handles DELETE /track/by-artist/:id_artist
-func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
+func (tc *TrackController) DeleteTrackByArtist(c *gin.Context) {
 	// Get artist ID from URL
 	idArtistString := c.Param("id_artist")
 	if idArtistString == "" {
@@ -128,7 +126,7 @@ func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
 	artistID := spotifyAPI.ID(idArtistString)
 
 	// Execute use case
-	ctx := context.Background() // In production, use c.Request.Context()
+	ctx := c.Request.Context()
 	if err := tc.deleteTracksByArtistUC.Execute(ctx, artistID); err != nil {
 		tc.HandleDomainError(c, err)
 		return
@@ -138,7 +136,7 @@ func (tc *TrackControllerComplete) DeleteTrackByArtist(c *gin.Context) {
 }
 
 // DeleteTrack handles DELETE /track/:id_track
-func (tc *TrackControllerComplete) DeleteTrack(c *gin.Context) {
+func (tc *TrackController) DeleteTrack(c *gin.Context) {
 	// Get track ID from URL
 	idTrackString := c.Param("id_track")
 	if idTrackString == "" {
@@ -149,7 +147,7 @@ func (tc *TrackControllerComplete) DeleteTrack(c *gin.Context) {
 	trackID := spotifyAPI.ID(idTrackString)
 
 	// Execute use case
-	ctx := context.Background() // In production, use c.Request.Context()
+	ctx := c.Request.Context()
 	if err := tc.deleteTrackUC.Execute(ctx, trackID); err != nil {
 		tc.HandleDomainError(c, err)
 		return
@@ -159,7 +157,7 @@ func (tc *TrackControllerComplete) DeleteTrack(c *gin.Context) {
 }
 
 // DeleteTrackByRange handles DELETE /track/by-range
-func (tc *TrackControllerComplete) DeleteTrackByRange(c *gin.Context) {
+func (tc *TrackController) DeleteTrackByRange(c *gin.Context) {
 	var req track.RangeRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		tc.JSONValidationError(c, "Invalid min or max parameters")
@@ -173,7 +171,7 @@ func (tc *TrackControllerComplete) DeleteTrackByRange(c *gin.Context) {
 	}
 
 	// Execute use case
-	ctx := context.Background() // In production, use c.Request.Context()
+	ctx := c.Request.Context()
 	if err := tc.deleteTracksByRangeUC.Execute(ctx, req.Min, req.Max); err != nil {
 		tc.HandleDomainError(c, err)
 		return
