@@ -276,6 +276,33 @@ func (r *SpotifyRepositoryImpl) GetArtist(ctx context.Context, artistID spotify.
 	return r.client.GetArtist(artistID)
 }
 
+// GetArtists retrieves multiple artists in batch (up to 50 per Spotify API call)
+func (r *SpotifyRepositoryImpl) GetArtists(ctx context.Context, artistIDs []spotify.ID) ([]*spotify.FullArtist, error) {
+	if r.client == nil {
+		return nil, errors.New("spotify client not initialized")
+	}
+
+	var allArtists []*spotify.FullArtist
+	batchSize := 50
+
+	for i := 0; i < len(artistIDs); i += batchSize {
+		end := i + batchSize
+		if end > len(artistIDs) {
+			end = len(artistIDs)
+		}
+
+		batch, err := r.client.GetArtists(artistIDs[i:end]...)
+		if err != nil {
+			log.Printf("Error fetching artists batch [%d:%d]: %v", i, end, err)
+			return nil, err
+		}
+
+		allArtists = append(allArtists, batch...)
+	}
+
+	return allArtists, nil
+}
+
 // GetTrack retrieves track information
 func (r *SpotifyRepositoryImpl) GetTrack(ctx context.Context, trackID spotify.ID) (*spotify.FullTrack, error) {
 	if r.client == nil {

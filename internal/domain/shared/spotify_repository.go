@@ -47,6 +47,9 @@ type SpotifyRepository interface {
 	// GetArtist retrieves artist information
 	GetArtist(ctx context.Context, artistID spotifyAPI.ID) (*spotifyAPI.FullArtist, error)
 
+	// GetArtists retrieves multiple artists in batch (up to 50 per call)
+	GetArtists(ctx context.Context, artistIDs []spotifyAPI.ID) ([]*spotifyAPI.FullArtist, error)
+
 	// GetTrack retrieves track information
 	GetTrack(ctx context.Context, trackID spotifyAPI.ID) (*spotifyAPI.FullTrack, error)
 

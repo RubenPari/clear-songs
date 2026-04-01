@@ -39,6 +39,14 @@ func (m *MockSpotifyRepository) GetArtist(ctx context.Context, id spotifyAPI.ID)
 	return args.Get(0).(*spotifyAPI.FullArtist), args.Error(1)
 }
 
+func (m *MockSpotifyRepository) GetArtists(ctx context.Context, ids []spotifyAPI.ID) ([]*spotifyAPI.FullArtist, error) {
+	args := m.Called(ctx, ids)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*spotifyAPI.FullArtist), args.Error(1)
+}
+
 func (m *MockSpotifyRepository) GetTrack(ctx context.Context, id spotifyAPI.ID) (*spotifyAPI.FullTrack, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {

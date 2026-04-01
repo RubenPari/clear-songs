@@ -3,6 +3,7 @@ package track
 import (
 	"context"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -131,6 +132,29 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 		}
 	}
 
+	// Collect unique artist IDs for batch fetching
+	var artistIDs []spotifyAPI.ID
+	for _, data := range artistMap {
+		if data.id != "" {
+			artistIDs = append(artistIDs, spotifyAPI.ID(data.id))
+		}
+	}
+
+	// Batch fetch all artist details
+	artistDetails := make(map[string]*spotifyAPI.FullArtist)
+	if len(artistIDs) > 0 {
+		artists, err := uc.spotifyRepo.GetArtists(ctx, artistIDs)
+		if err != nil {
+			log.Printf("Error batch fetching artists: %v", err)
+		} else {
+			for _, artist := range artists {
+				if artist != nil {
+					artistDetails[string(artist.ID)] = artist
+				}
+			}
+		}
+	}
+
 	// Convert to ArtistSummary array
 	var summary []track.ArtistSummary
 	for artistName, data := range artistMap {
@@ -142,16 +166,13 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 			continue
 		}
 
-		// Get artist image and genres
+		// Get artist image and genres from batch results
 		imageURL := ""
 		var genres []string
 
-		if data.id != "" {
-			artist, err := uc.spotifyRepo.GetArtist(ctx, spotifyAPI.ID(data.id))
-			if err == nil && artist != nil {
-				imageURL = utils.GetMediumImage(artist.Images)
-				genres = artist.Genres
-			}
+		if artist, ok := artistDetails[data.id]; ok {
+			imageURL = utils.GetMediumImage(artist.Images)
+			genres = artist.Genres
 		}
 
 		// Apply genre filter if specified

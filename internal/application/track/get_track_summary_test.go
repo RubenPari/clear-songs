@@ -59,9 +59,13 @@ func TestGetTrackSummaryUseCase_Execute(t *testing.T) {
 		mockSpotifyRepo.On("GetAllUserTracks", ctx).Return(tracks, nil)
 		mockCacheRepo.On("SetUserTracks", ctx, tracks, mock.Anything).Return(nil)
 
-		// Mock Artist Image calls
-		mockSpotifyRepo.On("GetArtist", ctx, spotifyAPI.ID("1")).Return(&spotifyAPI.FullArtist{}, nil)
-		mockSpotifyRepo.On("GetArtist", ctx, spotifyAPI.ID("2")).Return(&spotifyAPI.FullArtist{}, nil)
+		// Mock batch artist fetch
+		mockSpotifyRepo.On("GetArtists", ctx, mock.MatchedBy(func(ids []spotifyAPI.ID) bool {
+			return len(ids) == 2
+		})).Return([]*spotifyAPI.FullArtist{
+			{SimpleArtist: spotifyAPI.SimpleArtist{ID: "1", Name: "Artist 1"}},
+			{SimpleArtist: spotifyAPI.SimpleArtist{ID: "2", Name: "Artist 2"}},
+		}, nil)
 
 		mockCacheRepo.On("Set", ctx, "track_summary", mock.Anything, mock.Anything).Return(nil)
 
