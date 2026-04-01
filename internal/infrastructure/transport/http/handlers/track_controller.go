@@ -57,6 +57,7 @@ func (tc *TrackController) GetTrackSummary(c *gin.Context) {
 			Count:    artist.Count,
 			ImageURL: artist.ImageURL,
 			Genres:   artist.Genres,
+			Genre:    artist.Genre,
 		})
 	}
 

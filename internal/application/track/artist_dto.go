@@ -7,4 +7,5 @@ type ArtistSummary struct {
 	Count    int      `json:"count"`
 	ImageURL string   `json:"image_url,omitempty"`
 	Genres   []string `json:"genres,omitempty"`
+	Genre    string   `json:"genre,omitempty"`
 }

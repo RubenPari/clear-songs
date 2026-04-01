@@ -1,6 +1,7 @@
 package di
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"github.com/RubenPari/clear-songs/internal/application/track"
 	"github.com/RubenPari/clear-songs/internal/domain/shared"
 	"github.com/RubenPari/clear-songs/internal/domain/shared/constants"
+	"github.com/RubenPari/clear-songs/internal/infrastructure/external/gemini"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/external/spotify"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/postgres"
 	"github.com/RubenPari/clear-songs/internal/infrastructure/persistence/redis"
@@ -23,6 +25,7 @@ type Container struct {
 	SpotifyRepo  shared.SpotifyRepository
 	CacheRepo    shared.CacheRepository
 	DatabaseRepo shared.DatabaseRepository
+	AIRepo       shared.AIRepository
 
 	// OAuth Config
 	OAuthConfig *oauth2.Config
@@ -72,6 +75,22 @@ func NewContainer() (*Container, error) {
 	// Initialize database repository (may be nil if database not available)
 	databaseRepo := postgres.NewPostgresRepository(postgres.Db)
 
+	// Initialize AI repository (for genre resolution fallback)
+	var aiRepo shared.AIRepository
+	geminiKey := os.Getenv("GEMINI_API_KEY")
+	if geminiKey != "" {
+		geminiRepo, err := gemini.NewGeminiRepository(context.Background(), geminiKey)
+		if err != nil {
+			log.Printf("WARNING: Gemini initialization failed: %v", err)
+			aiRepo = gemini.NewNoOpAIRepository()
+		} else {
+			aiRepo = geminiRepo
+		}
+	} else {
+		log.Println("WARNING: GEMINI_API_KEY not set, AI genre resolution disabled")
+		aiRepo = gemini.NewNoOpAIRepository()
+	}
+
 	// Initialize auth use cases
 	loginUC := auth.NewLoginUseCase(oauthConfig)
 	callbackUC := auth.NewCallbackUseCase(oauthConfig, spotifyRepo, cacheRepo)
@@ -79,7 +98,7 @@ func NewContainer() (*Container, error) {
 	isAuthUC := auth.NewIsAuthUseCase(spotifyRepo)
 
 	// Initialize track use cases
-	getTrackSummaryUseCase := track.NewGetTrackSummaryUseCase(spotifyRepo, cacheRepo)
+	getTrackSummaryUseCase := track.NewGetTrackSummaryUseCase(spotifyRepo, cacheRepo, aiRepo)
 	deleteTracksByArtistUC := track.NewDeleteTracksByArtistUseCase(spotifyRepo, cacheRepo)
 	getTracksByArtistUC := track.NewGetTracksByArtistUseCase(spotifyRepo, cacheRepo)
 	deleteTrackUC := track.NewDeleteTrackUseCase(spotifyRepo, cacheRepo, databaseRepo)
@@ -104,6 +123,7 @@ func NewContainer() (*Container, error) {
 		SpotifyRepo:                spotifyRepo,
 		CacheRepo:                  cacheRepo,
 		DatabaseRepo:               databaseRepo,
+		AIRepo:                     aiRepo,
 		OAuthConfig:                oauthConfig,
 		LoginUC:                    loginUC,
 		CallbackUC:                 callbackUC,

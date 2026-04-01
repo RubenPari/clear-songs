@@ -18,16 +18,19 @@ import (
 type GetTrackSummaryUseCase struct {
 	spotifyRepo shared.SpotifyRepository
 	cacheRepo   shared.CacheRepository
+	aiRepo      shared.AIRepository
 }
 
 // NewGetTrackSummaryUseCase creates a new GetTrackSummaryUseCase
 func NewGetTrackSummaryUseCase(
 	spotifyRepo shared.SpotifyRepository,
 	cacheRepo shared.CacheRepository,
+	aiRepo shared.AIRepository,
 ) *GetTrackSummaryUseCase {
 	return &GetTrackSummaryUseCase{
 		spotifyRepo: spotifyRepo,
 		cacheRepo:   cacheRepo,
+		aiRepo:      aiRepo,
 	}
 }
 
@@ -175,17 +178,24 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 			genres = artist.Genres
 		}
 
-		// Apply genre filter if specified
-		if genre != "" {
-			genreLower := strings.ToLower(genre)
-			found := false
-			for _, g := range genres {
-				if strings.Contains(strings.ToLower(g), genreLower) {
-					found = true
-					break
-				}
+		// Resolve canonical genre
+		resolvedGenre := track.ResolveGenre(genres)
+
+		// Gemini fallback when no genre resolved
+		if resolvedGenre == "" && uc.aiRepo != nil {
+			aiCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			aiGenre, err := uc.aiRepo.ResolveArtistGenre(aiCtx, artistName)
+			cancel()
+			if err != nil {
+				log.Printf("Gemini fallback failed for artist %s: %v", artistName, err)
+			} else if aiGenre != "" {
+				resolvedGenre = track.ResolveGenre([]string{aiGenre})
 			}
-			if !found {
+		}
+
+		// Apply genre filter using resolved canonical genre
+		if genre != "" {
+			if !strings.EqualFold(resolvedGenre, genre) {
 				continue
 			}
 		}
@@ -201,6 +211,7 @@ func (uc *GetTrackSummaryUseCase) calculateSummary(
 			Count:    data.count,
 			ImageURL: imageURL,
 			Genres:   genres,
+			Genre:    resolvedGenre,
 		})
 	}
 
