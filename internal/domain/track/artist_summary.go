@@ -6,4 +6,5 @@ type ArtistSummary struct {
 	Name     string
 	Count    int
 	ImageURL string
+	Genres   []string
 }

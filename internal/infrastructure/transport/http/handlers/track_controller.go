@@ -42,17 +42,13 @@ func (tc *TrackController) GetTrackSummary(c *gin.Context) {
 		return
 	}
 
-	// Execute use case
-	// Note: the original manual validation fell back to 0 if min/max strings were empty,
-	// which matches how Gin parses missing query integers.
 	ctx := c.Request.Context()
-	result, err := tc.getTrackSummaryUseCase.Execute(ctx, req.Min, req.Max)
+	result, err := tc.getTrackSummaryUseCase.Execute(ctx, req.Min, req.Max, req.Genre)
 	if err != nil {
 		tc.HandleDomainError(c, err)
 		return
 	}
 
-	// Convert to API response format (entities to models)
 	var response []track.ArtistSummary
 	for _, artist := range result {
 		response = append(response, track.ArtistSummary{
@@ -60,6 +56,7 @@ func (tc *TrackController) GetTrackSummary(c *gin.Context) {
 			Name:     artist.Name,
 			Count:    artist.Count,
 			ImageURL: artist.ImageURL,
+			Genres:   artist.Genres,
 		})
 	}
 

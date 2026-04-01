@@ -13,6 +13,7 @@ type TrackResponse struct {
 
 // RangeRequest is used for validating query parameters related to track counts
 type RangeRequest struct {
-	Min int `form:"min" binding:"min=0"`
-	Max int `form:"max" binding:"min=0,gtefield=Min"`
+	Min   int    `form:"min" binding:"min=0"`
+	Max   int    `form:"max" binding:"min=0,gtefield=Min"`
+	Genre string `form:"genre"`
 }

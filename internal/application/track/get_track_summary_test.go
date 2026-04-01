@@ -14,7 +14,7 @@ func TestGetTrackSummaryUseCase_Execute(t *testing.T) {
 	// Setup mocks
 	mockSpotifyRepo := new(mocks.MockSpotifyRepository)
 	mockCacheRepo := new(mocks.MockCacheRepository)
-	
+
 	useCase := NewGetTrackSummaryUseCase(mockSpotifyRepo, mockCacheRepo)
 	ctx := context.Background()
 
@@ -58,24 +58,24 @@ func TestGetTrackSummaryUseCase_Execute(t *testing.T) {
 		mockCacheRepo.On("GetUserTracks", ctx).Return(nil, nil)
 		mockSpotifyRepo.On("GetAllUserTracks", ctx).Return(tracks, nil)
 		mockCacheRepo.On("SetUserTracks", ctx, tracks, mock.Anything).Return(nil)
-		
+
 		// Mock Artist Image calls
 		mockSpotifyRepo.On("GetArtist", ctx, spotifyAPI.ID("1")).Return(&spotifyAPI.FullArtist{}, nil)
 		mockSpotifyRepo.On("GetArtist", ctx, spotifyAPI.ID("2")).Return(&spotifyAPI.FullArtist{}, nil)
-		
+
 		mockCacheRepo.On("Set", ctx, "track_summary", mock.Anything, mock.Anything).Return(nil)
 
 		// Execute
-		result, err := useCase.Execute(ctx, 0, 0)
+		result, err := useCase.Execute(ctx, 0, 0, "")
 
 		// Assertions
 		assert.NoError(t, err)
 		assert.Len(t, result, 2)
-		
+
 		// Check Artist 1 (should have 2 tracks)
 		assert.Equal(t, "Artist 1", result[0].Name)
 		assert.Equal(t, 2, result[0].Count)
-		
+
 		// Check Artist 2 (should have 1 track)
 		assert.Equal(t, "Artist 2", result[1].Name)
 		assert.Equal(t, 1, result[1].Count)

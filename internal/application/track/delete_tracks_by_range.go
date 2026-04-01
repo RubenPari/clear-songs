@@ -9,10 +9,10 @@ import (
 
 // DeleteTracksByRangeUseCase handles the business logic for deleting tracks by range
 type DeleteTracksByRangeUseCase struct {
-	spotifyRepo        shared.SpotifyRepository
-	cacheRepo          shared.CacheRepository
-	getTrackSummaryUC  *GetTrackSummaryUseCase
-	deleteByArtistUC   *DeleteTracksByArtistUseCase
+	spotifyRepo       shared.SpotifyRepository
+	cacheRepo         shared.CacheRepository
+	getTrackSummaryUC *GetTrackSummaryUseCase
+	deleteByArtistUC  *DeleteTracksByArtistUseCase
 }
 
 // NewDeleteTracksByRangeUseCase creates a new DeleteTracksByRangeUseCase
@@ -26,14 +26,14 @@ func NewDeleteTracksByRangeUseCase(
 		spotifyRepo:       spotifyRepo,
 		cacheRepo:         cacheRepo,
 		getTrackSummaryUC: getTrackSummaryUC,
-		deleteByArtistUC: deleteByArtistUC,
+		deleteByArtistUC:  deleteByArtistUC,
 	}
 }
 
 // Execute deletes tracks within a count range
 func (uc *DeleteTracksByRangeUseCase) Execute(ctx context.Context, min, max int) error {
-	// 1. Get track summary filtered by range
-	summary, err := uc.getTrackSummaryUC.Execute(ctx, min, max)
+	// 1. Get track summary filtered by range (no genre filter for deletion)
+	summary, err := uc.getTrackSummaryUC.Execute(ctx, min, max, "")
 	if err != nil {
 		return err
 	}
