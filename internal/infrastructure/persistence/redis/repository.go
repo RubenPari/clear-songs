@@ -33,7 +33,7 @@ func NewRedisCacheRepository() (*RedisCacheRepository, error) {
 	dbStr := os.Getenv("REDIS_DB")
 
 	if host == "" {
-		host = "localhost"
+		host = "127.0.0.1"
 	}
 	if port == "" {
 		port = "6379"

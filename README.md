@@ -86,7 +86,7 @@ The application allows you to quickly clean up your Spotify library by:
 4. **Set up your Spotify App**
    - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
    - Create a new app
-   - Add your redirect URI (e.g., `http://localhost:3000/auth/callback`)
+   - Add your redirect URI (e.g., `http://127.0.0.1:3000/auth/callback`)
    - Copy Client ID and Client Secret to your `.env` file
 
 5. **Run the application**
@@ -95,7 +95,7 @@ The application allows you to quickly clean up your Spotify library by:
    go run src/main.go
    ```
 
-The server will start on `http://localhost:3000`
+The server will start on `http://127.0.0.1:3000`
 
 ## ⚙️ Environment Configuration
 
@@ -105,17 +105,17 @@ Create a `.env` file in the root directory with the following parameters:
 # Spotify API Credentials
 CLIENT_ID=your_spotify_client_id
 CLIENT_SECRET=your_spotify_client_secret
-REDIRECT_URL=http://localhost:3000/auth/callback
+REDIRECT_URL=http://127.0.0.1:3000/auth/callback
 
 # Database Configuration
-DB_HOST=localhost
+DB_HOST=127.0.0.1
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 DB_NAME=clear_songs
 DB_PORT=5432
 
 # Redis Cache Configuration
-REDIS_HOST=localhost
+REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DB=0
@@ -139,9 +139,9 @@ The easiest way to run the entire backend stack (API, PostgreSQL, and Redis) is 
    ```
 
    This will start:
-   - **API**: Running on `http://localhost:3000`
-   - **PostgreSQL**: Running on `localhost:5432`
-   - **Redis**: Running on `localhost:6379`
+   - **API**: Running on `http://127.0.0.1:3000`
+   - **PostgreSQL**: Running on `127.0.0.1:5432`
+   - **Redis**: Running on `127.0.0.1:6379`
 
 3. **Stop services**
    ```bash
@@ -201,12 +201,12 @@ The application requires the following Spotify scopes:
 ### Base URL
 
 ```
-http://localhost:3000
+http://127.0.0.1:3000
 ```
 
 ### Interactive Documentation
 
-Access the Swagger UI at: `http://localhost:3000/swagger/index.html`
+Access the Swagger UI at: `http://127.0.0.1:3000/swagger/index.html`
 
 ---
 
@@ -225,7 +225,7 @@ Initiates the OAuth flow to authenticate with Spotify.
 **Example:**
 
 ```bash
-curl -X GET "http://localhost:3000/auth/login"
+curl -X GET "http://127.0.0.1:3000/auth/login"
 ```
 
 ### OAuth Callback
@@ -322,13 +322,13 @@ Returns a comprehensive summary of tracks organized by artist, with optional fil
 
 ```bash
 # Get all artists
-curl -X GET "http://localhost:3000/track/summary"
+curl -X GET "http://127.0.0.1:3000/track/summary"
 
 # Get artists with 10-50 tracks
-curl -X GET "http://localhost:3000/track/summary?min=10&max=50"
+curl -X GET "http://127.0.0.1:3000/track/summary?min=10&max=50"
 
 # Get artists with more than 20 tracks
-curl -X GET "http://localhost:3000/track/summary?min=20"
+curl -X GET "http://127.0.0.1:3000/track/summary?min=20"
 ```
 
 ### Delete Tracks by Artist
@@ -352,7 +352,7 @@ Removes all tracks from a specific artist from your library.
 **Example:**
 
 ```bash
-curl -X DELETE "http://localhost:3000/track/artist/4NHQUGzhtTLFvgF5SZesLK"
+curl -X DELETE "http://127.0.0.1:3000/track/artist/4NHQUGzhtTLFvgF5SZesLK"
 ```
 
 ### Delete Tracks by Range
@@ -378,13 +378,13 @@ Removes tracks based on the number of songs per artist within a specified range.
 
 ```bash
 # Delete tracks from artists with exactly 1 track (likely singles)
-curl -X DELETE "http://localhost:3000/track/range?min=1&max=1"
+curl -X DELETE "http://127.0.0.1:3000/track/range?min=1&max=1"
 
 # Delete tracks from artists with more than 50 tracks
-curl -X DELETE "http://localhost:3000/track/range?min=50"
+curl -X DELETE "http://127.0.0.1:3000/track/range?min=50"
 
 # Delete tracks from artists with 5-15 tracks
-curl -X DELETE "http://localhost:3000/track/range?min=5&max=15"
+curl -X DELETE "http://127.0.0.1:3000/track/range?min=5&max=15"
 ```
 
 ---
@@ -412,7 +412,7 @@ Removes all tracks from a specified playlist while keeping the playlist structur
 **Example:**
 
 ```bash
-curl -X DELETE "http://localhost:3000/playlist/tracks?id=37i9dQZF1DXcBWIGoYBM5M"
+curl -X DELETE "http://127.0.0.1:3000/playlist/tracks?id=37i9dQZF1DXcBWIGoYBM5M"
 ```
 
 ### Delete Playlist Tracks and Remove from Library
@@ -436,7 +436,7 @@ Removes all tracks from both the specified playlist AND your personal library. I
 **Example:**
 
 ```bash
-curl -X DELETE "http://localhost:3000/playlist/tracks/all?id=37i9dQZF1DXcBWIGoYBM5M"
+curl -X DELETE "http://127.0.0.1:3000/playlist/tracks/all?id=37i9dQZF1DXcBWIGoYBM5M"
 ```
 
 **⚠️ Warning:** This operation removes tracks from your library permanently. Tracks are backed up to the database for recovery.
@@ -466,7 +466,7 @@ Converts an album to individual songs in your library.
 **Example:**
 
 ```bash
-curl -X POST "http://localhost:3000/album/convert?id_album=4aawyAB9vmqN3uQ7FjRGTy"
+curl -X POST "http://127.0.0.1:3000/album/convert?id_album=4aawyAB9vmqN3uQ7FjRGTy"
 ```
 
 ---
@@ -513,31 +513,31 @@ The API uses standard HTTP status codes and returns detailed error messages:
 
    ```bash
    # Open browser and visit
-   http://localhost:3000/auth/login
+   http://127.0.0.1:3000/auth/login
    ```
 
 2. **Analyze your library**
 
    ```bash
-   curl -X GET "http://localhost:3000/track/summary"
+   curl -X GET "http://127.0.0.1:3000/track/summary"
    ```
 
 3. **Remove artists with only 1 track (cleanup singles)**
 
    ```bash
-   curl -X DELETE "http://localhost:3000/track/range?min=1&max=1"
+   curl -X DELETE "http://127.0.0.1:3000/track/range?min=1&max=1"
    ```
 
 4. **Clean up a specific playlist**
 
    ```bash
-   curl -X DELETE "http://localhost:3000/playlist/tracks?id=YOUR_PLAYLIST_ID"
+   curl -X DELETE "http://127.0.0.1:3000/playlist/tracks?id=YOUR_PLAYLIST_ID"
    ```
 
 5. **Verify changes**
 
    ```bash
-   curl -X GET "http://localhost:3000/track/summary"
+   curl -X GET "http://127.0.0.1:3000/track/summary"
    ```
 
 ### Advanced Use Cases
@@ -545,13 +545,13 @@ The API uses standard HTTP status codes and returns detailed error messages:
 **Remove duplicate artists (keep only artists with 10+ tracks):**
 
 ```bash
-curl -X DELETE "http://localhost:3000/track/range?min=1&max=9"
+curl -X DELETE "http://127.0.0.1:3000/track/range?min=1&max=9"
 ```
 
 **Clean library and specific playlist simultaneously:**
 
 ```bash
-curl -X DELETE "http://localhost:3000/playlist/tracks/all?id=PLAYLIST_ID"
+curl -X DELETE "http://127.0.0.1:3000/playlist/tracks/all?id=PLAYLIST_ID"
 ```
 
 ---

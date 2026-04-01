@@ -57,7 +57,7 @@ func (uc *CallbackUseCase) Execute(ctx context.Context, code string) (string, er
 	// 5. Get frontend URL
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "http://localhost:4200"
+		frontendURL = "http://127.0.0.1:4200"
 	}
 
 	return frontendURL + "/callback", nil

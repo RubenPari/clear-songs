@@ -18,7 +18,7 @@ import (
 func setupTestEnv() {
 	os.Setenv("CLIENT_ID", "mock_id")
 	os.Setenv("CLIENT_SECRET", "mock_secret")
-	os.Setenv("REDIRECT_URL", "http://localhost:3000/callback")
+	os.Setenv("REDIRECT_URL", "http://127.0.0.1:3000/callback")
 }
 
 func TestTrackAPI_E2E(t *testing.T) {
