@@ -110,9 +110,6 @@ func Init() error {
 
 	// auto-migration
 	errMigration := db.AutoMigrate(
-		&models.UserDB{},
-		&models.VerificationTokenDB{},
-		&models.ResetTokenDB{},
 		&models.TrackDB{},
 	)
 

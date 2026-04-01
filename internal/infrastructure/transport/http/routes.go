@@ -71,26 +71,6 @@ func SetUpRoutes(server *gin.Engine, container *di.Container) {
 	}
 
 	/**
-	 * Local Authentication Routes Group (Email/Password)
-	 */
-	localAuthController := handlers.NewLocalAuthController(container.AuthService)
-	localAuth := server.Group("/local-auth")
-	{
-		localAuth.POST("/register", localAuthController.Register)
-		localAuth.GET("/confirm-email", localAuthController.ConfirmEmail)
-		localAuth.POST("/login", localAuthController.Login)
-		localAuth.POST("/forgot-password", localAuthController.ForgotPassword)
-		localAuth.POST("/reset-password", localAuthController.ResetPassword)
-		localAuth.POST("/logout", localAuthController.Logout)
-
-		protectedAuth := localAuth.Group("/")
-		protectedAuth.Use(middleware.JWTMiddleware())
-		{
-			protectedAuth.POST("/change-password", localAuthController.ChangePassword)
-		}
-	}
-
-	/**
 	 * Authentication Routes Group (Spotify)
 	 */
 	authController := handlers.NewAuthController(
