@@ -45,7 +45,7 @@ func main() {
 	log.Println("Setting up router...")
 	router := gin.Default()
 
-	allowedOrigins := []string{"http://127.0.0.1", "http://127.0.0.1:4200", "http://127.0.0.1:4200"}
+	allowedOrigins := []string{"http://127.0.0.1", "http://127.0.0.1:4200", "http://localhost:4200"}
 	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
 		allowedOrigins = append(allowedOrigins, frontendURL)
 	}
